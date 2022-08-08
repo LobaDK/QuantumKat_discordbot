@@ -1,36 +1,31 @@
-from urllib.parse import urljoin
-import requests
 import random
-from bs4 import BeautifulSoup
-import discord  
+from num2words import num2words
 
-with open('./files/token', 'r') as tokenfile:
+import discord
+from discord.ext import commands
+
+with open('C:/Users/nichel/code/Python/QuantumKat-discordbot/files/token', 'r') as tokenfile:
     token = tokenfile.read().strip()
 
-client = discord.Client()
+initial_extensions = ['cogs.Main','cogs.Admin']
+def setup(bot):
+    for extension in initial_extensions:
+        bot.load_extension(extension)
 
-@client.event
+intents = discord.Intents.default()
+
+bot = commands.Bot(command_prefix='?', help_command=None, intents=intents)
+
+@bot.check
+async def globally_block_dms(ctx):
+    return ctx.guild is not None
+
+@bot.event
 async def on_ready():
     quantum = ['reality','universe','dimension','timeline']
-    print(f'{client.user} has appeared from the {random.randint(4,35000)}th {random.choice(quantum)}!')
+    print(f'{bot.user} has appeared from the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
+    channel = bot.get_channel(665708424390246460)
+    await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    if message.content.startswith("?ar") or message.content.startswith("?or"):
-        links = []
-        if message.content.startswith("?ar"):
-                url = 'https://aaaa.lobadk.com/'
-        elif message.content.startswith("?or"):
-                url = 'https://possum.lobadk.com/'
-        reponse = requests.get(url)
-        soup = BeautifulSoup(reponse.text, 'lxml')
-        for link in soup.find_all('a'):
-            temp = link.get('href')
-            if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-                continue
-            links.append(temp)
-        await message.channel.send(urljoin(url,random.choice(links)))
-
-client.run(token)
+setup(bot)
+bot.run(token)
