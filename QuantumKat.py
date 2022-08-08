@@ -11,7 +11,8 @@ client = discord.Client()
 
 @client.event
 async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+    quantum = ['reality','universe','dimension','timeline']
+    print(f'{client.user} has appeared from the {random.randint(4,35000)}th {random.choice(quantum)}!')
 
 @client.event
 async def on_message(message):
