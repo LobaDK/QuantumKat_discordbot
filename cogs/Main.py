@@ -38,9 +38,29 @@ class Main(commands.Cog):
         await ctx.send(urljoin(url,random.choice(links)))
 
     @commands.command()
-    async def entangle(self, ctx):
-        quantum = ['reality','universe','dimension','timeline']
-        await ctx.send(f'Quantum entangles @{ctx.message.mentions[0]} to the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}')
+    async def entangle(self, ctx, *, arg):
+        await ctx.send(f'Quantum entangles {arg} to the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(["reality","universe","dimension","timeline"])}')
+
+    @commands.command()
+    async def pet(self, ctx, *, arg):
+        mention = f'<@{self.bot.user.id}>'
+        if mention in arg:
+            quantummode = random.choice(['purr','frequency'])
+            if quantummode == 'purr':
+                await ctx.send(f'Quantum purrs across {random.randint(0,100)} {random.choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], cum_weights=[100,100,100,100,105], k=1)}')
+            elif quantummode == 'frequency':
+                await ctx.send(f'Quantum vibrates at a frequency of {random.randint(1,69400)}')
+            return
+        verb = random.choice(["petted","pets"])
+        if verb == 'petted':
+            quantumtime = (f'{random.randint(1,24)} hours, {random.randint(0,31)} days, {random.randint(0,12)} months and {random.randint(0,150)} years ago')
+        elif verb == 'pets':
+            present = random.choice(['now','future'])
+            if present == 'now':
+                quantumtime = ('in present time')
+            elif present == 'future':
+                quantumtime = (f'{random.randint(1,24)} hour(s), {random.randint(0,31)} days, {random.randint(0,12)} months and {random.randint(0,150)} years into the future')
+        await ctx.send(f'Quantum {verb} {arg} {quantumtime}')
 
 def setup(bot):
     bot.add_cog(Main(bot))

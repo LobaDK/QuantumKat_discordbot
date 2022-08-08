@@ -7,13 +7,13 @@ class Admin(commands.Cog):
         self.bot = bot
     
     @commands.command()
-    async def stop(self, ctx):
+    async def observe(self, ctx):
         if ctx.author.id == 429406165903081472:
             await ctx.send("QuantumKat's superposition has collapsed!")
             await self.bot.close()
     
     @commands.command()
-    async def reload(self, ctx, module : str):
+    async def stabilize(self, ctx, module : str):
         if ctx.author.id == 429406165903081472:
             quantum = ['reality','universe','dimension','timeline']
             location = random.choice(quantum)
