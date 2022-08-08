@@ -47,7 +47,7 @@ class Main(commands.Cog):
         if mention in arg:
             quantummode = random.choice(['purr','frequency'])
             if quantummode == 'purr':
-                await ctx.send(f'Quantum purrs across {random.randint(0,100)} {random.choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], cum_weights=[100,100,100,100,105], k=1)}')
+                await ctx.send(f'Quantum purrs across {random.randint(2,100)} {random.choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
             elif quantummode == 'frequency':
                 await ctx.send(f'Quantum vibrates at a frequency of {random.randint(1,69400)}')
             return
