@@ -4,7 +4,7 @@ from num2words import num2words
 import discord
 from discord.ext import commands
 
-with open('C:/Users/nichel/code/Python/QuantumKat-discordbot/files/token', 'r') as tokenfile:
+with open('./files/token', 'r') as tokenfile:
     token = tokenfile.read().strip()
 
 initial_extensions = ['cogs.Main','cogs.Admin']
