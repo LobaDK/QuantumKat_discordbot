@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import random
 from urllib.parse import urljoin
 from num2words import num2words
