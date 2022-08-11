@@ -29,7 +29,7 @@ class Entanglement(commands.Cog):
                 await ctx.send(f'Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
-                await ctx.send('https://aaaa.lobadk.com/aitrash.mp4')
+                await ctx.send('Error, possible timeline paradox detected! Please try again')
     
     @commands.command()
     async def entangle(self, ctx, module : str):
