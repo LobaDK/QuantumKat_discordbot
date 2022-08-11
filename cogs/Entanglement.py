@@ -43,7 +43,7 @@ class Entanglement(commands.Cog):
                 print('{}: {}'.format(type(e).__name__, e))
                 await ctx.send('https://aaaa.lobadk.com/aitrash.mp4')
         else:
-            ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
 
     @commands.command()
     async def unentangle(self, ctx, module : str):
@@ -57,7 +57,7 @@ class Entanglement(commands.Cog):
                 print('{}: {}'.format(type(e).__name__, e))
                 await ctx.send('https://aaaa.lobadk.com/aitrash.mp4')
         else:
-            ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
 
 def setup(bot):
     bot.add_cog(Entanglement(bot))
