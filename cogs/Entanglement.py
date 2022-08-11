@@ -30,6 +30,8 @@ class Entanglement(commands.Cog):
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
                 await ctx.send('Error, possible timeline paradox detected! Please try again')
+        else:
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     
     @commands.command()
     async def entangle(self, ctx, module : str):
