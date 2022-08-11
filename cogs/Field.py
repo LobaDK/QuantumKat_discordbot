@@ -111,7 +111,7 @@ class Field(commands.Cog):
         mention = f'<@{self.bot.user.id}>'
         if not arg:
             await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets {ctx.author.mention}')
-        if mention in arg:
+        elif mention in arg:
             quantumpetloop = ""
             for _ in range(0,random.randint(8,40)):
                 quantumpetloop = quantumpetloop + random.choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])
