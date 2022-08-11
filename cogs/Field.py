@@ -95,7 +95,7 @@ class Field(commands.Cog):
             elif present == 'future':
                 quantum_time = (f'{random.randint(1,1000)} years, {random.randint(0,12)} months, {random.randint(0,31)} days and {random.randint(0,24)} hours into the future')
         if not arg:
-            await ctx.send(f'Superpositions to {ctx.author.mention}, and {verb} {quantum_time} {direction_prefix + quantum_direction}')
+            await ctx.send(f'Superpositions to {ctx.author.mention}, and {verb} {quantum_time} {direction_prefix + quantum_direction}, in the {num2words(quantumspan, to="ordinal_num")} timeline')
             return
 
         mention = f'<@{self.bot.user.id}>'
@@ -106,7 +106,7 @@ class Field(commands.Cog):
             elif quantummode == 'frequency':
                 await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","redacted","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
         else:
-            await ctx.send(f'Superpositions to {arg}, and {verb} {quantum_time} {direction_prefix + quantum_direction}')
+            await ctx.send(f'Superpositions to {arg}, and {verb} {quantum_time} {direction_prefix + quantum_direction}, in the {num2words(quantumspan, to="ordinal_num")} timeline')
             return
 def setup(bot):
     bot.add_cog(Field(bot))
