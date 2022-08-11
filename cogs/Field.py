@@ -63,7 +63,7 @@ class Field(commands.Cog):
                 await ctx.send(f'Quantum vibrates at a frequency of {random.randint(1,100000)}hz')
             elif quantummode == 'quantumloop':
                 petloop = ""
-                for n in range(0,random.randint(8,40)):
+                for _ in range(0,random.randint(8,40)):
                     petloop = petloop + random.choice(['pet','pat','petting'])
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
             return
@@ -105,5 +105,18 @@ class Field(commands.Cog):
         else:
             await ctx.send(f'Superpositions to {arg}, and {verb} {quantum_time} {direction_prefix + quantum_direction}, in the {num2words(quantumspan, to="ordinal_num")} timeline')
             return
+    
+    @commands.command()
+    async def quantumpet(self, ctx, *, arg=""):
+        mention = f'<@{self.bot.user.id}>'
+        if not arg:
+            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets {ctx.author.mention}')
+        if mention in arg:
+            quantumpetloop = ""
+            for _ in range(0,random.randint(8,40)):
+                quantumpetloop = quantumpetloop + random.choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])
+            await ctx.send(f'{quantumpetloop}. Instability detected, sucessfully terminated the {random.choices(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence"])}')
+        else:
+            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets {arg}')
 def setup(bot):
     bot.add_cog(Field(bot))
