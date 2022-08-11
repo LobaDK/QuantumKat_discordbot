@@ -82,9 +82,7 @@ class Field(commands.Cog):
             direction_prefix = 'from the '
         elif quantum_direction == 'behind':
             direction_prefix = 'from '
-
-        else:
-            direction_prefix = NULL
+            
         if verb == 'hugged':
             quantum_time = (f'{random.randint(1,1000)} years, {random.randint(0,12)} months, {random.randint(0,31)} days and {random.randint(0,24)} hours ago')
         elif verb == 'hugs':
