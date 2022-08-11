@@ -110,7 +110,7 @@ class Field(commands.Cog):
     async def quantumpet(self, ctx, *, arg=""):
         mention = f'<@{self.bot.user.id}>'
         if not arg:
-            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets {ctx.author.mention}')
+            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {ctx.author.mention}')
             return
         elif mention in arg:
             quantumpetloop = ""
@@ -119,7 +119,7 @@ class Field(commands.Cog):
             await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability"])}!')
             return
         else:
-            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets {arg}')
+            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {arg}')
             return
 def setup(bot):
     bot.add_cog(Field(bot))
