@@ -37,7 +37,7 @@ class Field(commands.Cog):
             links.append(temp)
         await ctx.send(urljoin(url,random.choice(links)))
 
-    @commands.command()
+    @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
         verb = random.choice(["petted","pets"])
         if verb == 'petted':
@@ -71,7 +71,7 @@ class Field(commands.Cog):
             await ctx.send(f'Quantum {verb} {arg} {quantumtime}')
             return
 
-    @commands.command()
+    @commands.command(aliases=['hugs'])
     async def hug(self, ctx, *, arg=""):
         verb = random.choice(["hugged","hugs"])
         quantum_direction = random.choice(["left","right","behind","front"])
@@ -106,7 +106,7 @@ class Field(commands.Cog):
             await ctx.send(f'Superpositions to {arg}, and {verb} {quantum_time} {direction_prefix + quantum_direction}, in the {num2words(quantumspan, to="ordinal_num")} timeline')
             return
     
-    @commands.command(aliases=['quantumpæt','qpet','qpæt'])
+    @commands.command(aliases=['quantumpæt','qpet','qpæt','quantumpæts','quantumpets','qpets','qpæts'])
     async def quantumpet(self, ctx, *, arg=""):
         mention = f'<@{self.bot.user.id}>'
         if not arg:
