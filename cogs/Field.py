@@ -122,7 +122,5 @@ class Field(commands.Cog):
             await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {arg}')
             return
     
-    @commands.command()
-    async def 
 def setup(bot):
     bot.add_cog(Field(bot))
