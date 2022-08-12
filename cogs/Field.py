@@ -106,7 +106,7 @@ class Field(commands.Cog):
             await ctx.send(f'Superpositions to {arg}, and {verb} {quantum_time} {direction_prefix + quantum_direction}, in the {num2words(quantumspan, to="ordinal_num")} timeline')
             return
     
-    @commands.command()
+    @commands.command(aliases=['quantumpæt','qpet','qpæt'])
     async def quantumpet(self, ctx, *, arg=""):
         mention = f'<@{self.bot.user.id}>'
         if not arg:
@@ -121,5 +121,8 @@ class Field(commands.Cog):
         else:
             await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {arg}')
             return
+    
+    @commands.command()
+    async def 
 def setup(bot):
     bot.add_cog(Field(bot))
