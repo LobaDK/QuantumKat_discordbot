@@ -122,5 +122,14 @@ class Field(commands.Cog):
             await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {arg}')
             return
     
+    @commands.command(aliases=['rockpaperscissor'])
+    async def rps(self, ctx, *, arg=""):
+        if str('rock' or 'paper' or 'scissor') in arg.lower():
+            whowin = random.choices(['I win!','You win!'], k=1, weights=[100,5])[0]
+            if whowin == 'I win':
+                response = "You do know I'm a quantum kat, right?"
+            await ctx.send(f'{whowin} {response}')
+        else:
+            await ctx.send('Rock, paper or scissor required')
 def setup(bot):
     bot.add_cog(Field(bot))
