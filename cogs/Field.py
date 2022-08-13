@@ -124,13 +124,13 @@ class Field(commands.Cog):
     
     @commands.command(aliases=['rockpaperscissor'])
     async def rps(self, ctx, *, arg=""):
-        substring = ['rock','rocks','paper','papers','scissor','scissors']
-        if any(_ in arg for _ in substring):
+        substring = ['rock','rocks','paper','papers','scissor','scissors','✂️','🪨','🧻']
+        if any(_ in arg.lower() for _ in substring):
             whowin = random.choices(['I win!','You win!'], k=1, weights=[100,5])[0]
             if whowin == 'I win!':
                 whowin = whowin + " You do know I'm a quantum kat, right?"
             await ctx.send(f'{whowin}')
         else:
-            await ctx.send('Rock, paper or scissor required')
+            await ctx.send('Rock, paper or scissors required')
 def setup(bot):
     bot.add_cog(Field(bot))
