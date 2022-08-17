@@ -6,31 +6,31 @@ import requests
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
-async def arpr(ctx, url):
-    links = []
-    reponse = requests.get(url)
-    soup = BeautifulSoup(reponse.text, 'lxml')
-    for link in soup.find_all('a'):
-        temp = link.get('href')
-        if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-            continue
-        links.append(temp)
-    await ctx.send(urljoin(url,random.choice(links)))
-
 class Field(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def arpr(self, ctx, url):
+        links = []
+        reponse = requests.get(url)
+        soup = BeautifulSoup(reponse.text, 'lxml')
+        for link in soup.find_all('a'):
+            temp = link.get('href')
+            if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
+                continue
+            links.append(temp)
+        await ctx.send(urljoin(url,random.choice(links)))
+
     @commands.command()
     async def ar(self, ctx):
         url = 'https://aaaa.lobadk.com/'
-        arpr(url, ctx)
+        await self.arpr(self, ctx, url)
         
 
     @commands.command()
     async def pr(self, ctx):
         url = 'https://possum.lobadk.com/'
-        arpr(url, ctx)
+        await self.arpr(self, ctx, url)
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
