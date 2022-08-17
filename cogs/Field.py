@@ -10,7 +10,7 @@ class Field(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def arpr(ctx, url):
+    async def arpr(self, ctx, url):
         links = []
         reponse = requests.get(url)
         soup = BeautifulSoup(reponse.text, 'lxml')
