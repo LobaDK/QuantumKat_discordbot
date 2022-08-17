@@ -27,7 +27,7 @@ class Field(commands.Cog):
         await self.arpr(ctx, url)
         
 
-    @commands.command()
+    @commands.command(aliases=['?or'])
     async def pr(self, ctx):
         url = 'https://possum.lobadk.com/'
         await self.arpr(ctx, url)
