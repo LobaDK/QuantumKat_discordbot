@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
-async def arpr(self, ctx, url):
+async def arpr(ctx, url):
     links = []
     reponse = requests.get(url)
     soup = BeautifulSoup(reponse.text, 'lxml')
@@ -22,15 +22,15 @@ class Field(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def ar(self):
+    async def ar(self, ctx):
         url = 'https://aaaa.lobadk.com/'
-        arpr(url)
+        arpr(url, ctx)
         
 
     @commands.command()
-    async def pr(self):
+    async def pr(self, ctx):
         url = 'https://possum.lobadk.com/'
-        arpr(url)
+        arpr(url, ctx)
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
