@@ -10,7 +10,7 @@ class Field(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def arpr(self, ctx, url):
+    async def arpr(ctx, url):
         links = []
         reponse = requests.get(url)
         soup = BeautifulSoup(reponse.text, 'lxml')
@@ -24,13 +24,13 @@ class Field(commands.Cog):
     @commands.command()
     async def ar(self, ctx):
         url = 'https://aaaa.lobadk.com/'
-        await self.arpr(self, ctx, url)
+        await self.arpr(ctx, url)
         
 
     @commands.command()
     async def pr(self, ctx):
         url = 'https://possum.lobadk.com/'
-        await self.arpr(self, ctx, url)
+        await self.arpr(ctx, url)
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
