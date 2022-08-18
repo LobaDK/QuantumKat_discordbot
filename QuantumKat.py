@@ -24,8 +24,8 @@ async def globally_block_dms(ctx):
 async def on_ready():
     quantum = ['reality','universe','dimension','timeline']
     print(f'{bot.user} has appeared from the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
-    channel = bot.get_channel(873703927621758986)
-    await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
+    #channel = bot.get_channel(873703927621758986)
+    #await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
 
 setup(bot)
 bot.run(token)

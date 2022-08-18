@@ -7,16 +7,6 @@ from num2words import num2words
 class Entanglement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-    async def quantize_get_data(self, ctx, cmd):
-        if not 'yt-dlp' in cmd:
-            cmd = 'yt-dlp ' + cmd
-        process = await asyncio.create_subprocess_exec(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-        stdout, stderr = await process.communicate()
-        if stdout:
-            ctx.send(f'[stdout]\n{stdout.decode()}')
-        if stderr:
-            ctx.send(f'[stderr]\n{stderr.decode()}')
     
     @commands.command()
     async def observe(self, ctx):
@@ -24,7 +14,7 @@ class Entanglement(commands.Cog):
             await ctx.send("QuantumKat's superposition has collapsed!")
             await self.bot.close()
     
-    @commands.command()
+    @commands.command(aliases=['stabilize'])
     async def stabilise(self, ctx, module : str):
         if ctx.author.id == 429406165903081472:
             location = random.choice(['reality','universe','dimension','timeline'])
@@ -82,10 +72,39 @@ class Entanglement(commands.Cog):
                     if "&list=" in arg or "playlist" in arg:
                         await ctx.send('Playlists not supported')
                         return
+                    #try:
                     await ctx.send('Getting quantization data...')
-                    asyncio.run(self.quantize_get_data(arg))
+                    if not 'yt-dlp' in arg:
+                        arg = '"C:/self installed apps/yt-dlp.exe" ' + arg
+                    print(arg)
+                    process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                    stdout, stderr = await process.communicate()
+                    print(stdout)
+                    if stdout:
+                        
+                        responseList = []
+                        response = ""
+                        
+                        for line in stdout:
+                            if len(response + "\n" + line) + 6 < 2000:
+                                response + "\n" + line
+                            else:
+                                responseList.append(response)
+                                response = line
+                                
+                        responseList.append(response)
+                                
+                        for response in responseList:
+                            await ctx.send('' + response.strip() + '')
+
+                        await ctx.send(f'[stdout]\n{stdout.decode()}')
+                    if stderr:
+                        await ctx.send(f'[stderr]\n{stderr.decode()}')
+                    #except:
+                        #await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                        #return
             else:
-                ctx.send('Command cannot be empty')
+                await ctx.send('Command cannot be empty')
                 
                 
             #if arg.startswith('-')
