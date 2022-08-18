@@ -1,3 +1,5 @@
+import asyncio
+from sys import stderr
 from discord.ext import commands
 import random
 from num2words import num2words
@@ -5,6 +7,16 @@ from num2words import num2words
 class Entanglement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    async def quantize_get_data(self, ctx, cmd):
+        if not 'yt-dlp' in cmd:
+            cmd = 'yt-dlp ' + cmd
+        process = await asyncio.create_subprocess_exec(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        stdout, stderr = await process.communicate()
+        if stdout:
+            ctx.send(f'[stdout]\n{stdout.decode()}')
+        if stderr:
+            ctx.send(f'[stderr]\n{stderr.decode()}')
     
     @commands.command()
     async def observe(self, ctx):
@@ -60,6 +72,28 @@ class Entanglement(commands.Cog):
                 await ctx.send('https://aaaa.lobadk.com/aitrash.mp4')
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+
+    @commands.command()
+    async def quantize(self, ctx, *, arg=""):
+        #substring = ['youtube.com','youtu.be']
+        if ctx.author.id == 429406165903081472:
+            if arg:
+                if '-F' in arg:
+                    if "&list=" in arg or "playlist" in arg:
+                        await ctx.send('Playlists not supported')
+                        return
+                    await ctx.send('Getting quantization data...')
+                    asyncio.run(self.quantize_get_data(arg))
+            else:
+                ctx.send('Command cannot be empty')
+                
+                
+            #if arg.startswith('-')
+            #if any(_ in arg.lower() for _ in substring):
+                #await ctx.send(f'Attempting quantization of data from the {num2words(random.randint(0,100), to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}...')
+                
+            #else:
+                #await ctx.send('Error, only youtube videos are currently supported')
 
 def setup(bot):
     bot.add_cog(Entanglement(bot))
