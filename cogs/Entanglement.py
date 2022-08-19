@@ -107,10 +107,11 @@ class Entanglement(commands.Cog):
                         arg = f'wget -nc -O {arg3} {arg2}'
                         process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                         stdout, stderr = await process.communicate()
+                        if 'already there; not retrieving' in stderr.decode():
+                            await ctx.send('Filename already exists, consider using a different name')
+                            return
                         if stderr:
                             await ctx.send(stderr.decode())
-                        if 'already there; not retrieving' in stdout.decode():
-                            await ctx.send('Filename already exists, consider using a different name')
                             return
                         else:
                             await ctx.send(f'Success! Data quantized to {arg3}')
