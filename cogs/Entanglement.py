@@ -18,12 +18,20 @@ class Entanglement(commands.Cog):
     async def stabilise(self, ctx, module : str):
         if ctx.author.id == 429406165903081472:
             location = random.choice(['reality','universe','dimension','timeline'])
-            if module == 'cogs.Entanglement' or module == 'Entanglement':
-                await ctx.send(f'Superposition irregularity detected in Quantum Entanglement! Attempting to quantum entangle to another {location}...')
-            if module == 'cogs.Field' or module == 'Field':
-                await ctx.send(f'Superposition irregularity detected in Quantum Field! Attempting to quantum entangle to another {location}...')
-            if module == 'cogs.Tunnel' or module == 'Tunnel':
-                await ctx.send(f'Superposition irregularity detected in Quantum Tunnel! Attempting to quantum entangle to another {location}...')
+            if module == '*':
+                await ctx.send('Quantum instability detected across... <error>. Purrging!')
+                initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel']
+                try:
+                    for extension in initial_extensions:
+                        await ctx.send(f'Purging {extension.replace("cogs.","")}!')
+                        self.bot.reload_extension(extension)
+                    return
+                except Exception as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send('Error, possible timeline paradox detected! Please try again')
+                    return
+
+            await ctx.send(f'Superposition irregularity detected in Quantum {module}! Attempting to quantum entangle to another {location}...')
             try:
                 if "cogs." not in module:
                     module = "cogs." + module
@@ -63,48 +71,56 @@ class Entanglement(commands.Cog):
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
 
-    @commands.command()
-    async def quantize(self, ctx, *, arg=""):
-        #substring = ['youtube.com','youtu.be']
+    @commands.command(aliases=['quantise'])
+    async def quantize(self, ctx, arg2="", arg3="", arg1=""):
         if ctx.author.id == 429406165903081472:
-            if arg:
-                if '-F' in arg:
-                    if "&list=" in arg or "playlist" in arg:
+            if arg2 and arg3:
+                if arg2.startswith('<') and arg2.endswith('>'):
+                    arg2 = arg2.replace('<','')
+                    arg2 = arg2.replace('>','')
+                if arg1 == 'YT':
+                    if "&list=" in arg2 or "playlist" in arg2:
                         await ctx.send('Playlists not supported')
                         return
-                    #try:
-                    await ctx.send('Getting quantization data...')
-                    if not 'yt-dlp' in arg:
-                        arg = '"C:/self installed apps/yt-dlp.exe" ' + arg
-                    print(arg)
-                    process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                    stdout, stderr = await process.communicate()
-                    print(stdout)
-                    if stdout:
-                        
-                        responseList = []
-                        response = ""
-                        
-                        for line in stdout:
-                            if len(response + "\n" + line) + 6 < 2000:
-                                response + "\n" + line
-                            else:
-                                responseList.append(response)
-                                response = line
-                                
-                        responseList.append(response)
-                                
-                        for response in responseList:
-                            await ctx.send('' + response.strip() + '')
+                    await ctx.send('Creating quantum tunnel...')
+                    try:
+                        arg = f'yt-dlp -f bestvideo[ext=mp4]+bestaudio[ext=m4a] {arg2} -o {arg3}.%(ext)s'
+                        await ctx.send('Tunnel created! Quantizing data...')
+                        process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                        stdout, stderr = await process.communicate()
+                        if stderr:
+                            await ctx.send(stderr.decode())
+                        if 'has already been downloaded' in stdout.decode():
+                            await ctx.send('Filename already exists, consider using a different name')
+                            return
+                        elif stdout:
+                            await ctx.send(f'Success! Data quantized to {arg3}.mp4')
+                    
+                    except:
+                        await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                        return
 
-                        await ctx.send(f'[stdout]\n{stdout.decode()}')
-                    if stderr:
-                        await ctx.send(f'[stderr]\n{stderr.decode()}')
-                    #except:
-                        #await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
-                        #return
+                else:
+                    await ctx.send('Creating quantum tunnel...')
+                    try:
+                        await ctx.send('Tunnel created! Quantizing data...')
+                        arg = f'wget -O {arg3} {arg2}'
+                        process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                        stdout, stderr = await process.communicate()
+                        if stderr:
+                            await ctx.send(stderr.decode())
+                        if 'already there; not retrieving' in stdout.decode():
+                            await ctx.send('Filename already exists, consider using a different name')
+                            return
+                        elif stdout:
+                            await ctx.send(f'Success! Data quantized to {arg3}')
+
+                    except:
+                        await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                        return
+                        
             else:
-                await ctx.send('Command cannot be empty')
+                await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>```')
                 
                 
             #if arg.startswith('-')
