@@ -104,7 +104,7 @@ class Entanglement(commands.Cog):
                     await ctx.send('Creating quantum tunnel...')
                     try:
                         await ctx.send('Tunnel created! Quantizing data...')
-                        arg = f'wget -O {arg3} {arg2}'
+                        arg = f'wget -nc -q -O {arg3} {arg2}'
                         process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                         stdout, stderr = await process.communicate()
                         if stderr:
