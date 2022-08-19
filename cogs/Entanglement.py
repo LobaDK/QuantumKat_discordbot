@@ -112,7 +112,7 @@ class Entanglement(commands.Cog):
                         if 'already there; not retrieving' in stdout.decode():
                             await ctx.send('Filename already exists, consider using a different name')
                             return
-                        elif stdout:
+                        else:
                             await ctx.send(f'Success! Data quantized to {arg3}')
 
                     except:
