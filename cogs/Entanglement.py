@@ -1,4 +1,5 @@
 import asyncio
+import os
 from sys import stderr
 from discord.ext import commands
 import random
@@ -84,7 +85,7 @@ class Entanglement(commands.Cog):
                         return
                     await ctx.send('Creating quantum tunnel...')
                     try:
-                        arg = f'yt-dlp -f bestvideo[ext=mp4]+bestaudio[ext=m4a] {arg2} -o {arg3}.%(ext)s'
+                        arg = f'yt-dlp -f bestvideo[ext=mp4]+bestaudio[ext=m4a] "{arg2}" -o "/var/www/aaaa/{arg3}.%(ext)s"'
                         await ctx.send('Tunnel created! Quantizing data...')
                         process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                         stdout, stderr = await process.communicate()
@@ -104,14 +105,13 @@ class Entanglement(commands.Cog):
                     await ctx.send('Creating quantum tunnel...')
                     try:
                         await ctx.send('Tunnel created! Quantizing data...')
-                        arg = f'wget -nc -O {arg3} {arg2}'
-                        process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                        if os.path.splitext(arg2)[1]:
+                            arg3 = arg3 + os.path.splitext(arg2)[1]
+                        arg = f'wget -nc -O /var/www/aaaa/{arg3} {arg2}'
+                        process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
                         stdout, stderr = await process.communicate()
                         if 'already there; not retrieving' in stderr.decode():
                             await ctx.send('Filename already exists, consider using a different name')
-                            return
-                        if stderr:
-                            await ctx.send(stderr.decode())
                             return
                         else:
                             await ctx.send(f'Success! Data quantized to {arg3}')
@@ -121,15 +121,6 @@ class Entanglement(commands.Cog):
                         return
                         
             else:
-                await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>```')
-                
-                
-            #if arg.startswith('-')
-            #if any(_ in arg.lower() for _ in substring):
-                #await ctx.send(f'Attempting quantization of data from the {num2words(random.randint(0,100), to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}...')
-                
-            #else:
-                #await ctx.send('Error, only youtube videos are currently supported')
-
+                await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` \nor ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
 def setup(bot):
     bot.add_cog(Entanglement(bot))
