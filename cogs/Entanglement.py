@@ -103,21 +103,21 @@ class Entanglement(commands.Cog):
 
                 else:
                     await ctx.send('Creating quantum tunnel...')
-                    try:
-                        await ctx.send('Tunnel created! Quantizing data...')
-                        if os.path.splitext(arg2)[1]:
-                            arg3 = arg3 + os.path.splitext(arg2)[1].lower()
-                        arg = f'wget -nc -O /var/www/aaaa/{arg3} {arg2}'
-                        process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
-                        stderr = await process.communicate()
-                        if 'already there; not retrieving' in stderr.decode():
-                            await ctx.send('Filename already exists, consider using a different name')
-                            return
-                        else:
-                            await ctx.send(f'Success! Data quantized to {arg3}')
+                    #try:
+                    await ctx.send('Tunnel created! Quantizing data...')
+                    if os.path.splitext(arg2)[1]:
+                        arg3 = arg3 + os.path.splitext(arg2)[1].lower()
+                    arg = f'wget -nc -O /var/www/aaaa/{arg3} {arg2}'
+                    process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
+                    stdout, stderr = await process.communicate()
+                    if 'already there; not retrieving' in stderr.decode():
+                        await ctx.send('Filename already exists, consider using a different name')
+                        return
+                    else:
+                        await ctx.send(f'Success! Data quantized to {arg3}')
 
-                    except:
-                        await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                    #except:
+                        #await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
                         
             else:
                 await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` \nor ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
