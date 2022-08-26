@@ -71,11 +71,9 @@ class Field(commands.Cog):
         verb = random.choice(["hugged","hugs"])
         quantum_direction = random.choice(["left","right","behind","front"])
         quantumspan = random.randint(0,100)
-        if quantum_direction == 'left' or quantum_direction == 'right':
+        if quantum_direction == 'left' or quantum_direction == 'right' or quantum_direction == 'front':
             direction_prefix = 'from the '
-        elif quantum_direction == 'front':
-            direction_prefix = 'from the '
-        elif quantum_direction == 'behind':
+        else:
             direction_prefix = 'from '
             
         if verb == 'hugged':
@@ -111,7 +109,7 @@ class Field(commands.Cog):
             quantumpetloop = ""
             for _ in range(0,random.randint(8,40)):
                 quantumpetloop = quantumpetloop + random.choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])
-            await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability"])}!')
+            await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
             return
         else:
             await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {arg}')
