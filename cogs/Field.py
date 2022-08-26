@@ -71,11 +71,9 @@ class Field(commands.Cog):
         verb = random.choice(["hugged","hugs"])
         quantum_direction = random.choice(["left","right","behind","front"])
         quantumspan = random.randint(0,100)
-        if quantum_direction == 'left' or quantum_direction == 'right':
+        if quantum_direction == 'left' or quantum_direction == 'right' or quantum_direction == 'front':
             direction_prefix = 'from the '
-        elif quantum_direction == 'front':
-            direction_prefix = 'from the '
-        elif quantum_direction == 'behind':
+        else:
             direction_prefix = 'from '
             
         if verb == 'hugged':
