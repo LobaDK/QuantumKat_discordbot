@@ -133,7 +133,10 @@ class Entanglement(commands.Cog):
                     stdout = stdout[0].decode()
                     stdout = stdout.replace("b'","")
                     stdout = stdout.replace("\\n'","")
-                    await ctx.send(stdout)
+                    if not stdout:
+                        await ctx.send('Output empty')
+                    else:
+                        await ctx.send(stdout)
                     #await ctx.message.add_reaction('👍')
                 
                 except:
