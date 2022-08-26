@@ -129,7 +129,6 @@ class Entanglement(commands.Cog):
                 cmd = f'git {arg1}'
                 try:
                     process = await asyncio.create_subprocess_shell(cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-                    await asyncio.sleep(3)
                     stderr, stdout = await process.communicate()
                     stdout = stdout.decode()
                     stdout = stdout.replace("b'","")
