@@ -128,17 +128,21 @@ class Entanglement(commands.Cog):
             if arg1:
                 cmd = f'git {arg1}'
                 try:
-                    process = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE)
-                    stdout = await process.communicate()
-                    stdout = stdout[0].decode()
+                    process = await asyncio.create_subprocess_shell(cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+                    stderr, stdout = await process.communicate()
+                    stdout = stdout.decode()
                     stdout = stdout.replace("b'","")
                     stdout = stdout.replace("\\n'","")
-                    if not stdout:
-                        await ctx.send('Output empty')
-                    else:
+                    stderr = stderr.decode()
+                    stderr = stderr.replace("b'","")
+                    stderr = stderr.replace("\\n'","")
+                    if stderr:
+                        await ctx.send(stderr)
+                    elif stdout:
                         await ctx.send(stdout)
-                    #await ctx.message.add_reaction('👍')
-                
+                    else:
+                        await ctx.message.add_reaction('👍')
+                    
                 except:
                     await ctx.send('Error running command')
 def setup(bot):
