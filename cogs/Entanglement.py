@@ -109,7 +109,7 @@ class Entanglement(commands.Cog):
                             arg3 = arg3 + os.path.splitext(arg2)[1].lower()
                         arg = f'wget -nc -O /var/www/aaaa/{arg3} {arg2}'
                         process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
-                        stdout, stderr = await process.communicate()
+                        stderr = await process.communicate()
                         if 'already there; not retrieving' in stderr.decode():
                             await ctx.send('Filename already exists, consider using a different name')
                             return
@@ -118,9 +118,25 @@ class Entanglement(commands.Cog):
 
                     except:
                         await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
-                        return
                         
             else:
                 await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` \nor ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
+    
+    @commands.command()
+    async def git(self, ctx, *, arg1):
+        if ctx.author.id == 429406165903081472:
+            if arg1:
+                cmd = f'git {arg1}'
+                try:
+                    process = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE)
+                    stdout = await process.communicate()
+                    stdout = stdout[0].decode()
+                    stdout = stdout.replace("b'","")
+                    stdout = stdout.replace("\\n'","")
+                    await ctx.send(stdout)
+                    #await ctx.message.add_reaction('👍')
+                
+                except:
+                    await ctx.send('Error running command')
 def setup(bot):
     bot.add_cog(Entanglement(bot))
