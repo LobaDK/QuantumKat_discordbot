@@ -20,16 +20,14 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['arr','arrr','arrrr','arrrrr'])
     async def ar(self, ctx):
-        count = ctx.command.name.count('r')
         url = 'https://aaaa.lobadk.com/botrandom'
-        await self.arpr(ctx, url, count)
+        await self.arpr(ctx, url)
         
 
     @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'])
     async def pr(self, ctx):
-        count = ctx.command.name.count('r')
         url = 'https://possum.lobadk.com/botrandom'
-        await self.arpr(ctx, url, count)
+        await self.arpr(ctx, url)
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
