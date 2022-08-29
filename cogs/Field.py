@@ -11,25 +11,20 @@ class Field(commands.Cog):
         self.bot = bot
 
     async def arpr(self, ctx, url):
-        links = []
-        reponse = requests.get(url)
-        soup = BeautifulSoup(reponse.text, 'lxml')
-        for link in soup.find_all('a'):
-            temp = link.get('href')
-            if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-                continue
-            links.append(temp)
-        await ctx.send(urljoin(url,random.choice(links)))
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'lxml')
+        link = soup.find('body')
+        await ctx.send(url.replace('botrandom', '') + link.get_text().replace('./', ''))
 
     @commands.command()
     async def ar(self, ctx):
-        url = 'https://aaaa.lobadk.com/'
+        url = 'https://aaaa.lobadk.com/botrandom'
         await self.arpr(ctx, url)
         
 
     @commands.command(aliases=['or'])
     async def pr(self, ctx):
-        url = 'https://possum.lobadk.com/'
+        url = 'https://possum.lobadk.com/botrandom'
         await self.arpr(ctx, url)
 
     @commands.command(aliases=['pæt','pets','pæts'])
