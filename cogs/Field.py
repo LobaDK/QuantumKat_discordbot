@@ -99,8 +99,13 @@ class Field(commands.Cog):
     @commands.command(aliases=['quantumpæt','qpet','qpæt','quantumpæts','quantumpets','qpets','qpæts'])
     async def quantumpet(self, ctx, *, arg=""):
         mention = f'<@{self.bot.user.id}>'
+        quantum_amount = random.randint(100,1000)
+        qpets = 'pe'
+        for _ in range(0, int(str(quantum_amount).rstrip(quantum_amount[-1]))):
+            qpets = qpets + 't'
+        qpets = qpets + 's'
         if not arg:
-            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {ctx.author.mention}')
+            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
             return
         elif mention in arg:
             quantumpetloop = ""
@@ -109,7 +114,7 @@ class Field(commands.Cog):
             await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
             return
         else:
-            await ctx.send(f'Superpositions across all timelines, dimensions, universes and realities, and pets all versions of {arg}')
+            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {arg}')
             return
     
     @commands.command(aliases=['rockpaperscissor'])
