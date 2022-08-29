@@ -39,10 +39,7 @@ class Field(commands.Cog):
         else:
             verb = 'times'
         
-        pets = 'pe'
-        for _ in range(0, quantum_amount):
-            pets = pets + 't'
-        pets = pets + 's'
+        pets = 'pe' + 't' * + 's'
         
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {pets}')
@@ -75,10 +72,7 @@ class Field(commands.Cog):
             verb = 'times'
         quantumspan = random.randint(0,100)
 
-        hugs = 'hu'
-        for _ in range(0, quantum_amount):
-            hugs = hugs + 'g'
-        hugs = hugs + 's'
+        hugs = 'hu' + 'g' * quantum_amount + 's'
 
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {arg} and {hugs}')
@@ -99,11 +93,7 @@ class Field(commands.Cog):
     async def quantumpet(self, ctx, *, arg=""):
         mention = f'<@{self.bot.user.id}>'
         quantum_amount = random.randint(100,1000)
-        qpets = 'pe'
-        reduced_qpets = str(quantum_amount)
-        for _ in range(0, int(reduced_qpets[:2])):
-            qpets = qpets + 't'
-        qpets = qpets + 's'
+        qpets = 'pe' + 't' * int(str(quantum_amount)[:2]) + 's'
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
             return
