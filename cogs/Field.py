@@ -10,10 +10,8 @@ class Field(commands.Cog):
         self.bot = bot
 
     async def arpr(self, ctx, url):
-        #command = ctx.command
         links = []
-        print(ctx.command.name.count('r'))
-        for _ in range(ctx.command.name.count('r')):
+        for _ in range(ctx.message.content.split(" ")[0].count("r")):
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'lxml')
             link = soup.find('body')
@@ -22,14 +20,16 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['arr','arrr','arrrr','arrrrr'])
     async def ar(self, ctx):
+        count = ctx.command.name.count('r')
         url = 'https://aaaa.lobadk.com/botrandom'
-        await self.arpr(ctx, url)
+        await self.arpr(ctx, url, count)
         
 
-    @commands.command(aliases=['or'])
+    @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'])
     async def pr(self, ctx):
+        count = ctx.command.name.count('r')
         url = 'https://possum.lobadk.com/botrandom'
-        await self.arpr(ctx, url)
+        await self.arpr(ctx, url, count)
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
