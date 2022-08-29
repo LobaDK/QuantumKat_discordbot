@@ -1,5 +1,4 @@
 import random
-from urllib.parse import urljoin
 from num2words import num2words
 
 import requests
@@ -11,12 +10,17 @@ class Field(commands.Cog):
         self.bot = bot
 
     async def arpr(self, ctx, url):
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'lxml')
-        link = soup.find('body')
-        await ctx.send(url.replace('botrandom', '') + link.get_text().replace('./', ''))
+        #command = ctx.command
+        links = []
+        print(ctx.command.name.count('r'))
+        for _ in range(ctx.command.name.count('r')):
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, 'lxml')
+            link = soup.find('body')
+            links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
+        await ctx.send('\n'.join(links))
 
-    @commands.command()
+    @commands.command(aliases=['arr','arrr','arrrr','arrrrr'])
     async def ar(self, ctx):
         url = 'https://aaaa.lobadk.com/botrandom'
         await self.arpr(ctx, url)
