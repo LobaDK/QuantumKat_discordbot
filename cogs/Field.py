@@ -37,7 +37,7 @@ class Field(commands.Cog):
         else:
             verb = 'times'
         
-        pets = 'pe' + 't' * + 's'
+        pets = 'pe' + 't' * quantum_amount + 's'
         
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {pets}')
