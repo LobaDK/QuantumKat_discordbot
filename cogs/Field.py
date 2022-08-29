@@ -34,14 +34,19 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
-        quantum_amount = random.randint(1,10)
+        quantum_amount = random.randint(1,20)
         if quantum_amount == 1:
             verb = 'time'
         else:
             verb = 'times'
         
+        pets = 'pe'
+        for _ in range(0, quantum_amount):
+            pets = pets + 't'
+        pets = pets + 's'
+        
         if not arg:
-            await ctx.send(f'Super positions {quantum_amount} {verb} around {ctx.author.mention} and pets')
+            await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {pets}')
             return
         
         mention = f'<@{self.bot.user.id}>'
@@ -51,7 +56,7 @@ class Field(commands.Cog):
             if quantummode == 'purr':
                 await ctx.send(f'Quantum purrs across {quantumspan} {random.choices(["dimension","universe","reality","timeline","dimension, universe, realitie and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else random.choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
             elif quantummode == 'frequency':
-                await ctx.send(f'Quantum vibrates at a frequency of {random.randint(1,100000)}hz')
+                await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz')
             elif quantummode == 'quantumloop':
                 petloop = ""
                 for _ in range(0,random.randint(8,40)):
@@ -59,29 +64,25 @@ class Field(commands.Cog):
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
             return
         else:
-            await ctx.send(f'Super positions {quantum_amount} {verb} around {arg} and pets')
+            await ctx.send(f'Superpositions {quantum_amount} {verb} around {arg} and {pets}')
             return
 
     @commands.command(aliases=['hugs'])
     async def hug(self, ctx, *, arg=""):
-        verb = random.choice(["hugged","hugs"])
-        quantum_direction = random.choice(["left","right","behind","front"])
-        quantumspan = random.randint(0,100)
-        if quantum_direction == 'left' or quantum_direction == 'right' or quantum_direction == 'front':
-            direction_prefix = 'from the '
+        quantum_amount = random.randint(1,20)
+        if quantum_amount == 1:
+            verb = 'time'
         else:
-            direction_prefix = 'from '
-            
-        if verb == 'hugged':
-            quantum_time = (f'{random.randint(1,1000)} years, {random.randint(0,12)} months, {random.randint(0,31)} days and {random.randint(0,24)} hours ago')
-        elif verb == 'hugs':
-            present = random.choices(['now','future'], k=1, weights=[1,10])[0]
-            if present == 'now':
-                quantum_time = ('in present time')
-            elif present == 'future':
-                quantum_time = (f'{random.randint(1,1000)} years, {random.randint(0,12)} months, {random.randint(0,31)} days and {random.randint(0,24)} hours into the future')
+            verb = 'times'
+        quantumspan = random.randint(0,100)
+
+        hugs = 'hu'
+        for _ in range(0, quantum_amount):
+            hugs = hugs + 'g'
+        hugs = hugs + 's'
+
         if not arg:
-            await ctx.send(f'Superpositions to {ctx.author.mention}, and {verb} {quantum_time} {direction_prefix + quantum_direction}, in the {num2words(quantumspan, to="ordinal_num")} timeline')
+            await ctx.send(f'Superpositions {quantum_amount} {verb} around {arg} and {hugs}')
             return
 
         mention = f'<@{self.bot.user.id}>'
@@ -92,7 +93,7 @@ class Field(commands.Cog):
             elif quantummode == 'frequency':
                 await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","redacted","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
         else:
-            await ctx.send(f'Superpositions to {arg}, and {verb} {quantum_time} {direction_prefix + quantum_direction}, in the {num2words(quantumspan, to="ordinal_num")} timeline')
+            await ctx.send(f'Superpositions {quantum_amount} {verb} around {arg} and {hugs}')
             return
     
     @commands.command(aliases=['quantumpæt','qpet','qpæt','quantumpæts','quantumpets','qpets','qpæts'])
