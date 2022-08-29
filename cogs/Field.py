@@ -102,7 +102,8 @@ class Field(commands.Cog):
         quantum_amount = random.randint(100,1000)
         qpets = 'pe'
         reduced_qpets = str(quantum_amount).rstrip(quantum_amount[-1])
-        for _ in range(0, int(reduced_qpets)):
+        reduced_qpets = int(reduced_qpets)
+        for _ in range(0, reduced_qpets):
             qpets = qpets + 't'
         qpets = qpets + 's'
         if not arg:
