@@ -101,7 +101,8 @@ class Field(commands.Cog):
         mention = f'<@{self.bot.user.id}>'
         quantum_amount = random.randint(100,1000)
         qpets = 'pe'
-        for _ in range(0, int(str(quantum_amount).rstrip(quantum_amount[-1]))):
+        reduced_qpets = str(quantum_amount).rstrip(quantum_amount[-1])
+        for _ in range(0, int(reduced_qpets)):
             qpets = qpets + 't'
         qpets = qpets + 's'
         if not arg:
