@@ -34,18 +34,14 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
-        verb = random.choice(["petted","pets"])
-        if verb == 'petted':
-            quantumtime = (f'{random.randint(1,150)} years, {random.randint(0,12)} months, {random.randint(0,31)} days and {random.randint(0,24)} hours ago')
-        elif verb == 'pets':
-            present = random.choices(['now','future'], k=1, weights=[1,10])[0]
-            if present == 'now':
-                quantumtime = ('in present time')
-            elif present == 'future':
-                quantumtime = (f'{random.randint(1,150)} years, {random.randint(0,12)} months, {random.randint(0,31)} days and {random.randint(0,24)} hours into the future')
+        quantum_amount = random.randint(1,10)
+        if quantum_amount == 1:
+            verb = 'time'
+        else:
+            verb = 'times'
         
         if not arg:
-            await ctx.send(f'Quantum {verb} {ctx.author.mention} {quantumtime}')
+            await ctx.send(f'Super positions {quantum_amount} {verb} around {ctx.author.mention} and pets')
             return
         
         mention = f'<@{self.bot.user.id}>'
@@ -63,7 +59,7 @@ class Field(commands.Cog):
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
             return
         else:
-            await ctx.send(f'Quantum {verb} {arg} {quantumtime}')
+            await ctx.send(f'Super positions {quantum_amount} {verb} around {arg} and pets')
             return
 
     @commands.command(aliases=['hugs'])
