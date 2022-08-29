@@ -1,5 +1,4 @@
 import random
-from urllib.parse import urljoin
 from num2words import num2words
 
 import requests
@@ -12,25 +11,25 @@ class Field(commands.Cog):
 
     async def arpr(self, ctx, url):
         links = []
-        reponse = requests.get(url)
-        soup = BeautifulSoup(reponse.text, 'lxml')
-        for link in soup.find_all('a'):
-            temp = link.get('href')
-            if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-                continue
-            links.append(temp)
-        await ctx.send(urljoin(url,random.choice(links)))
+        for _ in range(ctx.message.content.split(" ")[0].count("r")):
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, 'lxml')
+            link = soup.find('body')
+            links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
+        await ctx.send('\n'.join(links))
 
-    @commands.command()
+    @commands.command(aliases=['arr','arrr','arrrr','arrrrr'])
     async def ar(self, ctx):
-        url = 'https://aaaa.lobadk.com/'
-        await self.arpr(ctx, url)
+        count = ctx.command.name.count('r')
+        url = 'https://aaaa.lobadk.com/botrandom'
+        await self.arpr(ctx, url, count)
         
 
-    @commands.command(aliases=['or'])
+    @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'])
     async def pr(self, ctx):
-        url = 'https://possum.lobadk.com/'
-        await self.arpr(ctx, url)
+        count = ctx.command.name.count('r')
+        url = 'https://possum.lobadk.com/botrandom'
+        await self.arpr(ctx, url, count)
 
     @commands.command(aliases=['pæt','pets','pæts'])
     async def pet(self, ctx, *, arg=""):
@@ -40,10 +39,7 @@ class Field(commands.Cog):
         else:
             verb = 'times'
         
-        pets = 'pe'
-        for _ in range(0, quantum_amount):
-            pets = pets + 't'
-        pets = pets + 's'
+        pets = 'pe' + 't' * + 's'
         
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {pets}')
@@ -76,10 +72,7 @@ class Field(commands.Cog):
             verb = 'times'
         quantumspan = random.randint(0,100)
 
-        hugs = 'hu'
-        for _ in range(0, quantum_amount):
-            hugs = hugs + 'g'
-        hugs = hugs + 's'
+        hugs = 'hu' + 'g' * quantum_amount + 's'
 
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {arg} and {hugs}')
@@ -100,11 +93,7 @@ class Field(commands.Cog):
     async def quantumpet(self, ctx, *, arg=""):
         mention = f'<@{self.bot.user.id}>'
         quantum_amount = random.randint(100,1000)
-        qpets = 'pe'
-        reduced_qpets = str(quantum_amount)
-        for _ in range(0, int(reduced_qpets[:2])):
-            qpets = qpets + 't'
-        qpets = qpets + 's'
+        qpets = 'pe' + 't' * int(str(quantum_amount)[:2]) + 's'
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
             return
