@@ -85,7 +85,7 @@ class Entanglement(commands.Cog):
                         return
                     await ctx.send('Creating quantum tunnel...')
                     try:
-                        arg = f'yt-dlp -f ba+ba/b "{arg2}" -o "/var/www/aaaa/{arg3}.%(ext)s"'
+                        arg = f'yt-dlp -f ba+bv/b "{arg2}" -o "/var/www/aaaa/{arg3}.%(ext)s"'
                         await ctx.send('Tunnel created! Quantizing data...')
                         process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                         stdout, stderr = await process.communicate()
