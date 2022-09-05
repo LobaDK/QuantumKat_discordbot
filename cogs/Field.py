@@ -104,6 +104,24 @@ class Field(commands.Cog):
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {arg}')
             return
+
+    @commands.command(aliases=['quantumhøg','qhug','qhøg','quantumhøgs','quantumhugs','qhugs','qhøgs'])
+    async def quantumhug(self, ctx, *, arg=""):
+        mention = f'<@{self.bot.user.id}>'
+        quantum_amount = random.randint(100,1000)
+        qhugs = 'hu' + 'g' * int(str(quantum_amount)[:2]) + 's'
+        if not arg:
+            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {ctx.author.mention}')
+            return
+        elif mention in arg:
+            quantumhugloop = ""
+            for _ in range(0,random.randint(8,40)):
+                quantumhugloop = quantumhugloop + random.choice(['Quantum hugging the','QuantumKat','QuantumKatting the','Quantum hug'])
+            await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
+            return
+        else:
+            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {arg}')
+            return
     
     @commands.command(aliases=['rockpaperscissor'])
     async def rps(self, ctx, *, arg=""):
