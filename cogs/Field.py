@@ -134,9 +134,9 @@ class Field(commands.Cog):
         else:
             await ctx.send('Rock, paper or scissors required')
 
-    @commands.command()
+    @commands.command(aliases=['as','asearch'])
     async def aaaasearch(self, ctx, arg=""):
-        if arg >= 4:
+        if len(arg) >= 4:
             response = requests.get(f'https://aaaa.lobadk.com/?search={arg}')
             soup = BeautifulSoup(response.text, 'lxml')
             links = []
