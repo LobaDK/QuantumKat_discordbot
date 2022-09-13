@@ -1,9 +1,11 @@
 import random
-from num2words import num2words
+import re
 
 import requests
 from bs4 import BeautifulSoup
 from discord.ext import commands
+from num2words import num2words
+
 
 class Field(commands.Cog):
     def __init__(self, bot):
@@ -137,17 +139,24 @@ class Field(commands.Cog):
     @commands.command(aliases=['as','asearch'])
     async def aaaasearch(self, ctx, arg=""):
         if len(arg) >= 4:
-            response = requests.get(f'https://aaaa.lobadk.com/?search={arg}')
-            soup = BeautifulSoup(response.text, 'lxml')
-            links = []
+            allowed = re.compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
+            if allowed.match(arg):
+                response = requests.get(f'https://aaaa.lobadk.com/?search={arg}')
+                soup = BeautifulSoup(response.text, 'lxml')
+                links = []
 
-            for link in soup.find_all('a'):
-                temp = link.get('href')
-                if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-                    continue
-                links.append(temp)
+                for link in soup.find_all('a'):
+                    temp = link.get('href')
+                    if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
+                        continue
+                    links.append(temp)
 
-            await ctx.send(' '.join(links))
+                if len(links) == 0:
+                    await ctx.send('Search returned nothing')
+                else:
+                    await ctx.send(' '.join(links))
+            else:
+                await ctx.send('At least three alphanumeric characters are required, and only `.` is allowed')
         else:
             await ctx.send('Search too short! A minimum of 4 characters are required')
 def setup(bot):
