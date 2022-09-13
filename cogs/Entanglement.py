@@ -1,6 +1,5 @@
 import asyncio
 import os
-from sys import stderr
 from discord.ext import commands
 import random
 from num2words import num2words
