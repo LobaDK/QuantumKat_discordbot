@@ -133,5 +133,22 @@ class Field(commands.Cog):
             await ctx.send(f'{whowin}')
         else:
             await ctx.send('Rock, paper or scissors required')
+
+    @commands.command()
+    async def aaaasearch(self, ctx, arg=""):
+        if arg >= 4:
+            response = requests.get(f'https://aaaa.lobadk.com/?search={arg}')
+            soup = BeautifulSoup(response.text, 'lxml')
+            links = []
+
+            for link in soup.find_all('a'):
+                temp = link.get('href')
+                if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
+                    continue
+                links.append(temp)
+
+            ctx.send(' '.join(links))
+        else:
+            ctx.send('Search too short! A minimum of 4 characters are required')
 def setup(bot):
     bot.add_cog(Field(bot))
