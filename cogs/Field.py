@@ -147,8 +147,8 @@ class Field(commands.Cog):
                     continue
                 links.append(temp)
 
-            ctx.send(' '.join(links))
+            await ctx.send(' '.join(links))
         else:
-            ctx.send('Search too short! A minimum of 4 characters are required')
+            await ctx.send('Search too short! A minimum of 4 characters are required')
 def setup(bot):
     bot.add_cog(Field(bot))
