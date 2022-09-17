@@ -154,9 +154,12 @@ class Field(commands.Cog):
                 if len(links) == 0:
                     await ctx.send('Search returned nothing')
                 else:
-                    await ctx.send(' '.join(links))
+                    if len(' '.join(links)) > 4000:
+                        await ctx.send('Too many results! Try narrowing down the search')
+                    else:
+                        await ctx.send(' '.join(links))
             else:
-                await ctx.send('At least three alphanumeric characters are required, and only `.` is allowed')
+                await ctx.send('At least two alphanumeric characters are required, or a `.` at the start or end')
         else:
             await ctx.send('Search too short! A minimum of 2 characters are required')
 def setup(bot):
