@@ -138,7 +138,7 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['as','asearch'])
     async def aaaasearch(self, ctx, arg=""):
-        if len(arg) >= 4:
+        if len(arg) >= 2:
             allowed = re.compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
             if allowed.match(arg):
                 response = requests.get(f'https://aaaa.lobadk.com/?search={arg}')
@@ -158,6 +158,6 @@ class Field(commands.Cog):
             else:
                 await ctx.send('At least three alphanumeric characters are required, and only `.` is allowed')
         else:
-            await ctx.send('Search too short! A minimum of 4 characters are required')
+            await ctx.send('Search too short! A minimum of 2 characters are required')
 def setup(bot):
     bot.add_cog(Field(bot))
