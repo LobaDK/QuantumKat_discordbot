@@ -159,7 +159,7 @@ class Field(commands.Cog):
                     else:
                         await ctx.send(' '.join(links))
             else:
-                await ctx.send('At least two alphanumeric characters are required, or a `.` at the start or end')
+                await ctx.send('At least two alphanumeric characters are required, or 1 alphanumeric character and a `.` at the start or end')
         else:
             await ctx.send('Search too short! A minimum of 2 characters are required')
 def setup(bot):
