@@ -7,7 +7,7 @@ from discord.ext import commands
 with open('./files/token', 'r') as tokenfile:
     token = tokenfile.read().strip()
 
-initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel']
+initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel', 'cogs.Activity']
 def setup(bot):
     for extension in initial_extensions:
         bot.load_extension(extension)

@@ -20,7 +20,7 @@ class Entanglement(commands.Cog):
             location = random.choice(['reality','universe','dimension','timeline'])
             if module == '*':
                 await ctx.send('Quantum instability detected across... <error>. Purrging!')
-                initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel']
+                initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel', 'cogs.Activity']
                 try:
                     for extension in initial_extensions:
                         await ctx.send(f'Purging {extension.replace("cogs.","")}!')
