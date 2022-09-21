@@ -1,8 +1,11 @@
 import asyncio
 import os
-from discord.ext import commands
 import random
+import re
+
+from discord.ext import commands
 from num2words import num2words
+
 
 class Entanglement(commands.Cog):
     def __init__(self, bot):
@@ -121,6 +124,25 @@ class Entanglement(commands.Cog):
             else:
                 await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` \nor ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
     
+    @commands.command()
+    async def requantize(self, ctx, arg1='', arg2=''):
+        if ctx.author.id == 429406165903081472:
+            if arg1 and arg2:
+                allowed = re.compile('^[\w]*(\.?)[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
+                if not '/' in arg1 and allowed.match(arg2):
+                    try:
+                        os.rename(f'/var/www/aaaa/{arg1}', f'/var/www/aaaa/{arg2}')
+                    except FileNotFoundError:
+                        await ctx.send('File does not exist')
+                    except FileExistsError:
+                        await ctx.send('Cannot rename, file already exists')
+                    except:
+                        await ctx.send('Critical error, check logs for info')
+                else:
+                    await ctx.send('Only alphanumeric and a dot allowed. Syntax is ```name.extension```')
+            else:
+                await ctx.send('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')
+
     @commands.command()
     async def git(self, ctx, *, arg1):
         if ctx.author.id == 429406165903081472:
