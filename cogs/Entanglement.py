@@ -128,7 +128,7 @@ class Entanglement(commands.Cog):
     async def requantize(self, ctx, arg1='', arg2=''):
         if ctx.author.id == 429406165903081472:
             if arg1 and arg2:
-                allowed = re.compile('^[\w]*(\.?)[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
+                allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
                 if not '/' in arg1 and allowed.match(arg2):
                     await ctx.send('Attempting to requantize data...')
                     try:
