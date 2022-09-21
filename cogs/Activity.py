@@ -32,5 +32,9 @@ class Activity(commands.Cog):
             action_suffix = random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","redacted","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet", "Earth"])
             await self.bot.change_presence(activity=discord.Game(name=f'{action} {action_suffix} in the {prefix_location} {suffix_location}'))
 
+    @change_activity.before_loop
+    async def before_change_activity(self):
+        await self.bot.wait_until_ready()
+
 def setup(bot):
     bot.add_cog(Activity(bot))
