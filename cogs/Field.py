@@ -154,10 +154,24 @@ class Field(commands.Cog):
                 if len(links) == 0:
                     await ctx.send('Search returned nothing')
                 else:
-                    if len(' '.join(links)) > 4000:
-                        await ctx.send('Too many results! Try narrowing down the search')
+                    links = ' '.join(links)
+                    if len(links) < 4000:
+                        await ctx.send(links)
                     else:
-                        await ctx.send(' '.join(links))
+                        limit = 4000
+                        lines = links.splitlines()
+                        new_message = ''
+                        message_list = []
+                        for line in lines:
+                            if len(new_message+line+'\n') <= limit:
+                                new_message += line+'\n'
+                            else:
+                                message_list.append(new_message)
+                                new_message = ''
+                        if new_message:
+                            message_list.append(new_message)
+                        await ctx.send(message_list)
+                        
             else:
                 await ctx.send('At least two alphanumeric characters are required, or 1 alphanumeric character and a `.` at the start or end')
         else:
