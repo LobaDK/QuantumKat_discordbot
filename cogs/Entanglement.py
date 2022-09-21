@@ -124,22 +124,24 @@ class Entanglement(commands.Cog):
             else:
                 await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` \nor ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
     
-    @commands.command()
+    @commands.command(aliases=['requantise'])
     async def requantize(self, ctx, arg1='', arg2=''):
         if ctx.author.id == 429406165903081472:
             if arg1 and arg2:
                 allowed = re.compile('^[\w]*(\.?)[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
                 if not '/' in arg1 and allowed.match(arg2):
+                    await ctx.send('Attempting to requantize data...')
                     try:
                         os.rename(f'/var/www/aaaa/{arg1}', f'/var/www/aaaa/{arg2}')
+                        await ctx.send('Success!')
                     except FileNotFoundError:
-                        await ctx.send('File does not exist')
+                        await ctx.send('Error! Data does not exist')
                     except FileExistsError:
-                        await ctx.send('Cannot rename, file already exists')
+                        await ctx.send('Error! Cannot requantize, data already exists')
                     except:
-                        await ctx.send('Critical error, check logs for info')
+                        await ctx.send('Critical error! Check logs for info')
                 else:
-                    await ctx.send('Only alphanumeric and a dot allowed. Syntax is ```name.extension```')
+                    await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is ```name.extension```')
             else:
                 await ctx.send('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')
 
