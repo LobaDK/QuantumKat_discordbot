@@ -77,9 +77,5 @@ class Activity(commands.Cog):
     async def before_change_activity(self):
         await self.bot.wait_until_ready()
 
-    @change_activity.before_loop
-    async def before_change_activity(self):
-        await self.bot.wait_until_ready()
-
 def setup(bot):
     bot.add_cog(Activity(bot))
