@@ -37,7 +37,8 @@ class Activity(commands.Cog):
                     "an alien from the 7th dimension",
                     "a blackhole","a random star",
                     "a random planet",
-                    "Earth"]
+                    "Earth",
+                    'the void']
 
         locationList = ['dimension',
                         'universe',
