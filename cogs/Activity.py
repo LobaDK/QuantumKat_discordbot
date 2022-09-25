@@ -59,7 +59,6 @@ class Activity(commands.Cog):
 
     @tasks.loop(minutes=random.randint(30,180))
     async def change_activity(self, hissList, purgeList, purrList, vibrateList, nounList, locationList, messages):
-        print('Activity loop started!')
         self.change_activity.change_interval(minutes=(random.randint(30,360)))
 
         purrHz = random.randint(1,100000)
