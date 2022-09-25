@@ -50,7 +50,7 @@ class Activity(commands.Cog):
                     '{purr} at {noun} in the {ordinal} {location}',
                     '{vibrate} at {purrHz}hz in the {ordinal} {location}',
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
-                    '{purge} {noun} in the {prefix_location} {suffix_location}']
+                    '{purge} {noun} in the {oridnal} {location}']
             
         self.change_activity.start(hissList, purgeList, purrList, vibrateList, nounList, locationList, messages)
 
@@ -59,6 +59,7 @@ class Activity(commands.Cog):
 
     @tasks.loop(minutes=random.randint(30,180))
     async def change_activity(self, hissList, purgeList, purrList, vibrateList, nounList, locationList, messages):
+        print('Activity loop started!')
         self.change_activity.change_interval(minutes=(random.randint(30,360)))
 
         purrHz = random.randint(1,100000)
@@ -75,6 +76,7 @@ class Activity(commands.Cog):
     
     @change_activity.before_loop
     async def before_change_activity(self):
+        print('Starting Activity loop...')
         await self.bot.wait_until_ready()
 
 def setup(bot):
