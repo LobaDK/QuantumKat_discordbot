@@ -51,7 +51,7 @@ class Activity(commands.Cog):
                     '{purr} at {noun} in the {ordinal} {location}',
                     '{vibrate} at {purrHz}hz in the {ordinal} {location}',
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
-                    '{purge} {noun} in the {oridnal} {location}']
+                    '{purge} {noun} in the {ordinal} {location}']
             
         self.change_activity.start(hissList, purgeList, purrList, vibrateList, nounList, locationList, messages)
 
