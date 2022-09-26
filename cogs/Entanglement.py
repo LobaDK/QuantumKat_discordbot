@@ -16,6 +16,8 @@ class Entanglement(commands.Cog):
         if ctx.author.id == 429406165903081472:
             await ctx.send("QuantumKat's superposition has collapsed!")
             await self.bot.close()
+        else:
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     
     @commands.command(aliases=['stabilize'])
     async def stabilise(self, ctx, module : str):
@@ -122,8 +124,9 @@ class Entanglement(commands.Cog):
                         await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
                         
             else:
-                await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` \nor ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
-    
+                await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` or ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
+        else:
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     @commands.command(aliases=['requantise'])
     async def requantize(self, ctx, arg1='', arg2=''):
         if ctx.author.id == 429406165903081472:
@@ -141,10 +144,11 @@ class Entanglement(commands.Cog):
                     except:
                         await ctx.send('Critical error! Check logs for info')
                 else:
-                    await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is ```name.extension```')
+                    await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
             else:
                 await ctx.send('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')
-
+        else:
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     @commands.command()
     async def git(self, ctx, *, arg1):
         if ctx.author.id == 429406165903081472:
@@ -168,5 +172,7 @@ class Entanglement(commands.Cog):
                     
                 except:
                     await ctx.send('Error running command')
+        else:
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
 def setup(bot):
     bot.add_cog(Entanglement(bot))
