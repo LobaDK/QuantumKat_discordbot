@@ -1,6 +1,7 @@
 from discord.ext import commands
 import sys
 import traceback
+# import random
 
 class Tunnel(commands.Cog):
     def __init__(self, bot):
@@ -26,6 +27,11 @@ class Tunnel(commands.Cog):
         else:
             print((f'Ignoring exception in command {ctx.command}'), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-
+    
+    # @commands.Cog.listener()
+    # async def on_message(self, message):
+    #     if self.bot.user.mentioned_in(message):
+    #         answer = random.choice(['yes','no'])
+    #         await message.channel.send(answer)
 def setup(bot):
     bot.add_cog(Tunnel(bot))
