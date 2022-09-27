@@ -29,7 +29,7 @@ class Entanglement(commands.Cog):
                 try:
                     for extension in initial_extensions:
                         await ctx.send(f'Purging {extension.replace("cogs.","")}!')
-                        self.bot.reload_extension(extension)
+                        await self.bot.reload_extension(extension)
                     return
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
@@ -40,7 +40,7 @@ class Entanglement(commands.Cog):
             try:
                 if "cogs." not in module:
                     module = "cogs." + module
-                self.bot.reload_extension(module)
+                await self.bot.reload_extension(module)
                 await ctx.send(f'Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
@@ -54,7 +54,7 @@ class Entanglement(commands.Cog):
             try:
                 if "cogs." not in module:
                     module = "cogs." + module
-                self.bot.load_extension(module)
+                await self.bot.load_extension(module)
                 await ctx.send(f'Successfully entangled to {module.replace("cogs.","")}')
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
@@ -68,7 +68,7 @@ class Entanglement(commands.Cog):
             try:
                 if "cogs." not in module:
                     module = "cogs." + module
-                self.bot.unload_extension(module)
+                await self.bot.unload_extension(module)
                 await ctx.send(f'Successfully unentangled from {module.replace("cogs.","")}')
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
@@ -174,5 +174,5 @@ class Entanglement(commands.Cog):
                     await ctx.send('Error running command')
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
-def setup(bot):
-    bot.add_cog(Entanglement(bot))
+async def setup(bot):
+    await bot.add_cog(Entanglement(bot))

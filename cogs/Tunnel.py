@@ -27,11 +27,6 @@ class Tunnel(commands.Cog):
         else:
             print((f'Ignoring exception in command {ctx.command}'), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-    
-    # @commands.Cog.listener()
-    # async def on_message(self, message):
-    #     if self.bot.user.mentioned_in(message):
-    #         answer = random.choice(['yes','no'])
-    #         await message.channel.send(answer)
-def setup(bot):
-    bot.add_cog(Tunnel(bot))
+
+async def setup(bot):
+    await bot.add_cog(Tunnel(bot))
