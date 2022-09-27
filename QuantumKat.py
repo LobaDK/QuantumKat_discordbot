@@ -1,3 +1,4 @@
+import asyncio
 import random
 from num2words import num2words
 
@@ -7,12 +8,12 @@ from discord.ext import commands
 with open('./files/token', 'r') as tokenfile:
     token = tokenfile.read().strip()
 
-initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel', 'cogs.Activity']
-def setup(bot):
+initial_extensions = ['cogs.Activity']
+async def setup(bot):
     for extension in initial_extensions:
-        bot.load_extension(extension)
+        await bot.load_extension(extension)
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 
 bot = commands.Bot(command_prefix='?', help_command=None, intents=intents)
 
@@ -27,5 +28,5 @@ async def on_ready():
     #channel = bot.get_channel(873703927621758986)
     #await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
 
-setup(bot)
+asyncio.run(setup(bot))
 bot.run(token)

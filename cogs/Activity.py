@@ -8,7 +8,6 @@ from num2words import num2words
 class Activity(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.index = 0
 
         hissList = ['Hissing',
                     'Hissed']
@@ -58,7 +57,7 @@ class Activity(commands.Cog):
     def cog_unload(self):
         self.change_activity.cancel()
 
-    @tasks.loop(minutes=random.randint(30,180))
+    @tasks.loop(minutes=random.randint(30,180), count=None, reconnect=True)
     async def change_activity(self, hissList, purgeList, purrList, vibrateList, nounList, locationList, messages):
         self.change_activity.change_interval(minutes=(random.randint(30,360)))
 
@@ -79,5 +78,5 @@ class Activity(commands.Cog):
         print('Starting Activity loop...')
         await self.bot.wait_until_ready()
 
-def setup(bot):
-    bot.add_cog(Activity(bot))
+async def setup(bot):
+    await bot.add_cog(Activity(bot))

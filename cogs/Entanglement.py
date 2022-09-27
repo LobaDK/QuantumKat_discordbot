@@ -174,5 +174,5 @@ class Entanglement(commands.Cog):
                     await ctx.send('Error running command')
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
-def setup(bot):
-    bot.add_cog(Entanglement(bot))
+async def setup(bot):
+    await bot.add_cog(Entanglement(bot))
