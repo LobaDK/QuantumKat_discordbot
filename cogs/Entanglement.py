@@ -11,6 +11,11 @@ class Entanglement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
+    initial_extensions = []
+    for cog in os.listdir('./cogs'):
+        if cog.endswith('.py'):
+            initial_extensions.append(f'cogs.{cog[:-3]}')
+    
     @commands.command()
     async def observe(self, ctx):
         if ctx.author.id == 429406165903081472:
@@ -20,63 +25,86 @@ class Entanglement(commands.Cog):
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     
     @commands.command(aliases=['stabilize'])
-    async def stabilise(self, ctx, module : str):
+    async def stabilise(self, ctx, *, module : str=''):
         if ctx.author.id == 429406165903081472:
-            if module[0].islower:
-                module = module.replace(module[0], module[0].upper(), 1)
-            location = random.choice(['reality','universe','dimension','timeline'])
-            if module == '*':
-                await ctx.send('Quantum instability detected across... <error>. Purrging!')
-                initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel', 'cogs.Activity']
-                try:
-                    for extension in initial_extensions:
-                        await ctx.send(f'Purging {extension.replace("cogs.","")}!')
-                        await self.bot.reload_extension(extension)
-                    return
-                except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send('Error, possible timeline paradox detected! Please try again')
-                    return
-
-            await ctx.send(f'Superposition irregularity detected in Quantum {module}! Attempting to quantum entangle to another {location}...')
-            try:
-                if "cogs." not in module:
-                    module = "cogs." + module
-                await self.bot.reload_extension(module)
-                await ctx.send(f'Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
-            except Exception as e:
-                print('{}: {}'.format(type(e).__name__, e))
-                await ctx.send('Error, possible timeline paradox detected! Please try again')
+            if module:
+                location = random.choice(['reality','universe','dimension','timeline'])
+                if module == '*':
+                    await ctx.send('Quantum instability detected across... <error>. Purrging!')
+                    try:
+                        for extension in self.initial_extensions:
+                            await ctx.send(f'Purging {extension.replace("cogs.","")}!')
+                            await self.bot.reload_extension(extension)
+                    except Exception as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send('Error, possible timeline paradox detected! Please try again')
+                else:
+                    cogs = module.split()
+                    for cog in cogs:
+                        if cog[0].islower:
+                            cog = cog.replace(cog[0], cog[0].upper(), 1)
+                        if f'cogs.{cog}' in self.initial_extensions:
+                            if len(cogs) == 1:
+                                await ctx.send(f'Superposition irregularity detected in Quantum {cog}! Attempting to quantum entangle to another {location}...')
+                            else:
+                                await ctx.send(f'Purrging {cog}!')
+                            try:
+                                if "cogs." not in cog:
+                                    cog = "cogs." + cog
+                                await self.bot.reload_extension(cog)
+                                if len(cogs) == 1:
+                                    await ctx.send(f'Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
+                            except Exception as e:
+                                print('{}: {}'.format(type(e).__name__, e))
+                                await ctx.send('Error, possible timeline paradox detected! Please try again')
+                        else:
+                            await ctx.send(f'{cog} is not a module!')
+            else:
+                await ctx.send('Module name required!')
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     
     @commands.command()
-    async def entangle(self, ctx, module : str):
+    async def entangle(self, ctx, module : str=''):
         if ctx.author.id == 429406165903081472:
-            if module[0].islower:
-                module = module.replace(module[0], module[0].upper(), 1)
-            try:
-                if "cogs." not in module:
-                    module = "cogs." + module
-                await self.bot.load_extension(module)
-                await ctx.send(f'Successfully entangled to {module.replace("cogs.","")}')
-            except Exception as e:
-                print('{}: {}'.format(type(e).__name__, e))
-                await ctx.send('https://aaaa.lobadk.com/aitrash.mp4')
+            if module:
+                if module[0].islower:
+                    module = module.replace(module[0], module[0].upper(), 1)
+                if f'cogs.{module}' in self.initial_extensions:
+                    try:
+                        if "cogs." not in module:
+                            module = "cogs." + module
+                        await self.bot.load_extension(module)
+                        await ctx.send(f'Successfully entangled to {module.replace("cogs.","")}')
+                    except Exception as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send('Error, possible timeline paradox detected! Please try again')
+                else:
+                    await ctx.send(f'{module} is not a module!')
+            else:
+                await ctx.send('Module name required!')
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
 
     @commands.command()
-    async def unentangle(self, ctx, module : str):
+    async def unentangle(self, ctx, module : str=''):
         if ctx.author.id == 429406165903081472:
-            try:
-                if "cogs." not in module:
-                    module = "cogs." + module
-                await self.bot.unload_extension(module)
-                await ctx.send(f'Successfully unentangled from {module.replace("cogs.","")}')
-            except Exception as e:
-                print('{}: {}'.format(type(e).__name__, e))
-                await ctx.send('https://aaaa.lobadk.com/aitrash.mp4')
+            if module:
+                if module[0].islower:
+                    module = module.replace(module[0], module[0].upper(), 1)
+                if f'cogs.{module}' in self.initial_extensions:
+                    try:
+                        if "cogs." not in module:
+                            module = "cogs." + module
+                        await self.bot.unload_extension(module)
+                        await ctx.send(f'Successfully unentangled from {module.replace("cogs.","")}')
+                    except Exception as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send('Error, possible timeline paradox detected! Please try again')
+                else:
+                    await ctx.send(f'{module} is not a module!')
+            else:
+                await ctx.send('Module name required!')
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
 

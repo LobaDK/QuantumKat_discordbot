@@ -1,6 +1,7 @@
 import asyncio
 import random
 from num2words import num2words
+import os
 
 import discord
 from discord.ext import commands
@@ -8,7 +9,11 @@ from discord.ext import commands
 with open('./files/token', 'r') as tokenfile:
     token = tokenfile.read().strip()
 
-initial_extensions = ['cogs.Field','cogs.Entanglement','cogs.Tunnel', 'cogs.Activity']
+initial_extensions = []
+for cog in os.listdir('./cogs'):
+    if cog.endswith('.py'):
+        initial_extensions.append(f'cogs.{cog[:-3]}')
+
 async def setup(bot):
     for extension in initial_extensions:
         await bot.load_extension(extension)
