@@ -162,5 +162,19 @@ class Field(commands.Cog):
                 await ctx.send('At least two alphanumeric characters are required, or 1 alphanumeric character and a `.` at the start or end')
         else:
             await ctx.send('Search too short! A minimum of 2 characters are required')
+    
+    @commands.command()
+    async def a(self, ctx, arg=""):
+        if arg:
+            allowed = re.compile('[^\w.\-]')
+            if not allowed.match(arg):
+                URL = f'https://aaaa.lobadk.com/{arg}'
+                response = requests.head(URL)
+                if response.status_code == 200:
+                    await ctx.send(URL)
+                else:
+                    await ctx.send('File not found')
+        else:
+            await ctx.send('Filename required!\n```?a example.mp4```')
 async def setup(bot):
     await bot.add_cog(Field(bot))

@@ -59,7 +59,7 @@ class Activity(commands.Cog):
 
     @tasks.loop(minutes=random.randint(30,180), count=None, reconnect=True)
     async def change_activity(self, hissList, purgeList, purrList, vibrateList, nounList, locationList, messages):
-        self.change_activity.change_interval(minutes=(random.randint(30,360)))
+        self.change_activity.change_interval(minutes=(random.randint(30,180)))
 
         purrHz = random.randint(1,100000)
         ordinal = num2words(random.randint(0,10000), to='ordinal_num')

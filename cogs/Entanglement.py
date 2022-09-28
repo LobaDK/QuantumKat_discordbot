@@ -22,6 +22,8 @@ class Entanglement(commands.Cog):
     @commands.command(aliases=['stabilize'])
     async def stabilise(self, ctx, module : str):
         if ctx.author.id == 429406165903081472:
+            if module[0].islower:
+                module = module.replace(module[0], module[0].upper(), 1)
             location = random.choice(['reality','universe','dimension','timeline'])
             if module == '*':
                 await ctx.send('Quantum instability detected across... <error>. Purrging!')
@@ -51,6 +53,8 @@ class Entanglement(commands.Cog):
     @commands.command()
     async def entangle(self, ctx, module : str):
         if ctx.author.id == 429406165903081472:
+            if module[0].islower:
+                module = module.replace(module[0], module[0].upper(), 1)
             try:
                 if "cogs." not in module:
                     module = "cogs." + module
