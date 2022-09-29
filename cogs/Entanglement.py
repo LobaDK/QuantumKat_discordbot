@@ -14,107 +14,97 @@ class Entanglement(commands.Cog):
     initial_extensions = []
     for cog in os.listdir('./cogs'):
         if cog.endswith('.py'):
-            initial_extensions.append(f'cogs.{cog[:-3]}')
+            initial_extensions.append(f'{cog[:-3]}')
     
     @commands.command()
+    @commands.is_owner()
     async def observe(self, ctx):
-        if ctx.author.id == 429406165903081472:
-            await ctx.send("QuantumKat's superposition has collapsed!")
-            await self.bot.close()
-        else:
-            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+        await ctx.send("QuantumKat's superposition has collapsed!")
+        await self.bot.close()
     
     @commands.command(aliases=['stabilize', 'restart', 'reload'])
+    @commands.is_owner()
     async def stabilise(self, ctx, *, module : str=''):
-        if ctx.author.id == 429406165903081472:
-            if module:
-                location = random.choice(['reality','universe','dimension','timeline'])
-                if module == '*':
-                    await ctx.send('Quantum instability detected across... <error>. Purrging!')
-                    try:
-                        for extension in self.initial_extensions:
-                            await ctx.send(f'Purging {extension.replace("cogs.","")}!')
-                            await self.bot.reload_extension(extension)
-                    except Exception as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send('Error, possible timeline paradox detected! Please try again')
-                else:
-                    cogs = module.split()
-                    for cog in cogs:
-                        if cog[0].islower:
-                            cog = cog.replace(cog[0], cog[0].upper(), 1)
-                        if f'cogs.{cog}' in self.initial_extensions:
-                            if len(cogs) == 1:
-                                await ctx.send(f'Superposition irregularity detected in Quantum {cog}! Attempting to quantum entangle to another {location}...')
-                            else:
-                                await ctx.send(f'Purrging {cog}!')
-                            try:
-                                if "cogs." not in cog:
-                                    cog = "cogs." + cog
-                                await self.bot.reload_extension(cog)
-                                if len(cogs) == 1:
-                                    await ctx.send(f'Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
-                            except Exception as e:
-                                print('{}: {}'.format(type(e).__name__, e))
-                                await ctx.send('Error, possible timeline paradox detected! Please try again')
-                        else:
-                            await ctx.send(f'{cog} is not a module!')
-            else:
-                await ctx.send('Module name required!')
+        location = random.choice(['reality','universe','dimension','timeline'])
+        if module == '*':
+            await ctx.send('Quantum instability detected across... <error>. Purrging!')
+            for extension in self.initial_extensions:
+                try:
+                    await self.bot.reload_extension(f'cogs.{extension}')
+                    await ctx.send(f'Purging {extension}!')
+                except commands.ExtensionNotLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{extension} is not running, or could not be found')
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{extension} could not be found!')
+                except commands.NoEntryPointError as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'successfully loaded {extension}, but no setup was found!')
         else:
-            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+            cogs = module.split()
+            for cog in cogs:
+                if cog[0].islower:
+                    cog = cog.replace(cog[0], cog[0].upper(), 1)
+                    try:
+                        await self.bot.reload_extension(f'cogs.{cog}')
+                        if len(cogs) == 1:
+                            await ctx.send(f'Superposition irregularity detected in Quantum {cog}! Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
+                        else:
+                            await ctx.send(f'Purrging {cog}!')
+                    except commands.ExtensionNotFound as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{cog} could not be found!')
+                    except commands.ExtensionNotLoaded as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{cog} is not running, or could not be found!')
+                    except commands.NoEntryPointError as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'successfully loaded {cog}, but no setup was found!')
     
     @commands.command(aliases=['load', 'start'])
-    async def entangle(self, ctx, module : str=''):
-        if ctx.author.id == 429406165903081472:
-            if module:
-                cogs = module.split()
-                for cog in cogs:
-                    if cog[0].islower:
-                        cog = cog.replace(cog[0], cog[0].upper(), 1)
-                    if f'cogs.{cog}' in self.initial_extensions:
-                        try:
-                            if "cogs." not in cog:
-                                cog = "cogs." + cog
-                            await self.bot.load_extension(cog)
-                            await ctx.send(f'Successfully entangled to {cog.replace("cogs.","")}')
-                        except Exception as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.send('Error, possible timeline paradox detected! Please try again')
-                    else:
-                        await ctx.send(f'{cog} is not a module!')
-            else:
-                await ctx.send('Module name required!')
-        else:
-            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+    @commands.is_owner()
+    async def entangle(self, ctx, *, module : str=''):
+        cogs = module.split()
+        for cog in cogs:
+            if cog[0].islower:
+                cog = cog.replace(cog[0], cog[0].upper(), 1)
+                try:
+                    await self.bot.load_extension(f'cogs.{cog}')
+                    await ctx.send(f'Successfully entangled to {cog}')
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{cog} could not be found!')
+                except commands.ExtensionAlreadyLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{cog} is already loaded!')
+                except commands.NoEntryPointError as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'successfully loaded {cog}, but no setup was found!')
+                except commands.ExtensionFailed as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'Loading {cog} failed due to an error!')
 
     @commands.command(aliases=['unload', 'stop'])
-    async def unentangle(self, ctx, module : str=''):
-        if ctx.author.id == 429406165903081472:
-            if module:
-                cogs = module.split()
-                for cog in cogs:
-                    if cog[0].islower:
-                        cog = cog.replace(cog[0], cog[0].upper(), 1)
-                    if f'cogs.{cog}' in self.initial_extensions:
-                        try:
-                            if "cogs." not in cog:
-                                cog = "cogs." + cog
-                            await self.bot.unload_extension(cog)
-                            await ctx.send(f'Successfully unentangled from {cog.replace("cogs.","")}')
-                        except Exception as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.send('Error, possible timeline paradox detected! Please try again')
-                    else:
-                        await ctx.send(f'{cog} is not a module!')
-            else:
-                await ctx.send('Module name required!')
-        else:
-            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+    @commands.is_owner()
+    async def unentangle(self, ctx, *, module : str=''):
+        cogs = module.split()
+        for cog in cogs:
+            if cog[0].islower:
+                cog = cog.replace(cog[0], cog[0].upper(), 1)
+                try:
+                    await self.bot.unload_extension(f'cogs.{cog}')
+                    await ctx.send(f'Successfully unentangled from {cog}')
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{cog} could not be found!')
+                except commands.ExtensionNotLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{cog} not running, or could not be found!')
 
     @commands.command(aliases=['quantise'])
+    @commands.is_owner()
     async def quantize(self, ctx, arg2="", arg3="", arg1=""):
-        if ctx.author.id == 429406165903081472:
             if arg2 and arg3:
                 if arg2.startswith('<') and arg2.endswith('>'):
                     arg2 = arg2.replace('<','')
@@ -161,33 +151,31 @@ class Entanglement(commands.Cog):
                         
             else:
                 await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` or ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
-        else:
-            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+
     @commands.command(aliases=['requantise'])
+    @commands.is_owner()
     async def requantize(self, ctx, arg1='', arg2=''):
-        if ctx.author.id == 429406165903081472:
-            if arg1 and arg2:
-                allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
-                if not '/' in arg1 and allowed.match(arg2):
-                    await ctx.send('Attempting to requantize data...')
-                    try:
-                        os.rename(f'/var/www/aaaa/{arg1}', f'/var/www/aaaa/{arg2}')
-                        await ctx.send('Success!')
-                    except FileNotFoundError:
-                        await ctx.send('Error! Data does not exist')
-                    except FileExistsError:
-                        await ctx.send('Error! Cannot requantize, data already exists')
-                    except:
-                        await ctx.send('Critical error! Check logs for info')
-                else:
-                    await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
+        if arg1 and arg2:
+            allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
+            if not '/' in arg1 and allowed.match(arg2):
+                await ctx.send('Attempting to requantize data...')
+                try:
+                    os.rename(f'/var/www/aaaa/{arg1}', f'/var/www/aaaa/{arg2}')
+                    await ctx.send('Success!')
+                except FileNotFoundError:
+                    await ctx.send('Error! Data does not exist')
+                except FileExistsError:
+                    await ctx.send('Error! Cannot requantize, data already exists')
+                except:
+                    await ctx.send('Critical error! Check logs for info')
             else:
-                await ctx.send('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')
+                await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
         else:
-            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+            await ctx.send('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')
+
     @commands.command()
+    @commands.is_owner()
     async def git(self, ctx, *, arg1):
-        if ctx.author.id == 429406165903081472:
             if arg1:
                 cmd = f'git {arg1}'
                 try:
@@ -208,7 +196,6 @@ class Entanglement(commands.Cog):
                     
                 except:
                     await ctx.send('Error running command')
-        else:
-            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
+
 async def setup(bot):
     await bot.add_cog(Entanglement(bot))

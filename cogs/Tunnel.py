@@ -1,7 +1,6 @@
 from discord.ext import commands
 import sys
 import traceback
-# import random
 
 class Tunnel(commands.Cog):
     def __init__(self, bot):
@@ -21,6 +20,8 @@ class Tunnel(commands.Cog):
 
         error = getattr(error, 'original', error)
 
+        if isinstance(error, commands.NotOwner):
+            await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
         if isinstance(error, ignored_errors):
             return
         
