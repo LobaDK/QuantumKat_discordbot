@@ -24,7 +24,7 @@ class Entanglement(commands.Cog):
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     
-    @commands.command(aliases=['stabilize', 'restart'])
+    @commands.command(aliases=['stabilize', 'restart', 'reload'])
     async def stabilise(self, ctx, *, module : str=''):
         if ctx.author.id == 429406165903081472:
             if module:
