@@ -105,8 +105,8 @@ class Entanglement(commands.Cog):
                         except Exception as e:
                             print('{}: {}'.format(type(e).__name__, e))
                             await ctx.send('Error, possible timeline paradox detected! Please try again')
-                else:
-                    await ctx.send(f'{cog} is not a module!')
+                    else:
+                        await ctx.send(f'{cog} is not a module!')
             else:
                 await ctx.send('Module name required!')
         else:
