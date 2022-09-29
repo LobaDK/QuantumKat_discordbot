@@ -24,7 +24,7 @@ class Entanglement(commands.Cog):
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     
-    @commands.command(aliases=['stabilize'])
+    @commands.command(aliases=['stabilize', 'restart'])
     async def stabilise(self, ctx, *, module : str=''):
         if ctx.author.id == 429406165903081472:
             if module:
@@ -64,45 +64,49 @@ class Entanglement(commands.Cog):
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
     
-    @commands.command()
+    @commands.command(aliases=['load', 'start'])
     async def entangle(self, ctx, module : str=''):
         if ctx.author.id == 429406165903081472:
             if module:
-                if module[0].islower:
-                    module = module.replace(module[0], module[0].upper(), 1)
-                if f'cogs.{module}' in self.initial_extensions:
-                    try:
-                        if "cogs." not in module:
-                            module = "cogs." + module
-                        await self.bot.load_extension(module)
-                        await ctx.send(f'Successfully entangled to {module.replace("cogs.","")}')
-                    except Exception as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send('Error, possible timeline paradox detected! Please try again')
-                else:
-                    await ctx.send(f'{module} is not a module!')
+                cogs = module.split()
+                for cog in cogs:
+                    if cog[0].islower:
+                        cog = cog.replace(cog[0], cog[0].upper(), 1)
+                    if f'cogs.{cog}' in self.initial_extensions:
+                        try:
+                            if "cogs." not in cog:
+                                cog = "cogs." + cog
+                            await self.bot.load_extension(cog)
+                            await ctx.send(f'Successfully entangled to {cog.replace("cogs.","")}')
+                        except Exception as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.send('Error, possible timeline paradox detected! Please try again')
+                    else:
+                        await ctx.send(f'{cog} is not a module!')
             else:
                 await ctx.send('Module name required!')
         else:
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
 
-    @commands.command()
+    @commands.command(aliases=['unload', 'stop'])
     async def unentangle(self, ctx, module : str=''):
         if ctx.author.id == 429406165903081472:
             if module:
-                if module[0].islower:
-                    module = module.replace(module[0], module[0].upper(), 1)
-                if f'cogs.{module}' in self.initial_extensions:
-                    try:
-                        if "cogs." not in module:
-                            module = "cogs." + module
-                        await self.bot.unload_extension(module)
-                        await ctx.send(f'Successfully unentangled from {module.replace("cogs.","")}')
-                    except Exception as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send('Error, possible timeline paradox detected! Please try again')
+                cogs = module.split()
+                for cog in cogs:
+                    if cog[0].islower:
+                        cog = cog.replace(cog[0], cog[0].upper(), 1)
+                    if f'cogs.{cog}' in self.initial_extensions:
+                        try:
+                            if "cogs." not in cog:
+                                cog = "cogs." + cog
+                            await self.bot.unload_extension(cog)
+                            await ctx.send(f'Successfully unentangled from {cog.replace("cogs.","")}')
+                        except Exception as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.send('Error, possible timeline paradox detected! Please try again')
                 else:
-                    await ctx.send(f'{module} is not a module!')
+                    await ctx.send(f'{cog} is not a module!')
             else:
                 await ctx.send('Module name required!')
         else:
