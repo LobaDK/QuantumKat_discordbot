@@ -231,5 +231,6 @@ class Entanglement(commands.Cog):
             print('{}: {}'.format(type(e).__name__, e))
             await ctx.send('Error running command')
 
+    print('Started Entanglement!')
 async def setup(bot):
     await bot.add_cog(Entanglement(bot))

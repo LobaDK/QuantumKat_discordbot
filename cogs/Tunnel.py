@@ -29,5 +29,6 @@ class Tunnel(commands.Cog):
             print((f'Ignoring exception in command {ctx.command}'), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
+    print('Started Tunnel!')
 async def setup(bot):
     await bot.add_cog(Tunnel(bot))

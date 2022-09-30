@@ -176,5 +176,7 @@ class Field(commands.Cog):
                     await ctx.send('File not found')
         else:
             await ctx.send('Filename required!\n```?a example.mp4```')
+
+    print('Started Field!')
 async def setup(bot):
     await bot.add_cog(Field(bot))
