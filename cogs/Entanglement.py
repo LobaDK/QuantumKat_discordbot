@@ -22,7 +22,7 @@ class Entanglement(commands.Cog):
         await ctx.send("QuantumKat's superposition has collapsed!")
         await self.bot.close()
     
-    @commands.command(aliases=['stabilize', 'restart', 'reload'])
+    @commands.command(aliases=['stabilize', 'restart', 'reload', 'reboot'])
     @commands.is_owner()
     async def stabilise(self, ctx, *, module : str=''):
         location = random.choice(['reality','universe','dimension','timeline'])
@@ -196,6 +196,40 @@ class Entanglement(commands.Cog):
                     
                 except:
                     await ctx.send('Error running command')
+
+    @commands.command()
+    @commands.is_owner()
+    async def update(self, ctx):
+        try:
+            process = await asyncio.create_subprocess_shell('git pull', stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+            stderr, stdout = await process.communicate()
+            stdout = stdout.decode()
+            stdout = stdout.replace("b'","")
+            stdout = stdout.replace("\\n'","")
+            stderr = stderr.decode()
+            stderr = stderr.replace("b'","")
+            stderr = stderr.replace("\\n'","")
+            if 'Already up to date' in stderr or stderr:
+                await ctx.send(stderr)
+            elif stdout:
+                await ctx.send(stdout)
+                asyncio.sleep(2)
+                for extension in self.initial_extensions:
+                    try:
+                        await self.bot.reload_extension(f'cogs.{extension}')
+                        await ctx.send(f'Purging {extension}!')
+                    except commands.ExtensionNotLoaded as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{extension} is not running, or could not be found')
+                    except commands.ExtensionNotFound as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{extension} could not be found!')
+                    except commands.NoEntryPointError as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'successfully loaded {extension}, but no setup was found!')
+        except e:
+            print('{}: {}'.format(type(e).__name__, e))
+            await ctx.send('Error running command')
 
 async def setup(bot):
     await bot.add_cog(Entanglement(bot))
