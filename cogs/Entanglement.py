@@ -213,7 +213,7 @@ class Entanglement(commands.Cog):
             if 'Already up to date' in stderr:
                 await ctx.send(stderr)
             elif stderr:
-                await ctx.send(stdout)
+                await ctx.send(stderr)
                 asyncio.sleep(2)
                 for extension in self.initial_extensions:
                     try:
