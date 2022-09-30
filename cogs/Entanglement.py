@@ -209,9 +209,9 @@ class Entanglement(commands.Cog):
             stderr = stderr.decode()
             stderr = stderr.replace("b'","")
             stderr = stderr.replace("\\n'","")
-            if 'Already up to date' in stderr or stderr:
+            if 'Already up to date' in stderr:
                 await ctx.send(stderr)
-            elif stdout:
+            elif stderr:
                 await ctx.send(stdout)
                 asyncio.sleep(2)
                 for extension in self.initial_extensions:
@@ -227,6 +227,9 @@ class Entanglement(commands.Cog):
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'successfully loaded {extension}, but no setup was found!')
+            elif stdout:
+                await ctx.send(stdout)
+            
         except e:
             print('{}: {}'.format(type(e).__name__, e))
             await ctx.send('Error running command')
