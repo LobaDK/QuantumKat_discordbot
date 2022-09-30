@@ -26,82 +26,85 @@ class Entanglement(commands.Cog):
     @commands.command(aliases=['stabilize', 'restart', 'reload', 'reboot'])
     @commands.is_owner()
     async def stabilise(self, ctx, *, module : str=''):
-        location = random.choice(['reality','universe','dimension','timeline'])
-        if module == '*':
-            await ctx.send('Quantum instability detected across... <error>. Purrging!')
-            for extension in self.initial_extensions:
-                try:
-                    await self.bot.reload_extension(f'cogs.{extension}')
-                    await ctx.send(f'Purging {extension}!')
-                except commands.ExtensionNotLoaded as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{extension} is not running, or could not be found')
-                except commands.ExtensionNotFound as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{extension} could not be found!')
-                except commands.NoEntryPointError as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {extension}, but no setup was found!')
-        else:
+        if module:
+            location = random.choice(['reality','universe','dimension','timeline'])
+            if module == '*':
+                await ctx.send('Quantum instability detected across... <error>. Purrging!')
+                for extension in self.initial_extensions:
+                    try:
+                        await self.bot.reload_extension(f'cogs.{extension}')
+                        await ctx.send(f'Purging {extension}!')
+                    except commands.ExtensionNotLoaded as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{extension} is not running, or could not be found')
+                    except commands.ExtensionNotFound as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{extension} could not be found!')
+                    except commands.NoEntryPointError as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'successfully loaded {extension}, but no setup was found!')
+            else:
+                cogs = module.split()
+                for cog in cogs:
+                    if cog[0].islower:
+                        cog = cog.replace(cog[0], cog[0].upper(), 1)
+                        try:
+                            await self.bot.reload_extension(f'cogs.{cog}')
+                            if len(cogs) == 1:
+                                await ctx.send(f'Superposition irregularity detected in Quantum {cog}! Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
+                            else:
+                                await ctx.send(f'Purrging {cog}!')
+                        except commands.ExtensionNotFound as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.send(f'{cog} could not be found!')
+                        except commands.ExtensionNotLoaded as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.send(f'{cog} is not running, or could not be found!')
+                        except commands.NoEntryPointError as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.send(f'successfully loaded {cog}, but no setup was found!')
+    
+    @commands.command(aliases=['load', 'start'])
+    @commands.is_owner()
+    async def entangle(self, ctx, *, module : str=''):
+        if module:
             cogs = module.split()
             for cog in cogs:
                 if cog[0].islower:
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
                     try:
-                        await self.bot.reload_extension(f'cogs.{cog}')
-                        if len(cogs) == 1:
-                            await ctx.send(f'Superposition irregularity detected in Quantum {cog}! Successfully entangled to the {num2words(random.randint(1,1000), to="ordinal_num")} {location}!')
-                        else:
-                            await ctx.send(f'Purrging {cog}!')
+                        await self.bot.load_extension(f'cogs.{cog}')
+                        await ctx.send(f'Successfully entangled to {cog}')
+                    except commands.ExtensionNotFound as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{cog} could not be found!')
+                    except commands.ExtensionAlreadyLoaded as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{cog} is already loaded!')
+                    except commands.NoEntryPointError as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'successfully loaded {cog}, but no setup was found!')
+                    except commands.ExtensionFailed as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'Loading {cog} failed due to an error!')
+
+    @commands.command(aliases=['unload', 'stop'])
+    @commands.is_owner()
+    async def unentangle(self, ctx, *, module : str=''):
+        if module:
+            cogs = module.split()
+            for cog in cogs:
+                if cog[0].islower:
+                    cog = cog.replace(cog[0], cog[0].upper(), 1)
+                    try:
+                        await self.bot.unload_extension(f'cogs.{cog}')
+                        await ctx.send(f'Successfully unentangled from {cog}')
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{cog} could not be found!')
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'{cog} is not running, or could not be found!')
-                    except commands.NoEntryPointError as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'successfully loaded {cog}, but no setup was found!')
-    
-    @commands.command(aliases=['load', 'start'])
-    @commands.is_owner()
-    async def entangle(self, ctx, *, module : str=''):
-        cogs = module.split()
-        for cog in cogs:
-            if cog[0].islower:
-                cog = cog.replace(cog[0], cog[0].upper(), 1)
-                try:
-                    await self.bot.load_extension(f'cogs.{cog}')
-                    await ctx.send(f'Successfully entangled to {cog}')
-                except commands.ExtensionNotFound as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{cog} could not be found!')
-                except commands.ExtensionAlreadyLoaded as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{cog} is already loaded!')
-                except commands.NoEntryPointError as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {cog}, but no setup was found!')
-                except commands.ExtensionFailed as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'Loading {cog} failed due to an error!')
-
-    @commands.command(aliases=['unload', 'stop'])
-    @commands.is_owner()
-    async def unentangle(self, ctx, *, module : str=''):
-        cogs = module.split()
-        for cog in cogs:
-            if cog[0].islower:
-                cog = cog.replace(cog[0], cog[0].upper(), 1)
-                try:
-                    await self.bot.unload_extension(f'cogs.{cog}')
-                    await ctx.send(f'Successfully unentangled from {cog}')
-                except commands.ExtensionNotFound as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{cog} could not be found!')
-                except commands.ExtensionNotLoaded as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{cog} not running, or could not be found!')
+                        await ctx.send(f'{cog} not running, or could not be found!')
 
     @commands.command(aliases=['quantise'])
     @commands.is_owner()
