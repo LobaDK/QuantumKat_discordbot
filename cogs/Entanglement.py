@@ -210,11 +210,11 @@ class Entanglement(commands.Cog):
             stderr = stderr.decode()
             stderr = stderr.replace("b'","")
             stderr = stderr.replace("\\n'","")
-            if 'Already up to date' in stderr or 'Already-up-to-date' in stderr:
+            if 'Already up to date' in stderr or 'Already up-to-date' in stderr:
                 await ctx.send(stderr)
             elif stderr:
                 await ctx.send(stderr)
-                asyncio.sleep(2)
+                await asyncio.sleep(2)
                 for extension in self.initial_extensions:
                     try:
                         await self.bot.reload_extension(f'cogs.{extension}')
