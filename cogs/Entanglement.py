@@ -1,4 +1,5 @@
 import asyncio
+from logging import exception
 import os
 import random
 import re
@@ -230,7 +231,7 @@ class Entanglement(commands.Cog):
             elif stdout:
                 await ctx.send(stdout)
             
-        except e:
+        except Exception as e:
             print('{}: {}'.format(type(e).__name__, e))
             await ctx.send('Error running command')
 
