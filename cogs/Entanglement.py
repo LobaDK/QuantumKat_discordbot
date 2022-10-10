@@ -131,7 +131,8 @@ class Entanglement(commands.Cog):
                         elif stdout:
                             await ctx.send(f'Success! Data quantized to {arg3}.mp4')
                     
-                    except:
+                    except Exception as e:
+                        print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
                         return
 
@@ -150,7 +151,8 @@ class Entanglement(commands.Cog):
                         else:
                             await ctx.send(f'Success! Data quantized to {arg3}')
 
-                    except:
+                    except Exception as e:
+                        print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
                         
             else:
@@ -170,7 +172,8 @@ class Entanglement(commands.Cog):
                     await ctx.send('Error! Data does not exist')
                 except FileExistsError:
                     await ctx.send('Error! Cannot requantize, data already exists')
-                except:
+                except Exception as e:
+                    print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send('Critical error! Check logs for info')
             else:
                 await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
@@ -198,7 +201,8 @@ class Entanglement(commands.Cog):
                     else:
                         await ctx.message.add_reaction('👍')
                     
-                except:
+                except Exception as e:
+                    print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send('Error running command')
 
     @commands.command()
