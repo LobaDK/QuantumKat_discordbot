@@ -177,6 +177,13 @@ class Field(commands.Cog):
         else:
             await ctx.send('Filename required!\n```?a example.mp4```')
 
+    @commands.command(aliases=['qjoke', 'joke', 'qj'])
+    async def quantumjoke(self, ctx):
+        jokefile = open('./files/quantumjokes.txt', 'r')
+        jokes = [joke for joke in jokefile.readlines() if joke.strip()]
+        jokefile.close()
+        await ctx.send(random.choice(jokes).strip())
+
     print('Started Field!')
 async def setup(bot):
     await bot.add_cog(Field(bot))
