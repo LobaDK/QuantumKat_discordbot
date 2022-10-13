@@ -12,7 +12,7 @@ class Field(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         jokefile = open('./files/quantumjokes.txt', 'r')
-        jokes = [joke for joke in jokefile.readlines() if joke.strip()]
+        self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
 
     async def arpr(self, ctx, url):
