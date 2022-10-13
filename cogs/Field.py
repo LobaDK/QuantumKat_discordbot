@@ -200,7 +200,10 @@ class Field(commands.Cog):
                     if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
                         continue
                     links.append(temp)
-                await ctx.send(urljoin(URL,random.choice(links)))
+                if len(links) == 0:
+                    ctx.send('Search returned empty!')
+                else:    
+                    await ctx.send(urljoin(URL,random.choice(links)))
             else:
                 await ctx.send('Invalid character found in search parameter!')
         else:
