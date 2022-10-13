@@ -201,7 +201,7 @@ class Field(commands.Cog):
                         continue
                     links.append(temp)
                 if len(links) == 0:
-                    ctx.send('Search returned empty!')
+                    await ctx.send('Search returned empty!')
                 else:    
                     await ctx.send(urljoin(URL,random.choice(links)))
             else:
