@@ -11,6 +11,9 @@ from num2words import num2words
 class Field(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        jokefile = open('./files/quantumjokes.txt', 'r')
+        jokes = [joke for joke in jokefile.readlines() if joke.strip()]
+        jokefile.close()
 
     async def arpr(self, ctx, url):
         links = []
@@ -180,10 +183,7 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['qjoke', 'joke', 'qj'])
     async def quantumjoke(self, ctx):
-        jokefile = open('./files/quantumjokes.txt', 'r')
-        jokes = [joke for joke in jokefile.readlines() if joke.strip()]
-        jokefile.close()
-        await ctx.send(random.choice(jokes).strip())
+        await ctx.send(random.choice(self.jokes).strip())
 
     @commands.command(aliases=['ars', 'aaaarandomsearch'])
     async def arsearch(self, ctx, arg=""):
@@ -208,6 +208,7 @@ class Field(commands.Cog):
                 await ctx.send('Invalid character found in search parameter!')
         else:
             await ctx.send('Search parameter required!\n```?ars example```')
+
 
 
     print('Started Field!')
