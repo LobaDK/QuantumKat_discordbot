@@ -1,5 +1,6 @@
 import random
 import re
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -183,6 +184,28 @@ class Field(commands.Cog):
         jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
         await ctx.send(random.choice(jokes).strip())
+
+    @commands.command(aliases=['ars', 'aaaarandomsearch'])
+    async def arsearch(self, ctx, arg=""):
+        if arg:
+            allowed = re.compile('[^\w.\-]')
+            if not allowed.match(arg):
+                links = []
+                SearchURL = f'https://aaaa.lobadk.com/?search={arg}'
+                URL = 'https://aaaa.lobadk.com/'
+                response = requests.get(SearchURL)
+                soup = BeautifulSoup(response.text, 'lxml')
+                for link in soup.find_all('a'):
+                    temp = link.get('href')
+                    if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
+                        continue
+                    links.append(temp)
+                await ctx.send(urljoin(URL,random.choice(links)))
+            else:
+                await ctx.send('Invalid character found in search parameter!')
+        else:
+            await ctx.send('Search parameter required!\n```?ars example```')
+
 
     print('Started Field!')
 async def setup(bot):
