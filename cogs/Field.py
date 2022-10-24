@@ -1,5 +1,6 @@
 import random
 import re
+import time
 from urllib.parse import urljoin
 
 import requests
@@ -209,6 +210,23 @@ class Field(commands.Cog):
         else:
             await ctx.send('Search parameter required!\n```?ars example```')
 
+    @commands.commands(aliases=['pong'])
+    async def ping(self, ctx, arg=""):
+        LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "'Let's just not tell your alternate-self from another dimension..."]
+
+        if ctx.message.content.startswith('?ping'):
+            pingresponse = 'pong'
+        elif ctx.message.content.startswith('?pong'):
+            pingresponse = 'ping'
+        if arg:
+            if arg.lower() == 'latency':
+                await ctx.send(f'{pingresponse}! Took {round(time.time() * 1000) - ctx.message.timestamp}ms. {random.choice(LatencyResponses)}')
+            else:
+                await ctx.send("Only 'latency' parameter allowed")
+        else:
+            await ctx.send(pingresponse)
+            
+                
 
 
     print('Started Field!')
