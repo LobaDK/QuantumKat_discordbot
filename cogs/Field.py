@@ -210,7 +210,7 @@ class Field(commands.Cog):
         else:
             await ctx.send('Search parameter required!\n```?ars example```')
 
-    @commands.commands(aliases=['pong'])
+    @commands.command(aliases=['pong'])
     async def ping(self, ctx, arg=""):
         LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "'Let's just not tell your alternate-self from another dimension..."]
 
