@@ -220,7 +220,7 @@ class Field(commands.Cog):
             pingresponse = 'ping'
         if arg:
             if arg.lower() == 'latency':
-                await ctx.send(f'{pingresponse}! Took {(round(time.time() * 1000) - ctx.message.created_at.timestamp() * 1000)}ms. {random.choice(LatencyResponses)}')
+                await ctx.send(f'{pingresponse}! Took {(round(time.time() * 1000) - ctx.message.created_at.timestamp() * 1000)}ms. {random.choice(LatencyResponses)}\nConnection to discord: {round(self.bot.latency * 1000, 2)}ms')
             else:
                 await ctx.send("Only 'latency' parameter allowed")
         else:
