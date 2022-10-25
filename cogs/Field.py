@@ -225,9 +225,6 @@ class Field(commands.Cog):
                 await ctx.send("Only 'latency' parameter allowed")
         else:
             await ctx.send(pingresponse)
-            
-                
-
 
     print('Started Field!')
 async def setup(bot):
