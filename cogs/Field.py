@@ -212,7 +212,7 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['pong'])
     async def ping(self, ctx, arg=""):
-        LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "'Let's just not tell your alternate-self from another dimension..."]
+        LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "Let's just not tell your alternate-self from another dimension..."]
 
         if ctx.message.content.startswith('?ping'):
             pingresponse = 'pong'
@@ -220,7 +220,7 @@ class Field(commands.Cog):
             pingresponse = 'ping'
         if arg:
             if arg.lower() == 'latency':
-                await ctx.send(f'{pingresponse}! Took {ctx.message.created_at.timestamp() - round(time.time())}ms. {random.choice(LatencyResponses)}')
+                await ctx.send(f'{pingresponse}! Took {(round(time.time() * 1000) - ctx.message.created_at.timestamp() * 1000)}ms. {random.choice(LatencyResponses)}')
             else:
                 await ctx.send("Only 'latency' parameter allowed")
         else:
