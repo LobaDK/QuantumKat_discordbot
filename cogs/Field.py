@@ -63,10 +63,8 @@ class Field(commands.Cog):
                 for _ in range(0,random.randint(8,40)):
                     petloop = petloop + random.choice(['pet','pat','petting'])
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
-            return
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {arg} and {pets}')
-            return
 
     @commands.command(aliases=['hugs'])
     async def hug(self, ctx, *, arg=""):
@@ -89,10 +87,9 @@ class Field(commands.Cog):
             if quantummode == 'purr':
                 await ctx.send(f'Quantum purrs and entangles {ctx.author.mention} to the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
             elif quantummode == 'frequency':
-                await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","redacted","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
+                await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {arg} and {hugs}')
-            return
     
     @commands.command(aliases=['quantumpæt','qpet','qpæt','quantumpæts','quantumpets','qpets','qpæts'])
     async def quantumpet(self, ctx, *, arg=""):
@@ -101,16 +98,13 @@ class Field(commands.Cog):
         qpets = 'pe' + 't' * int(str(quantum_amount)[:2]) + 's'
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
-            return
         elif mention in arg:
             quantumpetloop = ""
             for _ in range(0,random.randint(8,40)):
                 quantumpetloop = quantumpetloop + random.choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])
-            await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
-            return
+            await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {arg}')
-            return
 
     @commands.command(aliases=['quantumhøg','qhug','qhøg','quantumhøgs','quantumhugs','qhugs','qhøgs'])
     async def quantumhug(self, ctx, *, arg=""):
@@ -119,16 +113,13 @@ class Field(commands.Cog):
         qhugs = 'hu' + 'g' * int(str(quantum_amount)[:2]) + 's'
         if not arg:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {ctx.author.mention}')
-            return
         elif mention in arg:
             quantumhugloop = ""
             for _ in range(0,random.randint(8,40)):
                 quantumhugloop = quantumhugloop + random.choice(['Quantum hugging the','QuantumKat','QuantumKatting the','Quantum hug'])
-            await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","redacted","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
-            return
+            await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {arg}')
-            return
     
     @commands.command(aliases=['rockpaperscissor'])
     async def rps(self, ctx, *, arg=""):
@@ -174,8 +165,7 @@ class Field(commands.Cog):
             allowed = re.compile('[^\w.\-]')
             if not allowed.match(arg):
                 URL = f'https://aaaa.lobadk.com/{arg}'
-                response = requests.head(URL)
-                if response.status_code == 200:
+                if requests.head(URL) == 200:
                     await ctx.send(URL)
                 else:
                     await ctx.send('File not found')
