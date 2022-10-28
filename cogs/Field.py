@@ -176,7 +176,7 @@ class Field(commands.Cog):
     async def quantumjoke(self, ctx):
         await ctx.send(random.choice(self.jokes).strip())
 
-    @commands.command(aliases=['ars', 'aaaarandomsearch'])
+    @commands.command(aliases=['ars', 'asr', 'aaaarandomsearch'])
     async def arsearch(self, ctx, arg=""):
         if arg:
             allowed = re.compile('[^\w.\-]')
