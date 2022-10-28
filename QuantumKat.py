@@ -22,7 +22,7 @@ async def setup(bot):
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='?', help_command=None, intents=intents)
+bot = commands.Bot(command_prefix='?', help_command=commands.DefaultHelpCommand(sort_commands=False, show_parameter_descriptions=False), intents=intents)
 
 @bot.check
 async def globally_block_dms(ctx):
