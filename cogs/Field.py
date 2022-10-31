@@ -212,7 +212,7 @@ class Field(commands.Cog):
         else:
             await ctx.send('Search parameter required!\n```?ars example```')
 
-    @commands.command(aliases=['pong'], brief='Test if bot works, and latency.', description="Tests if the bot is seeing the command as well as capable of responding. Supports one, but not required, argument, as 'latency'. If latency argument is used, tests and displays the one-way latency from your home, to Discord, and then to the bot, as well as the round-trip latency between the bot and Discord.")
+    @commands.command(aliases=['pong'], brief="Test if the bot works, and it's latency.", description="Tests if the bot is seeing the command as well as capable of responding. Supports one, but not required, argument, as 'latency'. If latency argument is used, tests and displays the one-way latency from your home, to Discord, and then to the bot, as well as the round-trip latency between the bot and Discord.")
     async def ping(self, ctx, arg=""):
         LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "Let's just not tell your alternate-self from another dimension..."]
 
