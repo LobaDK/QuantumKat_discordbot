@@ -23,7 +23,7 @@ class Entanglement(commands.Cog):
         await ctx.send("QuantumKat's superposition has collapsed!")
         await self.bot.close()
     
-    @commands.command(aliases=['stabilize', 'restart', 'reload', 'reboot'], brief="(Bot owner only) Reloads cogs/extensions.", description="Reloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments. Special character `*` can be used to reload all.")
+    @commands.command(aliases=['stabilize', 'restart', 'reload', 'reboot'], brief="(Bot owner only) Reloads cogs/extensions.", description="Reloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments. Special character '*' can be used to reload all.")
     @commands.is_owner()
     async def stabilise(self, ctx, *, module : str=''):
         if module:
@@ -106,7 +106,7 @@ class Entanglement(commands.Cog):
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{cog} not running, or could not be found!')
 
-    @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com, for easier file adding. Requires at least 2 arguments, and supports 3 arguments. The first argument is the file URL, the second is the filename to be used, the third (optional) is `YT` to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by `<>`.")
+    @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com, for easier file adding. Requires at least 2 arguments, and supports 3 arguments. The first argument is the file URL, the second is the filename to be used, the third (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
     @commands.is_owner()
     async def quantize(self, ctx, arg2="", arg3="", arg1=""):
             if arg2 and arg3:
@@ -205,7 +205,7 @@ class Entanglement(commands.Cog):
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send('Error running command')
 
-    @commands.command(brief="(Bot owner only) Fetches new updates and reloads all cogs/extensions.", description="Fetches the newest version by running `git pull` and then reloads the cogs/extensions if successful.")
+    @commands.command(brief="(Bot owner only) Fetches new updates and reloads all cogs/extensions.", description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.")
     @commands.is_owner()
     async def update(self, ctx):
         try:
