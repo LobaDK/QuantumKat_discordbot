@@ -205,7 +205,7 @@ class Entanglement(commands.Cog):
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send('Error running command')
 
-    @commands.command(brief="(Bot owner only) Fetches new updates and reloads all cogs/extensions.", desciption="Fetches the newest version by running `git pull` and then reloads the cogs/extensions if successful.")
+    @commands.command(brief="(Bot owner only) Fetches new updates and reloads all cogs/extensions.", description="Fetches the newest version by running `git pull` and then reloads the cogs/extensions if successful.")
     @commands.is_owner()
     async def update(self, ctx):
         try:
