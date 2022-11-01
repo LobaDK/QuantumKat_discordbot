@@ -183,7 +183,9 @@ class Entanglement(commands.Cog):
     @commands.command(brief="(Bot owner only) Runs git commands in the bots directory.", description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.")
     @commands.is_owner()
     async def git(self, ctx, *, arg1):
-            if arg1:
+        if arg1:
+            allowed = re.compile('^[\w\s-]*$')
+            if allowed.match(arg1):
                 cmd = f'git {arg1}'
                 try:
                     process = await asyncio.create_subprocess_shell(cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
