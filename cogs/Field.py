@@ -177,7 +177,7 @@ class Field(commands.Cog):
             allowed = re.compile('[^\w.\-]')
             if not allowed.match(arg):
                 URL = f'https://aaaa.lobadk.com/{arg}'
-                if requests.head(URL) == 200:
+                if requests.head(URL).status_code == 200:
                     await ctx.send(URL)
                 else:
                     await ctx.send('File not found')
