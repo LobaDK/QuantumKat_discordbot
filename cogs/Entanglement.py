@@ -131,7 +131,7 @@ class Entanglement(commands.Cog):
                         await ctx.send('Filename already exists, consider using a different name')
                         return
                     elif stdout:
-                        await ctx.send(f'Success! Data quantized to {filename}.mp4')
+                        await ctx.send(f'Success! Data quantized to https://aaaa.lobadk.com/{filename}.mp4')
                 
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
@@ -148,8 +148,10 @@ class Entanglement(commands.Cog):
                         if os.path.splitext(URL)[1]:
                             filename = filename + os.path.splitext(URL)[1].lower()
                         if location.lower() == 'aaaa':
+                            root = 'https://aaaa.lobadk.com/'
                             arg = f'wget -nc -O /var/www/aaaa/{filename} {URL}'
                         elif location.lower() == 'possum':
+                            root = 'https://possum.lobadk.com/'
                             arg = f'wget -nc -O /var/www/possum/{filename} {URL}'
                         process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
                         stdout, stderr = await process.communicate()
@@ -161,7 +163,7 @@ class Entanglement(commands.Cog):
                                 filename = "".join(random.choice(characters) for _ in range(8))
                                 continue
                         else:
-                            await ctx.send(f'Success! Data quantized to {filename}')
+                            await ctx.send(f'Success! Data quantized to <{root}{filename}>')
                             return
 
                 except Exception as e:
@@ -176,13 +178,13 @@ class Entanglement(commands.Cog):
 
     @commands.command(aliases=['requantise'], brief="(Bot owner only) Rename a file on aaaa.lobadk.com.", description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when chosing a new name.")
     @commands.is_owner()
-    async def requantize(self, ctx, arg1='', arg2=''):
-        if arg1 and arg2:
+    async def requantize(self, ctx, current_filename='', new_filename=''):
+        if current_filename and new_filename:
             allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
-            if not '/' in arg1 and allowed.match(arg2):
+            if not '/' in current_filename and allowed.match(new_filename):
                 await ctx.send('Attempting to requantize data...')
                 try:
-                    os.rename(f'/var/www/aaaa/{arg1}', f'/var/www/aaaa/{arg2}')
+                    os.rename(f'/var/www/aaaa/{current_filename}', f'/var/www/aaaa/{new_filename}')
                     await ctx.send('Success!')
                 except FileNotFoundError:
                     await ctx.send('Error! Data does not exist')
@@ -198,11 +200,11 @@ class Entanglement(commands.Cog):
 
     @commands.command(brief="(Bot owner only) Runs git commands in the bots directory.", description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.")
     @commands.is_owner()
-    async def git(self, ctx, *, arg1):
-        if arg1:
+    async def git(self, ctx, *, git_arguments):
+        if git_arguments:
             allowed = re.compile('^[\w\s-]*$')
-            if allowed.match(arg1):
-                cmd = f'git {arg1}'
+            if allowed.match(git_arguments):
+                cmd = f'git {git_arguments}'
                 try:
                     process = await asyncio.create_subprocess_shell(cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
                     stderr, stdout = await process.communicate()
