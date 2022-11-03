@@ -1,5 +1,5 @@
 import asyncio
-from logging import exception
+import string
 import os
 import random
 import re
@@ -106,57 +106,73 @@ class Entanglement(commands.Cog):
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{cog} not running, or could not be found!')
 
-    @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com, for easier file adding. Requires at least 2 arguments, and supports 3 arguments. The first argument is the file URL, the second is the filename to be used, the third (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
+    @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa/possum.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com or possum.lobadk.com, for easier file adding. Requires at least 3 arguments, and supports 4 arguments. The first argument is the file URL, the second is the filename to be used, with a special 'rand' parameter that produces a random 8 character long base62 filename, the third is the location, specified with 'aaaa' or 'possum', the fourth (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
     @commands.is_owner()
-    async def quantize(self, ctx, arg2="", arg3="", arg1=""):
-            if arg2 and arg3:
-                if arg2.startswith('<') and arg2.endswith('>'):
-                    arg2 = arg2.replace('<','')
-                    arg2 = arg2.replace('>','')
-                if arg1 == 'YT':
-                    if "&list=" in arg2 or "playlist" in arg2:
-                        await ctx.send('Playlists not supported')
+    async def quantize(self, ctx, URL="", filename="", location="", mode=""):
+        characters = string.ascii_letters + string.digits
+        if URL and filename:
+            if filename.lower() == 'rand':
+                filename = "".join(random.choice(characters) for _ in range(8))
+            if URL.startswith('<') or URL.endswith('>'):
+                URL = URL.replace('<','')
+                URL = URL.replace('>','')
+            if mode.upper() == 'YT' and not location.lower() == 'possum':
+                if "&list=" in URL or "playlist" in URL:
+                    await ctx.send('Playlists not supported')
+                    return
+                try:
+                    arg = f'yt-dlp -f ba+bv/b "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
+                    await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
+                    process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                    stdout, stderr = await process.communicate()
+                    if stderr:
+                        await ctx.send(stderr.decode())
+                    if 'has already been downloaded' in stdout.decode():
+                        await ctx.send('Filename already exists, consider using a different name')
                         return
-                    await ctx.send('Creating quantum tunnel...')
-                    try:
-                        arg = f'yt-dlp -f ba+bv/b "{arg2}" -o "/var/www/aaaa/{arg3}.%(ext)s"'
-                        await ctx.send('Tunnel created! Quantizing data...')
-                        process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                        stdout, stderr = await process.communicate()
-                        if stderr:
-                            await ctx.send(stderr.decode())
-                        if 'has already been downloaded' in stdout.decode():
-                            await ctx.send('Filename already exists, consider using a different name')
-                            return
-                        elif stdout:
-                            await ctx.send(f'Success! Data quantized to {arg3}.mp4')
-                    
-                    except Exception as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
-                        return
+                    elif stdout:
+                        await ctx.send(f'Success! Data quantized to {filename}.mp4')
+                
+                except Exception as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                    return
 
-                else:
-                    await ctx.send('Creating quantum tunnel...')
-                    try:
-                        await ctx.send('Tunnel created! Quantizing data...')
-                        if os.path.splitext(arg2)[1]:
-                            arg3 = arg3 + os.path.splitext(arg2)[1].lower()
-                        arg = f'wget -nc -O /var/www/aaaa/{arg3} {arg2}'
+            elif mode.upper() == 'YT' and location.lower() == 'possum':
+                await ctx.send('Oppossum location not allowed with YT download mode!')
+
+            elif location.lower() == 'aaaa' or location.lower() == 'possum':
+                try:
+                    await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
+                    while True:
+                        if os.path.splitext(URL)[1]:
+                            filename = filename + os.path.splitext(URL)[1].lower()
+                        if location.lower() == 'aaaa':
+                            arg = f'wget -nc -O /var/www/aaaa/{filename} {URL}'
+                        elif location.lower() == 'possum':
+                            arg = f'wget -nc -O /var/www/possum/{filename} {URL}'
                         process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
                         stdout, stderr = await process.communicate()
                         if 'already there; not retrieving' in stderr.decode():
-                            await ctx.send('Filename already exists, consider using a different name')
-                            return
+                            if not filename.lower() == 'rand':
+                                await ctx.send('Filename already exists, consider using a different name')
+                                return
+                            else:
+                                filename = "".join(random.choice(characters) for _ in range(8))
+                                continue
                         else:
-                            await ctx.send(f'Success! Data quantized to {arg3}')
+                            await ctx.send(f'Success! Data quantized to {filename}')
+                            return
 
-                    except Exception as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
-                        
+                except Exception as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+            
             else:
-                await ctx.send('Command requires 2 arguments:\n```?quantize <URL> <filename>``` or ```?quantize <URL> <filename> YT``` to use yt-dlp to download it')
+                await ctx.send('Only `aaaa` and `possum` are valid parameters!')
+                    
+        else:
+            await ctx.send('Command requires 3 arguments:\n```?quantize <URL> <filename> <aaaa|possum>``` or ```?quantize <URL> <filename> <aaaa|possum> YT``` to use yt-dlp to download it')
 
     @commands.command(aliases=['requantise'], brief="(Bot owner only) Rename a file on aaaa.lobadk.com.", description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when chosing a new name.")
     @commands.is_owner()
