@@ -67,8 +67,8 @@ class Activity(commands.Cog):
     async def change_activity(self):
         self.change_activity.change_interval(minutes=(random.randint(30,180)))
 
-        self.purrHz = random.randint(1,100000)
-        self.ordinal = num2words(random.randint(0,10000), to='ordinal_num')
+        purrHz = random.randint(1,100000)
+        ordinal = num2words(random.randint(0,10000), to='ordinal_num')
 
         await self.bot.change_presence(activity=discord.Game(name=random.choice(self.messages).format(hiss=random.choice(self.hissList),
                                                                                                     purge=random.choice(self.purgeList),
@@ -76,8 +76,8 @@ class Activity(commands.Cog):
                                                                                                     vibrate=random.choice(self.vibrateList),
                                                                                                     noun=random.choice(self.nounList),
                                                                                                     location=random.choice(self.locationList),
-                                                                                                    purrHz=self.purrHz,
-                                                                                                    ordinal=self.ordinal)))
+                                                                                                    purrHz=purrHz,
+                                                                                                    ordinal=ordinal)))
 
 ######################################################################################################
 
@@ -100,10 +100,8 @@ class Activity(commands.Cog):
 
     @commands.command(aliases=['activityrestart', 'arestart', 'ActivityRefresh', 'activityrefresh', 'arefresh'], brief='(Bot owner only) Restarts/Refreshes the displayed activity.', description='Restarts/Refreshes the loop that displays a random activity under the bot.')
     @commands.is_owner()
-    async def ActivityRestart(self):
-        if self.change_activity.is_running():
-            self.change_activity.cancel()
-        self.change_activity.start()
+    async def ActivityRestart(self, ctx):
+        self.change_activity.restart()
 
 ######################################################################################################
 
