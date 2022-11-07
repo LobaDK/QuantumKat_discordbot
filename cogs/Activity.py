@@ -120,7 +120,7 @@ class Activity(commands.Cog):
     @commands.is_owner()
     async def ActivityStart(self, ctx):
         if not self.change_activity.is_running():
-            self.change_activity.cancel()
+            self.change_activity.start()
         else:
             await ctx.send('Activity is already running!')
 
