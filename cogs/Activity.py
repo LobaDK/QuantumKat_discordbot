@@ -21,7 +21,7 @@ class Activity(commands.Cog):
         self.vibrateList = ['Vibrating',
                        'Vibrated']
 
-        self.nounList = ["a chair",
+        self.normal_nounList = ["a chair",
                     "a table",
                     "a vase",
                     "a long-lost creditcard",
@@ -34,12 +34,18 @@ class Activity(commands.Cog):
                     "a cat",
                     "a quantum cat",
                     "an alien from the 7th dimension",
-                    "a blackhole","a random star",
+                    "a blackhole",
+                    "a random star",
                     "a random planet",
                     "Earth",
-                    'the void',
-                    'r̸̨̼͉̦̻̔̇e̴̘̪̦͆̎̽́͒̽͂͝ͅḏ̶̛͍̊̂̾̍̑́͐a̸̜͙̩͌̒̈́c̵̢̺͚̯̟̙͖̩͙̅̌̐̏̀̈́̋̃̀t̵̩̍ẹ̷̰̲̭̼̞̦͔̦̉d̸̨͕̝̍̏̐̀̊̿̈̈̿͘͜', #<- says redacted but in glitched form
-                    'ê̸̱̑͒͝r̶͓̆̀̑̇̾̇̂̃̕ȑ̵̥̖͙̞̮̾o̵̗̘̫̩̐̐͒̏̏̓͑r̸̻͚̟͈̻͗̋̈́̇']  #<- says error but in glitched form
+                    'the void']
+
+        self.glitched_nounList = ['a̵̛̮͐̀̾̉́̽̕ń̸̘͎̞͇̠͎̃̐͋ͅ ̵͔͇̜͇̾̕é̶̮̗̥̺̝̫̩͓̱̲̜̯̔͋́͆̀̂̌ṙ̴̙̒r̷̟͎̗͓͖͓̝̓͗̏̏ͅo̷͕̪͇͐̾̎͊r̷̨̧̺͚̭͇͎̈́̂̓̏̒̿̽͒̕͝,' #<- an error
+                                'r̷̢̪̱͔͖͚̙̀̈́͑e̶̡͖͙̰̰̮̼̘̜͙̣͂̈̀̂̿̆̄̽͝ͅd̸̟̰̺̗͖̩̪̜͖̜͍̐̑̎̾̔̀̎́͘a̵̜͚̠̐ͅc̸̟̦̋̐̌͋̈́t̷̺͉̥̳͇̙̗̫̪̟̒̐̈́̍ȩ̷̠̻̰̰̱̜̭̻̞̭̈́̀̂̂͜ḑ̷̫̰͛̀̿͐̑̂͂͗', #<- redacted
+                                'a̷̬̩̦͍͍͖̣͉̥͒̆̊͌͠ͅ ̵̳̮͎͇̝̑̂̏q̸̬̟͍͕͍̫͚͇̾ṷ̷͙̃̏̒a̷̡̟̣̞̤̦̳͌̊͒̋̒͑̄̌̊͝ͅͅṇ̷̢̨̙̥̭́́̑̊ẗ̸̨̜͕̪̳́̌̀̅̇̐͝͝u̶̡͙̘͔̘̻͇̩̭̫̽̈́̒̿̓͋̒̒͛̈́͝m̴̧͕̫̤̼͈͊̇́̾̋̎͝ͅ ̴̛̟̘̝͖̠̮̿̕c̵͙͍͍̲̠̦͈̀̒̓̆̂͂͒̎͐̑͌͝ą̵̛̥͙̪̎͐͐͊͌̽̒̑̽͝t̷̡̛̙̻͙͓͉̤͚̝̺̎͑̿̏̔̀̈̉͝', #<- a quantum cat
+                                't̴̢͓̳̪̞̭͉̣̹̘̰̙̆̃̄͛̂̏͒̂͑̏͘h̵̢̡̺̖̺͔̞͓͖̝̊̐̈́̽̍͐͊̊̈̑̌ͅe̵͙͒̿̈́ ̶̭̘̪̈́̉̀͗̕͝v̵̠̽͝o̶͖̿͂̑̕i̶̺͐̈́̾̿͆d̷̡͖̰̩̝͉̯̋̈̈́̓̍̐̈́̕͜', #<- the void
+                                'e̸̟̺̰̰̤̩͔̻͕̾̕r̴̗̪̳̟͊͛̓r̵͎̹̹͈͔̐̉͂̓̉̑̌̉̓̕͝͝ȍ̷̮͋̋̈́̃̿ŕ̶̻̬̜͉͎', #<- error
+                                'ę̶̀̎́͘r̵͔̰̫͚͚̒͆͒͘͝͠͠ŕ̷̲͂͂̆̆̈́͗͂̚͠͝͝ở̶̬̪̠̲̦̭̞̟̖̤̹r̴̹̫̭͔̰͖͔̫͔͓̪̦͎͋̄̂ͅę̷͇͖̩̝̝̻͎͉̀̈̍̉̈́͆̌͛̚͠r̴̡̗̺̥̻̬̼̓̋̽̀͌͌͠ͅŗ̴̫̭͚͖̦̭̘̖̒̇͜ͅo̸̳̭̖͔͎̥̝̜̿̋͑̈̒̚̚ṙ̵̢̨̨̻̥̼̪͖͖̫̟͚̗́̍̽̇̀͋̇̿́̆̊̀̚ė̶̙̳̩̲̙͚͍͎͔͚̮̏͝r̵̞̞̯͙̞̰͎̗̖͚̘̪̘͋̔̓͂͘ͅr̴̛̩̘̟͕̤͖̖̺̖̄̐̆́̀̅̔̓̔̋͘͜o̵̻͊̀r̷̝͙͖͎̬͚̮̠͑́̈͆̀͝ȩ̴̛͕͈͇͉́̂̎͐̔́͗̿̏̀̃̄r̵̰̞̖̪̲̜̞̓̾̆̄͊ͅŗ̶̧̫̘̲̣̣̣̀ö̴͓̫̦̲̘́̀͋͂̋͂̿͂ŗ̵̬͇̱̙̅̽͂̄͒̔̈́̋͝'] #<- errorerrorerrorerror
 
         self.locationList = ['dimension',
                         'universe',
@@ -53,7 +59,12 @@ class Activity(commands.Cog):
                     '{vibrate} at {purrHz}hz in the {ordinal} {location}',
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
                     '{purge} {noun} in the {ordinal} {location}']
-            
+        
+        list_type = random.choices(['use_normal', 'use_glitched'], cum_weights=[50, 1], k=1)[0]
+        if list_type == 'use_normal':
+            self.nounList = self.normal_nounList
+        elif list_type == 'use_glitched':
+            self.nounList = self.glitched_nounList
         self.change_activity.start()
 
 ###################################################################################################### command splitter for easier reading and navigating
