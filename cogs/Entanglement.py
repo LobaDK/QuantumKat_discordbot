@@ -16,13 +16,17 @@ class Entanglement(commands.Cog):
     for cog in os.listdir('./cogs'):
         if cog.endswith('.py'):
             initial_extensions.append(f'{cog[:-3]}')
+
+###################################################################################################### command splitter for easier reading and navigating
     
     @commands.command(brief="(Bot owner only) Stops the bot.", description="Stops and disconnects the bot. Supports no arguments.")
     @commands.is_owner()
     async def observe(self, ctx):
         await ctx.send("QuantumKat's superposition has collapsed!")
         await self.bot.close()
-    
+
+######################################################################################################
+
     @commands.command(aliases=['stabilize', 'restart', 'reload', 'reboot'], brief="(Bot owner only) Reloads cogs/extensions.", description="Reloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments. Special character '*' can be used to reload all.")
     @commands.is_owner()
     async def stabilise(self, ctx, *, module : str=''):
@@ -63,7 +67,9 @@ class Entanglement(commands.Cog):
                         except commands.NoEntryPointError as e:
                             print('{}: {}'.format(type(e).__name__, e))
                             await ctx.send(f'successfully loaded {cog}, but no setup was found!')
-    
+
+######################################################################################################
+
     @commands.command(aliases=['load', 'start'], brief="(Bot owner only) Starts/Loads a cog/extension.", description="Starts/Loads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
     @commands.is_owner()
     async def entangle(self, ctx, *, module : str=''):
@@ -88,6 +94,8 @@ class Entanglement(commands.Cog):
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'Loading {cog} failed due to an error!')
 
+######################################################################################################
+
     @commands.command(aliases=['unload', 'stop'], brief="(Bot owner only) Stops/Unloads a cog/extension.", description="Stops/Unloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
     @commands.is_owner()
     async def unentangle(self, ctx, *, module : str=''):
@@ -105,6 +113,8 @@ class Entanglement(commands.Cog):
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{cog} not running, or could not be found!')
+
+######################################################################################################
 
     @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa/possum.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com or possum.lobadk.com, for easier file adding. Requires at least 3 arguments, and supports 4 arguments. The first argument is the file URL, the second is the filename to be used, with a special 'rand' parameter that produces a random 8 character long base62 filename, the third is the location, specified with 'aaaa' or 'possum', the fourth (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
     @commands.is_owner()
@@ -176,6 +186,8 @@ class Entanglement(commands.Cog):
         else:
             await ctx.send('Command requires 3 arguments:\n```?quantize <URL> <filename> <aaaa|possum>``` or ```?quantize <URL> <filename> <aaaa|possum> YT``` to use yt-dlp to download it')
 
+######################################################################################################
+
     @commands.command(aliases=['requantise'], brief="(Bot owner only) Rename a file on aaaa.lobadk.com.", description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when chosing a new name.")
     @commands.is_owner()
     async def requantize(self, ctx, current_filename='', new_filename=''):
@@ -197,6 +209,8 @@ class Entanglement(commands.Cog):
                 await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
         else:
             await ctx.send('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')
+
+######################################################################################################
 
     @commands.command(brief="(Bot owner only) Runs git commands in the bots directory.", description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.")
     @commands.is_owner()
@@ -224,6 +238,8 @@ class Entanglement(commands.Cog):
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send('Error running command')
+
+######################################################################################################
 
     @commands.command(brief="(Bot owner only) Fetches new updates and reloads all cogs/extensions.", description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.")
     @commands.is_owner()
@@ -261,6 +277,8 @@ class Entanglement(commands.Cog):
         except Exception as e:
             print('{}: {}'.format(type(e).__name__, e))
             await ctx.send('Error running command')
+
+######################################################################################################
 
     print('Started Entanglement!')
 async def setup(bot):

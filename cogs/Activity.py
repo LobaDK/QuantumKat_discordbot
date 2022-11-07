@@ -9,19 +9,19 @@ class Activity(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        hissList = ['Hissing',
+        self.hissList = ['Hissing',
                     'Hissed']
         
-        purgeList = ['Purrging',
+        self.purgeList = ['Purrging',
                      'Purrged']
 
-        purrList = ['Purring',
+        self.purrList = ['Purring',
                     'Purred']
 
-        vibrateList = ['Vibrating',
+        self.vibrateList = ['Vibrating',
                        'Vibrated']
 
-        nounList = ["a chair",
+        self.nounList = ["a chair",
                     "a table",
                     "a vase",
                     "a long-lost creditcard",
@@ -37,14 +37,16 @@ class Activity(commands.Cog):
                     "a blackhole","a random star",
                     "a random planet",
                     "Earth",
-                    'the void']
+                    'the void',
+                    'r̸̨̼͉̦̻̔̇e̴̘̪̦͆̎̽́͒̽͂͝ͅḏ̶̛͍̊̂̾̍̑́͐a̸̜͙̩͌̒̈́c̵̢̺͚̯̟̙͖̩͙̅̌̐̏̀̈́̋̃̀t̵̩̍ẹ̷̰̲̭̼̞̦͔̦̉d̸̨͕̝̍̏̐̀̊̿̈̈̿͘͜', #<- says redacted but in glitched form
+                    'ê̸̱̑͒͝r̶͓̆̀̑̇̾̇̂̃̕ȑ̵̥̖͙̞̮̾o̵̗̘̫̩̐̐͒̏̏̓͑r̸̻͚̟͈̻͗̋̈́̇']  #<- says error but in glitched form
 
-        locationList = ['dimension',
+        self.locationList = ['dimension',
                         'universe',
                         'timeline',
                         'reality']
 
-        messages = ['{hiss} in the {ordinal} {location}',
+        self.messages = ['{hiss} in the {ordinal} {location}',
                     '{purr} in the {ordinal} {location}',
                     '{hiss} at {noun} in the {ordinal} {location}',
                     '{purr} at {noun} in the {ordinal} {location}',
@@ -52,31 +54,68 @@ class Activity(commands.Cog):
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
                     '{purge} {noun} in the {ordinal} {location}']
             
-        self.change_activity.start(hissList, purgeList, purrList, vibrateList, nounList, locationList, messages)
+        self.change_activity.start()
+
+###################################################################################################### command splitter for easier reading and navigating
 
     def cog_unload(self):
         self.change_activity.cancel()
 
+######################################################################################################
+
     @tasks.loop(minutes=random.randint(30,180), count=None, reconnect=True)
-    async def change_activity(self, hissList, purgeList, purrList, vibrateList, nounList, locationList, messages):
+    async def change_activity(self):
         self.change_activity.change_interval(minutes=(random.randint(30,180)))
 
-        purrHz = random.randint(1,100000)
-        ordinal = num2words(random.randint(0,10000), to='ordinal_num')
+        self.purrHz = random.randint(1,100000)
+        self.ordinal = num2words(random.randint(0,10000), to='ordinal_num')
 
-        await self.bot.change_presence(activity=discord.Game(name=random.choice(messages).format(hiss=random.choice(hissList),
-                                                                                                    purge=random.choice(purgeList),
-                                                                                                    purr=random.choice(purrList),
-                                                                                                    vibrate=random.choice(vibrateList),
-                                                                                                    noun=random.choice(nounList),
-                                                                                                    location=random.choice(locationList),
-                                                                                                    purrHz=purrHz,
-                                                                                                    ordinal=ordinal)))
-    
+        await self.bot.change_presence(activity=discord.Game(name=random.choice(self.messages).format(hiss=random.choice(self.hissList),
+                                                                                                    purge=random.choice(self.purgeList),
+                                                                                                    purr=random.choice(self.purrList),
+                                                                                                    vibrate=random.choice(self.vibrateList),
+                                                                                                    noun=random.choice(self.nounList),
+                                                                                                    location=random.choice(self.locationList),
+                                                                                                    purrHz=self.purrHz,
+                                                                                                    ordinal=self.ordinal)))
+
+######################################################################################################
+
     @change_activity.before_loop
     async def before_change_activity(self):
         print('Starting Activity loop...')
         await self.bot.wait_until_ready()
+
+######################################################################################################
+
+    @commands.command(aliases=['activitystop', 'astop'], brief='(Bot owner only) Stops the displayed activity.', description='Stops the loop that displays a random activity under the bot.')
+    @commands.is_owner()
+    async def ActivityStop(self, ctx):
+        if self.change_activity.is_running():
+            self.change_activity.cancel()
+        else:
+            await ctx.send('Activity is not running!')
+
+######################################################################################################
+
+    @commands.command(aliases=['activityrestart', 'arestart', 'ActivityRefresh', 'activityrefresh', 'arefresh'], brief='(Bot owner only) Restarts/Refreshes the displayed activity.', description='Restarts/Refreshes the loop that displays a random activity under the bot.')
+    @commands.is_owner()
+    async def ActivityRestart(self):
+        if self.change_activity.is_running():
+            self.change_activity.cancel()
+        self.change_activity.start()
+
+######################################################################################################
+
+    @commands.command(aliases=['activitystart', 'astart'], brief='(Bot owner only) Starts displaying a random activity.', description='Starts the loop that displays a random activity under the bot. A random interval between 30 to 180 minutes is chosen each time it loops itself.')
+    @commands.is_owner()
+    async def ActivityStart(self, ctx):
+        if not self.change_activity.is_running():
+            self.change_activity.cancel()
+        else:
+            await ctx.send('Activity is already running!')
+
+######################################################################################################
 
 async def setup(bot):
     await bot.add_cog(Activity(bot))

@@ -16,6 +16,8 @@ class Field(commands.Cog):
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
 
+###################################################################################################### command splitter for easier reading and navigating
+
     async def arpr(self, ctx, url):
         links = []
         for _ in range(ctx.message.content.split(" ")[0].count("r")):
@@ -25,16 +27,21 @@ class Field(commands.Cog):
             links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
         await ctx.send('\n'.join(links))
 
+######################################################################################################
+
     @commands.command(aliases=['arr','arrr','arrrr','arrrrr'], brief='Returns a random file from aaaa.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from aaaa.lobadk.com.")
     async def ar(self, ctx):
         url = 'https://aaaa.lobadk.com/botrandom'
         await self.arpr(ctx, url)
         
+######################################################################################################
 
     @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
     async def pr(self, ctx):
         url = 'https://possum.lobadk.com/botrandom'
         await self.arpr(ctx, url)
+
+######################################################################################################
 
     @commands.command(aliases=['pæt','pets','pæts'], brief='Pets another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 1 and 20 long pet.')
     async def pet(self, ctx, *, optional_user_or_object=""):
@@ -66,6 +73,8 @@ class Field(commands.Cog):
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}')
 
+######################################################################################################
+
     @commands.command(aliases=['hugs'], brief='Hugs another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 1 and 20 long hug.')
     async def hug(self, ctx, *, optional_user_or_object=""):
         quantum_amount = random.randint(1,20)
@@ -90,7 +99,9 @@ class Field(commands.Cog):
                 await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {hugs}')
-    
+
+######################################################################################################
+
     @commands.command(aliases=['quantumpæt','qpet','qpæt','quantumpæts','quantumpets','qpets','qpæts'], brief='Pets another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 100 and 1000 long pet.')
     async def quantumpet(self, ctx, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
@@ -106,6 +117,8 @@ class Field(commands.Cog):
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {optional_user_or_object}')
 
+######################################################################################################
+
     @commands.command(aliases=['quantumhøg','qhug','qhøg','quantumhøgs','quantumhugs','qhugs','qhøgs'], brief='Hugs another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 100 and 1000 long hug.')
     async def quantumhug(self, ctx, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
@@ -120,7 +133,9 @@ class Field(commands.Cog):
             await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {random.choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {optional_user_or_object}')
-    
+
+######################################################################################################
+
     @commands.command(aliases=['rockpaperscissor'], brief='Rock, Paper, Scissors game.', description='A Rock, Paper, Scissors game. Supports one argument, being the chosen gesture. Emote is also supported. Is not rigged.')
     async def rps(self, ctx, *, item=""):
         substring = ['rock','rocks','paper','papers','scissor','scissors','✂️','🪨','🧻']
@@ -143,6 +158,8 @@ class Field(commands.Cog):
                 await ctx.send(f'{winItem[item]}. {whowin}')
         else:
             await ctx.send('Rock, paper or scissors required')
+
+######################################################################################################
 
     @commands.command(aliases=['as','asearch'], brief='aaaa search function.', description='Searches aaaa with the given argument and returns the results. Only takes one, and limited to a minimum of two characters, being alphanumeric as well as a dot.')
     async def aaaasearch(self, ctx, search_keyword=""):
@@ -170,7 +187,9 @@ class Field(commands.Cog):
                 await ctx.send('At least two alphanumeric characters are required, or 1 alphanumeric character and a `.` at the start or end')
         else:
             await ctx.send('Search too short! A minimum of 2 characters are required')
-    
+
+######################################################################################################
+
     @commands.command(brief='Appends filename to aaaa.lobadk.com.', description='Appends the provided filename to the end of aaaa.lobadk.com/, to quickly link the file. Only alphanumeric characters and a dot is allowed.')
     async def a(self, ctx, filename=""):
         if filename:
@@ -184,9 +203,13 @@ class Field(commands.Cog):
         else:
             await ctx.send('Filename required!\n```?a example.mp4```')
 
+######################################################################################################
+
     @commands.command(aliases=['qjoke', 'joke', 'qj'], brief='Fetch a random quantum joke.', description='Fetches a random quantum joke stored in a text file. Supports no arguments.')
     async def quantumjoke(self, ctx):
         await ctx.send(random.choice(self.jokes).strip())
+
+######################################################################################################
 
     @commands.command(aliases=['ars', 'asr', 'aaaarandomsearch'], brief='Search aaaa.lobadk.com and return a random result.', description='Queries aaaa.lobadk.com with the provided search, and returns a random file from it. Supports one argument')
     async def arsearch(self, ctx, search_keyword=""):
@@ -212,6 +235,8 @@ class Field(commands.Cog):
         else:
             await ctx.send('Search parameter required!\n```?ars example```')
 
+######################################################################################################
+
     @commands.command(aliases=['pong'], brief="Test if the bot works, and it's latency.", description="Tests if the bot is seeing the command as well as capable of responding. Supports one, but not required, argument, as 'latency'. If latency argument is used, tests and displays the one-way latency from your home, to Discord, and then to the bot, as well as the round-trip latency between the bot and Discord.")
     async def ping(self, ctx, ping_mode=""):
         LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "Let's just not tell your alternate-self from another dimension..."]
@@ -227,6 +252,8 @@ class Field(commands.Cog):
                 await ctx.send("Only 'latency' parameter allowed")
         else:
             await ctx.send(pingresponse)
+
+######################################################################################################
 
     print('Started Field!')
 async def setup(bot):
