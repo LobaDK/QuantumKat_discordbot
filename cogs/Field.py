@@ -1,6 +1,7 @@
 import random
 import re
 import time
+import glob
 from urllib.parse import urljoin
 
 import requests
@@ -252,6 +253,17 @@ class Field(commands.Cog):
                 await ctx.send("Only 'latency' parameter allowed")
         else:
             await ctx.send(pingresponse)
+
+######################################################################################################
+
+    @commands.command(aliases=['acount', 'countaaaa', 'counta'], brief='Counts the images and videos stored on aaaa.lobadk.com.', description="Counts the amount of images and videos that are stored on aaaa.lobadk.com, excluding any unrelated files, as well as folders.")
+    async def aaaacount(self, ctx):
+        extensions = ['*.gif', '*.jpeg', '*.jpg', '*.mov', '*.mp3', '*.mp4', '*.png', '*.webm', '*.webp']
+        all_files = []
+        for extension in extensions:
+            current_extension = glob.glob(extension)
+            all_files += current_extension
+        await ctx.send(f'There are currently {len(all_files)} quantised datasets.')
 
 ######################################################################################################
 
