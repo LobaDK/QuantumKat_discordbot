@@ -294,12 +294,14 @@ class Entanglement(commands.Cog):
                         os.remove(f'/var/www/possum/{filename}')
                     else:
                         await ctx.send('Only `aaaa` and `possum` are valid locations!')
+                        return
+                    await ctx.send('Success!')
                 except FileNotFoundError:
                     await ctx.send('Dataset not found. Did you spell it correctly?')
                 except:
                     await ctx.send('Error dequantising dataset!')
             else:
-                await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```?dequantise name.extension```')
+                await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```?dequantise name.extension aaaa|possum```')
 
 
     print('Started Entanglement!')
