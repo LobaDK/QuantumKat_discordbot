@@ -145,8 +145,8 @@ class Entanglement(commands.Cog):
                         if int(os.stat(f'/var/www/aaaa/{filename}.mp4').st_size / (1024 * 1024)) > 50:
                             await ctx.send('Dataset exceeded recommended limit! Crunching some bits... this might take a *bit*')
                             try:
-                                arg2 = f'ffmpeg -n -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -f mp4 /var/www/aaaa/{filename}.tmp'
-                                process2 = await asyncio.create_subprocess_shell(arg2)
+                                arg2 = f'-n -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -f mp4 /var/www/aaaa/{filename}.tmp'
+                                process2 = await asyncio.create_subprocess_shell( arg2, executable='ffmpeg')
                                 await process2.wait()
                                 if process2.returncode() == 0:
                                     try:
