@@ -131,7 +131,7 @@ class Entanglement(commands.Cog):
                     await ctx.send('Playlists not supported')
                     return
                 try:
-                    arg = f'yt-dlp -f ba+bv/b "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
+                    arg = f'yt-dlp -f bv[ext=mp4]+ba[ext=m4a]/b[ext=mp4] "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
                     await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
                     process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                     stdout, stderr = await process.communicate()
@@ -141,7 +141,29 @@ class Entanglement(commands.Cog):
                         await ctx.send('Filename already exists, consider using a different name')
                         return
                     elif stdout:
-                        await ctx.send(f'Success! Data quantized to https://aaaa.lobadk.com/{filename}.mp4')
+                        if int(os.stat(f'/var/www/aaaa/{filename}.mp4').st_size / (1024 * 1024)) > 50:
+                            await ctx.send('Dataset exceeded recommended limit! Crunching some bits... this might take a *bit*')
+                            try:
+                                arg2 = f'ffmpeg -n -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -f mp4 /var/www/aaaa/{filename}.tmp'
+                                process2 = await asyncio.create_subprocess_shell(arg2)
+                                if process2.returncode() == 0:
+                                    try:
+                                        os.rename(f'/var/www/aaaa/{filename}.mp4', f'/var/www/aaaa/{filename}.old')
+                                        os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
+                                        os.remove(f'/var/www/aaaa/{filename}.old')
+                                        #Precautions to avoid loss of original file in case of error
+                                        await ctx.send(f'Success! Data quantized and bit-crunched to https://aaaa.lobadk.com/{filename}.mp4')
+                                    except Exception as e:
+                                        print('{}: {}'.format(type(e).__name__, e))
+                                        await ctx.send('Error shifting the dataset!')
+                                else:
+                                    await ctx.send('Unknown error running utility!')
+                            except Exception as e:
+                                print('{}: {}'.format(type(e).__name__, e))
+                                await ctx.send('Dataset bit error!')
+                        else:
+                            await ctx.send(f'Success! Data quantized to https://aaaa.lobadk.com/{filename}.mp4')
+
                 
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
