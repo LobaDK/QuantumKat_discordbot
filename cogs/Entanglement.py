@@ -280,6 +280,28 @@ class Entanglement(commands.Cog):
 
 ######################################################################################################
 
+    @commands.command(aliases=['dequantize'], brief='(Bot owner only) Delete the specified file.', description='Attempts to delete the specified file. Supports and requires 2 arguments, being the filename, and location (aaaa|possum).')
+    @commands.is_owner()
+    async def dequantise(self, ctx, filename="", location=""):
+        if filename and location:
+            allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
+            if allowed.match(filename):
+                try:
+                    await ctx.send(f'Dequantising and purging {filename}...')
+                    if location.lower() == 'aaaa':
+                        os.remove(f'/var/www/aaaa/{filename}')
+                    elif location.lower() == 'possum':
+                        os.remove(f'/var/www/possum/{filename}')
+                    else:
+                        await ctx.send('Only `aaaa` and `possum` are valid locations!')
+                except FileNotFoundError:
+                    await ctx.send('Dataset not found. Did you spell it correctly?')
+                except:
+                    await ctx.send('Error dequantising dataset!')
+            else:
+                await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```?dequantise name.extension```')
+
+
     print('Started Entanglement!')
 async def setup(bot):
     await bot.add_cog(Entanglement(bot))
