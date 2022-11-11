@@ -154,17 +154,17 @@ class Entanglement(commands.Cog):
                                         os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
                                         os.remove(f'/var/www/aaaa/{filename}.old')
                                         #Precautions to avoid loss of original file in case of error
-                                        await ctx.send(f'Success! Data quantized and bit-crunched to https://aaaa.lobadk.com/{filename}.mp4')
+                                        await ctx.reply(f'Success! Data quantized and bit-crunched to https://aaaa.lobadk.com/{filename}.mp4')
                                     except Exception as e:
                                         print('{}: {}'.format(type(e).__name__, e))
-                                        await ctx.send('Error shifting the dataset!')
+                                        await ctx.reply('Error shifting the dataset!')
                                 else:
-                                    await ctx.send('Unknown error running utility!')
+                                    await ctx.reply('Unknown error running utility!')
                             except Exception as e:
                                 print('{}: {}'.format(type(e).__name__, e))
-                                await ctx.send('Dataset bit error!')
+                                await ctx.reply('Dataset bit error!')
                         else:
-                            await ctx.send(f'Success! Data quantized to https://aaaa.lobadk.com/{filename}.mp4')
+                            await ctx.reply(f'Success! Data quantized to https://aaaa.lobadk.com/{filename}.mp4')
 
                 
                 except Exception as e:
