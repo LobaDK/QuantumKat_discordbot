@@ -148,7 +148,7 @@ class Entanglement(commands.Cog):
                                 arg2 = f'ffmpeg -n -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -f mp4 /var/www/aaaa/{filename}.tmp'
                                 process2 = await asyncio.create_subprocess_shell(arg2)
                                 await process2.wait()
-                                if process2.returncode() == 0:
+                                if process2.returncode == 0:
                                     try:
                                         os.rename(f'/var/www/aaaa/{filename}.mp4', f'/var/www/aaaa/{filename}.old')
                                         os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
