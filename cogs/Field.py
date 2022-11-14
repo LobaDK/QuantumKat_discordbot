@@ -2,6 +2,7 @@ import random
 import re
 import time
 import glob
+import ntplib
 from urllib.parse import urljoin
 
 import requests
@@ -248,7 +249,20 @@ class Field(commands.Cog):
             pingresponse = 'ping'
         if ping_mode:
             if ping_mode.lower() == 'latency':
-                await ctx.send(f'{pingresponse}! Took {(round(time.time() * 1000) - ctx.message.created_at.timestamp() * 1000)}ms. {random.choice(LatencyResponses)}\nConnection to discord: {round(self.bot.latency * 1000, 2)}ms')
+                local_time_in_ms = (round(time.time() * 1000))
+                message_timestamp = (round(ctx.message.created_at.timestamp() * 1000))
+                latency = local_time_in_ms - message_timestamp
+                print(latency)
+                if latency < 0:
+                    c = ntplib.NTPClient()
+                    response = c.request('pool.ntp.org', version=3)
+                    offset = round(response.offset * 1000)
+                    print(offset)
+                    latency += offset
+                    await ctx.send(f'A negative latency value was detected. Used pool.ntp.org to attempt to correct, with a {round(offset)}ms offset.')
+
+
+                await ctx.send(f'{pingresponse}! Took {latency}ms')
             else:
                 await ctx.send("Only 'latency' parameter allowed")
         else:
@@ -266,6 +280,18 @@ class Field(commands.Cog):
         await ctx.send(f'There are currently {len(all_files)} quantised datasets.')
 
 ######################################################################################################
+
+    @commands.command(aliases=['quantumball', 'qball'], brief='standard 8ball replies, but with some quantum mixed.', description='Uses the standard 8ball replies, but with some quantum related replies or addition to the messages. Accepts no arguments.')
+    async def QuantumBall(self, ctx):
+        affirmative_answers_list = ['It is certain.', 'It is decidedly so.', 'Without a doubt.', 'Yes definitely.', 'You may rely on it.', 'As I see it, yes.', 'Most likely.', 'Outlook good.', 'Yes.', 'Signs point to yes.']
+        non_committal_answers_list = ['Reply hazy, try again.', 'Ask again later.', 'Better not tell you now.', 'Cannot predict now.', 'Concentrate and ask again.']
+        negative_answers_list = ["Don't count on it.", 'My reply is no.', 'My sources say no.', 'Outlook not so good.', 'Very doubtful.']
+        reason_list = ['Quantum tunnel unexpectedly collapsed!', 'Entanglement lost!', 'Was that vase always broken?', 'Error', '||redacted||', 'Universal instability detected!']
+        quantumball_messages_list = ['{amount} {location} agrees or already happened in. {affirmative_answer}', '{reason}. {non_committal_answer}', 'No related parallel universe, dimension, timeline or reality detected! {negative_answer}']
+
+        amount = random.randint(100, 100_000)
+
+        await ctx.send(random.choice(quantumball_messages_list).format(amount=amount, location=random.choice(['realities','universes','dimensions','timelines']), affirmative_answer=random.choice(affirmative_answers_list), reason=random.choice(reason_list), non_committal_answer=random.choice(non_committal_answers_list), negative_answer=random.choice(negative_answers_list)))
 
     print('Started Field!')
 async def setup(bot):

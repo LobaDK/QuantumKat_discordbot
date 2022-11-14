@@ -21,12 +21,9 @@ async def setup(bot):
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 bot = commands.Bot(command_prefix='?', help_command=commands.DefaultHelpCommand(sort_commands=False, show_parameter_descriptions=False, width=100), intents=intents)
-
-@bot.check
-async def globally_block_dms(ctx):
-    return ctx.guild is not None
 
 @bot.event
 async def on_ready():

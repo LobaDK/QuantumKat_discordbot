@@ -20,7 +20,7 @@ class Tunnel(commands.Cog):
 
         error = getattr(error, 'original', error)
 
-        if isinstance(error, commands.NotOwner):
+        if isinstance(error, (commands.NotOwner, commands.PrivateMessageOnly)):
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
         if isinstance(error, ignored_errors):
             return
