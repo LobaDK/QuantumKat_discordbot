@@ -289,7 +289,7 @@ class Field(commands.Cog):
 
         amount = random.randint(100, 100_000)
 
-        await ctx.send(random.choice(quantumball_messages_list).format(amount=amount, location=random.choice(['realities','universes','dimensions','timelines']), affirmative_answer=random.choice(affirmative_answers_list), reason=random.choice(reason_list), non_committal_answer=random.choice(non_committal_answers_list), negative_answer=random.choice(negative_answers_list)))
+        await ctx.send(random.choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=random.choice(['realities','universes','dimensions','timelines']), affirmative_answer=random.choice(affirmative_answers_list), reason=random.choice(reason_list), non_committal_answer=random.choice(non_committal_answers_list), negative_answer=random.choice(negative_answers_list)))
 
     print('Started Field!')
 async def setup(bot):
