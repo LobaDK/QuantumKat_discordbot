@@ -252,12 +252,10 @@ class Field(commands.Cog):
                 local_time_in_ms = (round(time.time() * 1000))
                 message_timestamp = (round(ctx.message.created_at.timestamp() * 1000))
                 latency = local_time_in_ms - message_timestamp
-                print(latency)
                 if latency < 0:
                     c = ntplib.NTPClient()
                     response = c.request('pool.ntp.org', version=3)
                     offset = round(response.offset * 1000)
-                    print(offset)
                     latency += offset
                     await ctx.send(f'A negative latency value was detected. Used pool.ntp.org to attempt to correct, with a {round(offset)}ms offset.')
 
