@@ -39,7 +39,7 @@ class Control(commands.Cog):
                 await ctx.send(f'*Poofs to another {random.choice(["universe", "reality", "dimension", "timeline"])}*')
                 await ctx.guild.leave()
             else:
-                await ctx.send('Only owner and mods can use this!')
+                await ctx.send('Only server and bot owner, and mods can use this!')
         else:
             await ctx.send('Command only works in a server')
 
