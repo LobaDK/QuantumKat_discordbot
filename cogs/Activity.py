@@ -60,7 +60,7 @@ class Activity(commands.Cog):
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
                     '{purge} {noun} in the {ordinal} {location}']
         
-        list_type = random.choices(['use_normal', 'use_glitched'], cum_weights=[50, 1], k=1)[0]
+        list_type = random.choices(['use_normal', 'use_glitched'], weights=[30, 1], k=1)[0]
         if list_type == 'use_normal':
             self.nounList = self.normal_nounList
         elif list_type == 'use_glitched':

@@ -14,7 +14,7 @@ class Control(commands.Cog):
             servers_and_owners.append(f'Server: {guild.name} with ID: {guild.id}, owned by: {guild.owner.display_name}#{guild.owner.discriminator} with ID: {guild.owner.id}')
         await ctx.send("\n".join(servers_and_owners))
 
-    @commands.command(aliases=['leaveserver'], brief='Leaves a server.', description='Leaves the ID-specified server. ID can be acquired from the ServerOwnerList command. Only bot owner can do this. Supports and requires a single argument.')
+    @commands.command(aliases=['leaveserver'], brief='(Bot owner only) Leaves a server.', description='Leaves the ID-specified server. ID can be acquired from the ServerOwnerList command. Only bot owner can do this. Supports and requires a single argument.')
     @commands.is_owner()
     @commands.dm_only()
     async def LeaveServer(self, ctx, Server_ID=""):
@@ -28,7 +28,7 @@ class Control(commands.Cog):
         else:
             await ctx.send('Server ID required!')
 
-    @commands.command(aliases=['leave'], brief='Leave current server.', description='Leaves the server the message was sent from. Only server and bot owner, and mods can do this. Supports no arguments.')
+    @commands.command(aliases=['leave'], brief='(Bot owner, server owner and admin/mods only) Leave current server.', description='Leaves the server the message was sent from. Only server and bot owner, and mods can do this. Supports no arguments.')
     async def Leave(self, ctx):
         if ctx.guild is not None:
             application = await self.bot.application_info()
