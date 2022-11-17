@@ -19,12 +19,17 @@ class Control(commands.Cog):
     @commands.dm_only()
     async def LeaveServer(self, ctx, Server_ID=""):
         if Server_ID:
-            try:
-                await self.bot.get_guild(int(Server_ID)).leave()
-                await ctx.send(f'Left {Server_ID}')
-            except Exception as e:
-                await ctx.send(e)
-                print('{}: {}'.format(type(e).__name__, e))
+            if Server_ID.isnumeric():
+                guild = self.bot.get_guild(int(Server_ID))
+                if guild is not None:
+                    try:
+                        await guild.leave()
+                        await ctx.send(f'Left {guild}')
+                    except Exception as e:
+                        await ctx.send(e)
+                        print('{}: {}'.format(type(e).__name__, e))
+                else:
+                    await ctx.send('Guild does not exist or the bot is not in it, did you enter the correct ID?')
         else:
             await ctx.send('Server ID required!')
 

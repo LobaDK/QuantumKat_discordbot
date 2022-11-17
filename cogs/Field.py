@@ -66,7 +66,7 @@ class Field(commands.Cog):
             if quantummode == 'purr':
                 await ctx.send(f'Quantum purrs across {quantumspan} {random.choices(["dimension","universe","reality","timeline","dimension, universe, realitie and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else random.choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
             elif quantummode == 'frequency':
-                await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz')
+                await ctx.send(f'Quantum vibrates at {random.randint(1,100_000)}hz')
             elif quantummode == 'quantumloop':
                 petloop = ""
                 for _ in range(0,random.randint(8,40)):
@@ -98,7 +98,7 @@ class Field(commands.Cog):
             if quantummode == 'purr':
                 await ctx.send(f'Quantum purrs and entangles {ctx.author.mention} to the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
             elif quantummode == 'frequency':
-                await ctx.send(f'Quantum vibrates at {random.randint(1,100000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
+                await ctx.send(f'Quantum vibrates at {random.randint(1,100_000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {hugs}')
 

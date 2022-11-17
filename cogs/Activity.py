@@ -78,8 +78,8 @@ class Activity(commands.Cog):
     async def change_activity(self):
         self.change_activity.change_interval(minutes=(random.randint(30,180)))
 
-        purrHz = random.randint(1,100000)
-        ordinal = num2words(random.randint(0,10000), to='ordinal_num')
+        purrHz = random.randint(1,100_000)
+        ordinal = num2words(random.randint(0,100_00), to='ordinal_num')
 
         await self.bot.change_presence(activity=discord.Game(name=random.choice(self.messages).format(hiss=random.choice(self.hissList),
                                                                                                     purge=random.choice(self.purgeList),
