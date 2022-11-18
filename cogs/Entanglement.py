@@ -272,8 +272,9 @@ class Entanglement(commands.Cog):
                                 await ctx.reply('Error moving/removing file!')
                                 return
                             
-                            #If the bitrate option was NOT reached, only print the new frame width and height used
-                            if not bitrate:
+                            #If the bitrate option was reached, this would be at least 1
+                            #Otherwise if it's 0, it means it never attempted to transcode with a variable bitrate
+                            if attempts == 0:
                                 await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>\nResized to {self.frame_width}:{self.frame_height}')
                             else:
                                 await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>\nUsing {bitrate}k/s and Resized to {self.frame_width}:{self.frame_height} with {attempts} attemp(s)')
