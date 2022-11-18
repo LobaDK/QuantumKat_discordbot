@@ -440,6 +440,8 @@ class Entanglement(commands.Cog):
                     await ctx.send('Error dequantising dataset!')
             else:
                 await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```?dequantise name.extension aaaa|possum```')
+        else:
+            await ctx.send('Filename and location required!\n`?dequantise|dequantize <filename> aaaa|possum`')
 
 
     print('Started Entanglement!')
