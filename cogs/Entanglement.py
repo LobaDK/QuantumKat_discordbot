@@ -186,14 +186,15 @@ class Entanglement(commands.Cog):
                         
                         #Attempt to run command with above args
                         try:
-                            stream = await asyncio.create_subprocess_shell(arg2)
+                            self.stream = await asyncio.create_subprocess_shell(arg2)
+                            await self.stream.wait()
                         except Exception as e:
                             print('{}: {}'.format(type(e).__name__, e))
                             await ctx.reply('Error getting video metadata!')
                             return
 
                         #Load the "streams" key, which holds all the metadata information
-                        video_metadata = json.loads(stream)['streams'][0]
+                        video_metadata = json.loads(self.stream)['streams'][0]
                         
                         #Attempt to parse, divide, and save the video's width and height in int, to remove any decimal points
                         try:
