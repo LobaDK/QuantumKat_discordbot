@@ -120,71 +120,178 @@ class Entanglement(commands.Cog):
     @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa/possum.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com or possum.lobadk.com, for easier file adding. Requires at least 3 arguments, and supports 4 arguments. The first argument is the file URL, the second is the filename to be used, with a special 'rand' parameter that produces a random 8 character long base62 filename, the third is the location, specified with 'aaaa' or 'possum', the fourth (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
     @commands.is_owner()
     async def quantize(self, ctx, URL="", filename="", location="", mode=""):
+
+        #Make a characters variable that combines lower- and uppercase letters, as well as numbers.
+        #Used to generate a random filename, if specified
         characters = string.ascii_letters + string.digits
         if URL and filename:
+
+            #If the filename is 'rand' generate a random 8-character long base 62 filename using the previously created 'characters' variable
             if filename.lower() == 'rand':
                 filename = "".join(random.choice(characters) for _ in range(8))
+            
+            #Discord disabled embed detection for the URL
+            #Strips all greater-than and less-than symbols from the URL string
+            #Allows the user to supply a URL without making it embed
             if URL.startswith('<') or URL.endswith('>'):
                 URL = URL.replace('<','')
                 URL = URL.replace('>','')
+
             if mode.upper() == 'YT' and not location.lower() == 'possum':
                 if "&list=" in URL or "playlist" in URL:
                     await ctx.send('Playlists not supported')
                     return
+                
+                #Download the best (highest quality) MP4 video and m4a audio, and then combines them
+                #Or a single video with audio included, if that's the best option
+                arg = f'yt-dlp -f bv[ext=mp4]+ba[ext=m4a]/b[ext=mp4] "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
+                
+                await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
+                
+                #Attempt to run command with above args
                 try:
-                    arg = f'yt-dlp -f bv[ext=mp4]+ba[ext=m4a]/b[ext=mp4] "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
-                    await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
                     process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
                     await process.wait()
                     stdout, stderr = await process.communicate()
-                    if stderr:
-                        await ctx.send(stderr.decode())
-                    if 'has already been downloaded' in stdout.decode():
-                        await ctx.send('Filename already exists, consider using a different name')
-                        return
-                    elif stdout:
-                        if int(os.stat(f'/var/www/aaaa/{filename}.mp4').st_size / (1024 * 1024)) > 50:
-                            arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json /var/www/aaaa/{filename}.mp4'
-                            try:
-                                stream = await asyncio.create_subprocess_shell(arg2)
-                                video_metadata = json.loads(stream)['streams'][0]
-                                duration = video_metadata['duration']
-                                frame_width = video_metadata['coded_width']
-                                frame_height = video_metadata['coded_height']
 
-                                await ctx.send('Dataset exceeded recommended limit! Crunching some bits... this might take a *bit*')
-                                try:
-                                    arg3 = f'ffmpeg -n -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale=-1:720 -f mp4 /var/www/aaaa/{filename}.tmp'
-                                    process2 = await asyncio.create_subprocess_shell(arg3)
-                                    await process2.wait()
-                                    if process2.returncode == 0:
-                                        try:
-                                            os.remove(f'/var/www/aaaa/{filename}.mp4')
-                                            os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
-                                            await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>')
-                                        except Exception as e:
-                                            print('{}: {}'.format(type(e).__name__, e))
-                                            await ctx.reply('Error moving/removing file!')
-                                    else:
-                                        await ctx.reply('Non-0 exit status code detected!')
-                                except Exception as e:
-                                    print('{}: {}'.format(type(e).__name__, e))
-                                    await ctx.reply('Error downloading video!')
-                        else:
-                            await ctx.reply(f'Success! Data quantized to <https://aaaa.lobadk.com/{filename}.mp4>')
-
-                
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                    await ctx.reply('Error, quantization tunnel collapsed unexpectedly!')
                     return
+                
+                #yt-dlp can sometimes output non-fatal errors to stderr
+                #Rather than use it to cancel the process if anything is found
+                #simply print the output
+                #To-do: Figure out which kind of fatal messages it can return, and attempt to look for/parse them
+                if stderr:
+                    await ctx.send(stderr.decode())
+
+                #If a file with the same name already exists, yt-dlp returns this string somewhere in it's output
+                if 'has already been downloaded' in stdout.decode():
+                    await ctx.send('Filename already exists, consider using a different name')
+                    return
+                
+                #If this piece of code is reached, it's assumed that everything went well.
+                #This could definitely be improved, but I'm already losing my sanity
+                elif stdout:
+
+                    #If the downloaded video file is larger than 50MB's
+                    if int(os.stat(f'/var/www/aaaa/{filename}.mp4').st_size / (1024 * 1024)) > 50:
+                        await ctx.reply('Dataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
+                        #Try and first lower the resolution of the original video by 1.5 e.g. 1080p turns into 720p. 
+                        #For Discord embeds, this doesn't hurt viewability much, if at all
+                        
+                        #Get JSON output of the first video stream's metadata. Youtube only allows a single video stream, so this should always work
+                        arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json /var/www/aaaa/{filename}.mp4'
+                        
+                        #Attempt to run command with above args
+                        try:
+                            stream = await asyncio.create_subprocess_shell(arg2)
+                        except Exception as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.reply('Error getting video metadata!')
+                            return
+
+                        #Load the "streams" key, which holds all the metadata information
+                        video_metadata = json.loads(stream)['streams'][0]
+                        
+                        #Attempt to parse, divide, and save the video's width and height in int, to remove any decimal points
+                        try:
+                            self.frame_width = int(video_metadata['coded_width'] / 1.5)
+                            self.frame_height = int(video_metadata['coded_height'] / 1.5)
+                        except Exception as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.reply('Error parsing video resolution, manual conversion required!')
+                            return
+
+                        #Transcode original video into an h264 stream, with a reasonable CRF value of 30, and scale the video to the new resolution.
+                        #In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
+                        #or the audio stream's bitrate (I don't know how Youtube handles muted videos)
+                        arg3 = f'ffmpeg -y -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 /var/www/aaaa/{filename}.tmp'
+                        
+                        #Attempt to run command with above args
+                        try:
+                            self.process2 = await asyncio.create_subprocess_shell(arg3)
+                            await self.process2.wait()
+                        except Exception as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.reply('Error transcoding resized video!')
+                            return
+
+                        #If the returncode is 0, i.e. no errors happened
+                        if self.process2.returncode == 0:
+                            
+                            #Check if the new lower-resolution version is under 50MB's.
+                            #as a last resort, If not, enter an endless loop and keep trying a lower bitrate until one works
+                            bitrate_decrease = 0
+                            attempts = 0
+                            while int(os.stat(f'/var/www/aaaa/{filename}.tmp').st_size / (1024 * 1024)) > 50:
+                                
+                                #Attempt to parse, convert from string, to float, to int, and save the video duration
+                                #100% accuracy down to the exact millisecond isn't required, so we just get the whole number instead
+                                try:
+                                    video_duration = int(float(video_duration['duration']))
+                                except Exception as e:
+                                    print('{}: {}'.format(type(e).__name__, e))
+                                    await ctx.reply('Error parsing video duration, manual conversion required!')
+                                    return
+                            
+                                #calculate the average bitrate required to reach around 50MB's
+                                #by multiplying 50 by 8192 (convert megabits to kilobits) 
+                                #dividing that by the video length, and subtracting the audio bitrate
+                                #Audio bitrate is hardcoded for now.
+                                bitrate = (50 * 8192) / video_duration - 192 - bitrate_decrease
+
+                                #Transcode original video into an h264 stream, with an average bitrate calculated from the above code, and scale the video to the new resolution
+                                #In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
+                                #or the audio stream's bitrate (I don't know how Youtube handles muted videos)
+                                arg4 = f'ffmpeg -y -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -b:v {bitrate}k -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 /var/www/aaaa/{filename}.tmp'
+                            
+                                try:
+                                    self.process3 = await asyncio.create_subprocess_shell(arg4)
+                                    await self.process3.wait()
+                                except Exception as e:
+                                    print('{}: {}'.format(type(e).__name__, e))
+                                    await ctx.reply('Error transcoding resized with average bitrate video!')
+                                    return
+
+                                #Increase attemps by 1
+                                attempts += 1
+                                #Increase by 100 kilobits, to decrease the average bitrate by 100 kilotbits
+                                bitrate_decrease += 100
+                            
+                            #Attempt to delete the original video, and then rename the transcoded .tmp video to .mp4
+                            try:
+                                os.remove(f'/var/www/aaaa/{filename}.mp4')
+                                os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
+                            
+                            except Exception as e:
+                                print('{}: {}'.format(type(e).__name__, e))
+                                await ctx.reply('Error moving/removing file!')
+                                return
+                            
+                            #If the bitrate option was NOT reached, only print the new frame width and height used
+                            if not bitrate:
+                                await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>\nResized to {self.frame_width}:{self.frame_height}')
+                            else:
+                                await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>\nUsing {bitrate}k/s and Resized to {self.frame_width}:{self.frame_height} with {attempts} attemp(s)')
+                        
+                        #Else statement for the process returncode, from the initial ffmpeg command
+                        else:
+                            await ctx.reply('Non-0 exit status code detected!')
+                    
+                    #Else statement if file was under 50MB's        
+                    else:
+                        await ctx.reply(f'Success! Data quantized to <https://aaaa.lobadk.com/{filename}.mp4>')
+
+                
 
             elif mode.upper() == 'YT' and location.lower() == 'possum':
                 await ctx.send('Oppossum location not allowed with YT download mode!')
 
             elif location.lower() == 'aaaa' or location.lower() == 'possum':
+                await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
                 try:
-                    await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
                     while True:
                         if os.path.splitext(URL)[1]:
                             filename = filename + os.path.splitext(URL)[1].lower()
