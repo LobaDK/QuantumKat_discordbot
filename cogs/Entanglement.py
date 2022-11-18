@@ -3,6 +3,7 @@ import string
 import os
 import random
 import re
+import json
 
 from discord.ext import commands
 from num2words import num2words
@@ -143,24 +144,32 @@ class Entanglement(commands.Cog):
                         return
                     elif stdout:
                         if int(os.stat(f'/var/www/aaaa/{filename}.mp4').st_size / (1024 * 1024)) > 50:
-                            await ctx.send('Dataset exceeded recommended limit! Crunching some bits... this might take a *bit*')
+                            arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json /var/www/aaaa/{filename}.mp4'
                             try:
-                                arg2 = f'ffmpeg -n -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale=-1:720 -f mp4 /var/www/aaaa/{filename}.tmp'
-                                process2 = await asyncio.create_subprocess_shell(arg2)
-                                await process2.wait()
-                                if process2.returncode == 0:
-                                    try:
-                                        os.remove(f'/var/www/aaaa/{filename}.mp4')
-                                        os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
-                                        await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>')
-                                    except Exception as e:
-                                        print('{}: {}'.format(type(e).__name__, e))
-                                        await ctx.reply('Error shifting the dataset!')
-                                else:
-                                    await ctx.reply('Unknown error running utility!')
-                            except Exception as e:
-                                print('{}: {}'.format(type(e).__name__, e))
-                                await ctx.reply('Dataset bit error!')
+                                stream = await asyncio.create_subprocess_shell(arg2)
+                                video_metadata = json.loads(stream)['streams'][0]
+                                duration = video_metadata['duration']
+                                frame_width = video_metadata['coded_width']
+                                frame_height = video_metadata['coded_height']
+
+                                await ctx.send('Dataset exceeded recommended limit! Crunching some bits... this might take a *bit*')
+                                try:
+                                    arg3 = f'ffmpeg -n -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale=-1:720 -f mp4 /var/www/aaaa/{filename}.tmp'
+                                    process2 = await asyncio.create_subprocess_shell(arg3)
+                                    await process2.wait()
+                                    if process2.returncode == 0:
+                                        try:
+                                            os.remove(f'/var/www/aaaa/{filename}.mp4')
+                                            os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
+                                            await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>')
+                                        except Exception as e:
+                                            print('{}: {}'.format(type(e).__name__, e))
+                                            await ctx.reply('Error moving/removing file!')
+                                    else:
+                                        await ctx.reply('Non-0 exit status code detected!')
+                                except Exception as e:
+                                    print('{}: {}'.format(type(e).__name__, e))
+                                    await ctx.reply('Error downloading video!')
                         else:
                             await ctx.reply(f'Success! Data quantized to <https://aaaa.lobadk.com/{filename}.mp4>')
 
