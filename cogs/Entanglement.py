@@ -144,7 +144,7 @@ class Entanglement(commands.Cog):
                 
                 #Download the best (highest quality) MP4 video and m4a audio, and then combines them
                 #Or a single video with audio included, if that's the best option
-                arg = f'yt-dlp -f bv[ext=mp4]+ba[ext=m4a]/b[ext=mp4] "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
+                arg = f'yt-dlp -f bv[ext=mp4]["height<=1080"]+ba[ext=m4a]/b[ext=mp4]["height<=1080"] "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
                 
                 await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
                 
@@ -186,7 +186,8 @@ class Entanglement(commands.Cog):
                         
                         #Attempt to run command with above args
                         try:
-                            self.stream = await asyncio.create_subprocess_shell(arg2)
+                            self.stream = await asyncio.create_subprocess_shell(arg2, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                            self.stdout, self.stderr = await self.stream.communicate()
                             await self.stream.wait()
                         except Exception as e:
                             print('{}: {}'.format(type(e).__name__, e))
@@ -194,7 +195,7 @@ class Entanglement(commands.Cog):
                             return
 
                         #Load the "streams" key, which holds all the metadata information
-                        video_metadata = json.loads(self.stream)['streams'][0]
+                        video_metadata = json.loads(self.stdout)['streams'][0]
                         
                         #Attempt to parse, divide, and save the video's width and height in int, to remove any decimal points
                         try:
