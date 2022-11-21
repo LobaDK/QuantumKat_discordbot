@@ -429,6 +429,7 @@ class Entanglement(commands.Cog):
             #Save the output (filenames) in stdout2
             stderr1, stdout2 = await process2.communicate()
 
+            stderr1 = stderr1.decode()
             #Each displayed file is on a newline, so split by the newlines to save them as a list
             extensions = stderr1.split('\n')
 
