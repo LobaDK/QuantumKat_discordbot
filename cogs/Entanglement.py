@@ -390,11 +390,17 @@ class Entanglement(commands.Cog):
 
 ######################################################################################################
 
-    @commands.command(brief="(Bot owner only) Fetches new updates and reloads all cogs/extensions.", description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.")
+    @commands.command(brief="(Bot owner only) Fetches new updates and reloads all changed/updated cogs/extensions.", description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.")
     @commands.is_owner()
     async def update(self, ctx):
         try:
             process = await asyncio.create_subprocess_shell('git pull', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            
+            #DO NOT CHANGE ORDER
+            #Git's output seems to be reversed, and most information gets piped to STDERR instead for some reason
+            #STDOUT may also sometimes contain either the data, or some other random data, or part of the whole output, from STDERR
+            #"Aready up to date" is piped to STDUT, but output from file changes when doing "git pull" for example
+            #Are outputted to STDERR instead, hence why it is also reversed here
             stderr, stdout = await process.communicate()
        
         except Exception as e:
@@ -429,7 +435,9 @@ class Entanglement(commands.Cog):
             #Save the output (filenames) in stdout2
             stderr1, stdout2 = await process2.communicate()
 
+            #Decode and remove "b'" characters
             stderr1 = stderr1.decode().replace("b'","")
+
             #Each displayed file is on a newline, so split by the newlines to save them as a list
             extensions = stderr1.split('\n')
 
