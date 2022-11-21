@@ -395,7 +395,7 @@ class Entanglement(commands.Cog):
     async def update(self, ctx):
         try:
             process = await asyncio.create_subprocess_shell('git pull', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            stdout, stderr = await process.communicate()
+            stderr, stdout = await process.communicate()
        
         except Exception as e:
             print('{}: {}'.format(type(e).__name__, e))
@@ -406,55 +406,53 @@ class Entanglement(commands.Cog):
         stdout = stdout.decode()
         stdout = stdout.replace("b'","")
         stdout = stdout.replace("\\n'","")
+        stdout = stdout.replace("\n'","")
         stderr = stderr.decode()
         stderr = stderr.replace("b'","")
         stderr = stderr.replace("\\n'","")
-
-        print(1)
-        print(stdout)
-        print(2)
-        print(stderr)
+        stderr = stderr.replace("\n'","")
 
         #For some reason Git on Windows returns the string without hyphens, while Linux returns it with hyphens
-        if 'Already up to date' in stdout or 'Already up-to-date' in stdout:
-            await ctx.send(stdout)
+        if 'Already up to date' in stderr or 'Already up-to-date' in stderr:
+            await ctx.send(stderr)
         
-        elif stdout:
+        elif stderr:
 
             #Send the output of Git, which displays whichs files has been updated, and how much
             #Then sleep 2 seconds to allow the text to be sent, and read
-            await ctx.send(stdout)
+            await ctx.send(stderr)
             await asyncio.sleep(2)
 
             #This command display the filenames of the files the changed between the last and current versions
             process2 = await asyncio.create_subprocess_shell('git diff --name-only HEAD~1 HEAD', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
             #Save the output (filenames) in stdout2
-            stdout, stderr = await process2.communicate()
+            stderr1, stdout2 = await process2.communicate()
 
             #Each displayed file is on a newline, so split by the newlines to save them as a list
-            extensions = stdout.split('\n')
+            extensions = stderr1.split('\n')
 
             #Iterate through each listed files
             for extension in extensions:
-                try:
-                    await self.bot.reload_extension(f'cogs.{os.path.basename(extension)[:-3]}')
-                    await ctx.send(f'Purging updated {extension[:-3]}!')
-                
-                except commands.ExtensionNotLoaded as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{extension[:-3]} is not running, or could not be found')
-                
-                except commands.ExtensionNotFound as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{extension[:-3]} could not be found!')
-                
-                except commands.NoEntryPointError as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {extension[:-3]}, but no setup was found!')
+                if extension.endswith('.py'):
+                    try:
+                        await self.bot.reload_extension(f'cogs.{os.path.basename(extension)[:-3]}')
+                        await ctx.send(f'Purging updated {extension[:-3]}!')
+                    
+                    except commands.ExtensionNotLoaded as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{extension[:-3]} is not running, or could not be found')
+                    
+                    except commands.ExtensionNotFound as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'{extension[:-3]} could not be found!')
+                    
+                    except commands.NoEntryPointError as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send(f'successfully loaded {extension[:-3]}, but no setup was found!')
         
-        elif stderr:
-            await ctx.send(stderr)
+        elif stdout:
+            await ctx.send(stdout)
         
 
 ######################################################################################################
