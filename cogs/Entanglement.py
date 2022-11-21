@@ -415,15 +415,22 @@ class Entanglement(commands.Cog):
             await ctx.send(stderr)
         
         elif stderr:
+
+            #Send the output of Git, which displays whichs files has been updated, and how much
+            #Then sleep 2 seconds to allow the text to be sent, and read
             await ctx.send(stderr)
             await asyncio.sleep(2)
 
+            #This command display the filenames of the files the changed between the last and current versions
             process2 = await asyncio.create_subprocess_shell('git diff --name-only HEAD~1 HEAD', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
-            stderr, stdout = await process2.communicate()
+            #Save the output (filenames) in stdout2
+            stderr2, stdout2 = await process2.communicate()
 
-            extensions = stdout.split('\n')
+            #Each displayed file is on a newline, so split by the newlines to save them as a list
+            extensions = stdout2.split('\n')
 
+            #Iterate through each listed files
             for extension in extensions:
                 try:
                     await self.bot.reload_extension(f'cogs.{os.path.basename(extension)[:-3]}')
