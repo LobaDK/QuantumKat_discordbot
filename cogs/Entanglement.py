@@ -427,19 +427,19 @@ class Entanglement(commands.Cog):
             for extension in extensions:
                 try:
                     await self.bot.reload_extension(f'cogs.{os.path.basename(extension)[:-3]}')
-                    await ctx.send(f'Purging updated {extension}!')
+                    await ctx.send(f'Purging updated {extension[:-3]}!')
                 
                 except commands.ExtensionNotLoaded as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{extension} is not running, or could not be found')
+                    await ctx.send(f'{extension[:-3]} is not running, or could not be found')
                 
                 except commands.ExtensionNotFound as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{extension} could not be found!')
+                    await ctx.send(f'{extension[:-3]} could not be found!')
                 
                 except commands.NoEntryPointError as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {extension}, but no setup was found!')
+                    await ctx.send(f'successfully loaded {extension[:-3]}, but no setup was found!')
         
         elif stdout:
             await ctx.send(stdout)
