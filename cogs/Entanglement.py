@@ -411,14 +411,14 @@ class Entanglement(commands.Cog):
         stderr = stderr.replace("\\n'","")
 
         #For some reason Git on Windows returns the string without hyphens, while Linux returns it with hyphens
-        if 'Already up to date' in stderr or 'Already up-to-date' in stderr:
-            await ctx.send(stderr)
+        if 'Already up to date' in stdout or 'Already up-to-date' in stdout:
+            await ctx.send(stdout)
         
-        elif stderr:
+        elif stdout:
 
             #Send the output of Git, which displays whichs files has been updated, and how much
             #Then sleep 2 seconds to allow the text to be sent, and read
-            await ctx.send(stderr)
+            await ctx.send(stdout)
             await asyncio.sleep(2)
 
             #This command display the filenames of the files the changed between the last and current versions
@@ -448,8 +448,8 @@ class Entanglement(commands.Cog):
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send(f'successfully loaded {extension[:-3]}, but no setup was found!')
         
-        elif stdout:
-            await ctx.send(stdout)
+        elif stderr:
+            await ctx.send(stderr)
         
 
 ######################################################################################################
