@@ -410,6 +410,11 @@ class Entanglement(commands.Cog):
         stderr = stderr.replace("b'","")
         stderr = stderr.replace("\\n'","")
 
+        print(1)
+        print(stdout)
+        print(2)
+        print(stderr)
+
         #For some reason Git on Windows returns the string without hyphens, while Linux returns it with hyphens
         if 'Already up to date' in stdout or 'Already up-to-date' in stdout:
             await ctx.send(stdout)
@@ -425,10 +430,10 @@ class Entanglement(commands.Cog):
             process2 = await asyncio.create_subprocess_shell('git diff --name-only HEAD~1 HEAD', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
             #Save the output (filenames) in stdout2
-            stdout2, stderr2 = await process2.communicate()
+            stdout, stderr = await process2.communicate()
 
             #Each displayed file is on a newline, so split by the newlines to save them as a list
-            extensions = stdout2.split('\n')
+            extensions = stdout.split('\n')
 
             #Iterate through each listed files
             for extension in extensions:
