@@ -402,7 +402,7 @@ class Entanglement(commands.Cog):
             await ctx.send('Error running command')
 
         #For some reason after decoding Git's output stream, "b'" and "\\n'" shows up everywhere in the output
-        #This removes any of them, cleaning up the output
+        #This removes any of them, cleaning up the output Test
         stdout = stdout.decode()
         stdout = stdout.replace("b'","")
         stdout = stdout.replace("\\n'","")
