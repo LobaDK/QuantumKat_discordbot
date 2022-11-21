@@ -425,7 +425,7 @@ class Entanglement(commands.Cog):
             process2 = await asyncio.create_subprocess_shell('git diff --name-only HEAD~1 HEAD', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
             #Save the output (filenames) in stdout2
-            stderr2, stdout2 = await process2.communicate()
+            stdout2, stderr2 = await process2.communicate()
 
             #Each displayed file is on a newline, so split by the newlines to save them as a list
             extensions = stdout2.split('\n')
