@@ -18,6 +18,14 @@ class Entanglement(commands.Cog):
         if cog.endswith('.py'):
             initial_extensions.append(f'{cog[:-3]}')
 
+    aaaa_dir = '/var/www/aaaa/'
+    aaaa_domain = 'https://aaaa.lobadk.com/'
+    possum_dir = '/var/www/possum/'
+    possum_domain = 'https://possum.lobadk.com/'
+
+
+    
+
 ###################################################################################################### command splitter for easier reading and navigating
     
     @commands.command(brief="(Bot owner only) Stops the bot.", description="Stops and disconnects the bot. Supports no arguments.")
@@ -124,206 +132,205 @@ class Entanglement(commands.Cog):
         #Make a characters variable that combines lower- and uppercase letters, as well as numbers.
         #Used to generate a random filename, if specified
         characters = string.ascii_letters + string.digits
-        if URL and filename:
+        if URL and filename and location:
+            if location.lower() == 'aaaa':
+                data_dir = self.aaaa_dir
+                data_domain = self.aaaa_domain
+            elif location.lower()== 'possum':
+                data_dir = self.possum_dir
+                data_domain = self.possum_domain
 
-            #If the filename is 'rand' generate a random 8-character long base 62 filename using the previously created 'characters' variable
-            if filename.lower() == 'rand':
-                filename = "".join(random.choice(characters) for _ in range(8))
-            
-            #Discord disabled embed detection for the URL
-            #Strips all greater-than and less-than symbols from the URL string
-            #Allows the user to supply a URL without making it embed
-            if URL.startswith('<') or URL.endswith('>'):
-                URL = URL.replace('<','')
-                URL = URL.replace('>','')
+                #If the filename is 'rand' generate a random 8-character long base62 filename using the previously created 'characters' variable
+                if filename.lower() == 'rand':
+                    filename = "".join(random.choice(characters) for _ in range(8))
+                
+                #Discord disabled embed detection for the URL
+                #Strips all greater-than and less-than symbols from the URL string
+                #Allows the user to supply a URL without making it embed
+                if URL.startswith('<') or URL.endswith('>'):
+                    URL = URL.replace('<','')
+                    URL = URL.replace('>','')
 
-            if mode.upper() == 'YT' and not location.lower() == 'possum':
-                if "&list=" in URL or "playlist" in URL:
-                    await ctx.send('Playlists not supported')
-                    return
-                
-                #Download the best (highest quality) MP4 video and m4a audio, and then combines them
-                #Or a single video with audio included, if that's the best option
-                arg = f'yt-dlp -f bv[ext=mp4]["height<=1080"]+ba[ext=m4a]/b[ext=mp4]["height<=1080"] "{URL}" -o "/var/www/aaaa/{filename}.%(ext)s"'
-                
-                await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
-                
-                #Attempt to run command with above args
-                try:
-                    process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                    await process.wait()
-                    stdout, stderr = await process.communicate()
-
-                except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.reply('Error, quantization tunnel collapsed unexpectedly!')
-                    return
-                
-                #yt-dlp can sometimes output non-fatal errors to stderr
-                #Rather than use it to cancel the process if anything is found
-                #simply print the output
-                #To-do: Figure out which kind of fatal messages it can return, and attempt to look for/parse them
-                if stderr:
-                    await ctx.send(stderr.decode())
-
-                #If a file with the same name already exists, yt-dlp returns this string somewhere in it's output
-                if 'has already been downloaded' in stdout.decode():
-                    await ctx.send('Filename already exists, consider using a different name')
-                    return
-                
-                #If this piece of code is reached, it's assumed that everything went well.
-                #This could definitely be improved, but I'm already losing my sanity
-                elif stdout:
-
-                    #If the downloaded video file is larger than 50MB's
-                    if int(os.stat(f'/var/www/aaaa/{filename}.mp4').st_size / (1024 * 1024)) > 50:
-                        await ctx.reply('Dataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
-                        #Try and first lower the resolution of the original video by 1.5 e.g. 1080p turns into 720p. 
-                        #For Discord embeds, this doesn't hurt viewability much, if at all
+                if mode.upper() == 'YT':
+                    
+                    #Disallow playlists
+                    if not "&list=" in URL and not "playlist" in URL:
+                    
+                        #Download the best (up to 1080p) MP4 video and m4a audio, and then combines them
+                        #Or a single video with audio included (up to 1080p), if that's the best option
+                        arg = f'yt-dlp -f bv[ext=mp4]["height<=1080"]+ba[ext=m4a]/b[ext=mp4]["height<=1080"] "{URL}" -o "{data_dir}{filename}.%(ext)s"'
                         
-                        #Get JSON output of the first video stream's metadata. Youtube only allows a single video stream, so this should always work
-                        arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json /var/www/aaaa/{filename}.mp4'
+                        await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
                         
                         #Attempt to run command with above args
                         try:
-                            self.stream = await asyncio.create_subprocess_shell(arg2, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-                            self.stdout, self.stderr = await self.stream.communicate()
-                            await self.stream.wait()
+                            process = await asyncio.create_subprocess_shell(arg, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                            await process.wait()
+                            stdout, stderr = await process.communicate()
+
                         except Exception as e:
                             print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply('Error getting video metadata!')
+                            await ctx.reply('Error, quantization tunnel collapsed unexpectedly!')
                             return
-
-                        #Load the "streams" key, which holds all the metadata information
-                        video_metadata = json.loads(self.stdout)['streams'][0]
                         
-                        #Attempt to parse, divide, and save the video's width and height in int, to remove any decimal points
-                        try:
-                            self.frame_width = int(video_metadata['coded_width'] / 1.5)
-                            self.frame_height = int(video_metadata['coded_height'] / 1.5)
-                        except Exception as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply('Error parsing video resolution, manual conversion required!')
-                            return
+                        #yt-dlp can sometimes output non-fatal errors to stderr
+                        #Rather than use it to cancel the process if anything is found
+                        #simply print the output
+                        #To-do: Figure out which kind of fatal messages it can return, and attempt to look for/parse them
+                        if stderr:
+                            await ctx.send(stderr.decode())
 
-                        #Transcode original video into an h264 stream, with a reasonable CRF value of 30, and scale the video to the new resolution.
-                        #In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
-                        #or the audio stream's bitrate (I don't know how Youtube handles muted videos)
-                        arg3 = f'ffmpeg -y -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 /var/www/aaaa/{filename}.tmp'
+                        #If a file with the same name already exists, yt-dlp returns this string somewhere in it's output
+                        if 'has already been downloaded' in stdout.decode():
+                            await ctx.send('Filename already exists, consider using a different name')
+                            return
                         
-                        #Attempt to run command with above args
-                        try:
-                            self.process2 = await asyncio.create_subprocess_shell(arg3)
-                            await self.process2.wait()
-                        except Exception as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply('Error transcoding resized video!')
-                            return
+                        #If this piece of code is reached, it's assumed that everything went well.
+                        #This could definitely be improved, but I'm already losing my sanity
+                        elif stdout:
 
-                        #If the returncode is 0, i.e. no errors happened
-                        if self.process2.returncode == 0:
-                            
-                            #Check if the new lower-resolution version is under 50MB's.
-                            #as a last resort, If not, enter an endless loop and keep trying a lower bitrate until one works
-                            bitrate_decrease = 0
-                            attempts = 0
-                            while int(os.stat(f'/var/www/aaaa/{filename}.tmp').st_size / (1024 * 1024)) > 50:
+                            #If the downloaded video file is larger than 50MB's
+                            if int(os.stat(f'{data_dir}{filename}.mp4').st_size / (1024 * 1024)) > 50:
+                                await ctx.reply('Dataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
+                                #Try and first lower the resolution of the original video by 1.5 e.g. 1080p turns into 720p. 
+                                #For Discord embeds, this doesn't hurt viewability much, if at all
                                 
-                                #Attempt to parse, convert from string, to float, to int, and save the video duration
-                                #100% accuracy down to the exact millisecond isn't required, so we just get the whole number instead
+                                #Get JSON output of the first video stream's metadata. Youtube only allows a single video stream, so this should always work
+                                arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json {data_dir}{filename}.mp4'
+                                
+                                #Attempt to run command with above args
                                 try:
-                                    video_duration = int(float(video_duration['duration']))
+                                    self.stream = await asyncio.create_subprocess_shell(arg2, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                                    self.stdout, self.stderr = await self.stream.communicate()
+                                    await self.stream.wait()
                                 except Exception as e:
                                     print('{}: {}'.format(type(e).__name__, e))
-                                    await ctx.reply('Error parsing video duration, manual conversion required!')
+                                    await ctx.reply('Error getting video metadata!')
                                     return
-                            
-                                #calculate the average bitrate required to reach around 50MB's
-                                #by multiplying 50 by 8192 (convert megabits to kilobits) 
-                                #dividing that by the video length, and subtracting the audio bitrate
-                                #Audio bitrate is hardcoded for now.
-                                bitrate = (50 * 8192) / video_duration - 192 - bitrate_decrease
 
-                                #Transcode original video into an h264 stream, with an average bitrate calculated from the above code, and scale the video to the new resolution
+                                #Load the "streams" key, which holds all the metadata information
+                                video_metadata = json.loads(self.stdout)['streams'][0]
+                                
+                                #Attempt to parse, divide, and save the video's width and height in int, to remove any decimal points
+                                try:
+                                    self.frame_width = int(video_metadata['coded_width'] / 1.5)
+                                    self.frame_height = int(video_metadata['coded_height'] / 1.5)
+                                except Exception as e:
+                                    print('{}: {}'.format(type(e).__name__, e))
+                                    await ctx.reply('Error parsing video resolution, manual conversion required!')
+                                    return
+
+                                #Transcode original video into an h264 stream, with a reasonable CRF value of 30, and scale the video to the new resolution.
                                 #In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
                                 #or the audio stream's bitrate (I don't know how Youtube handles muted videos)
-                                arg4 = f'ffmpeg -y -i /var/www/aaaa/{filename}.mp4 -c:v libx264 -c:a aac -b:v {bitrate}k -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 /var/www/aaaa/{filename}.tmp'
-                            
+                                arg3 = f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 {data_dir}{filename}.tmp'
+                                
+                                #Attempt to run command with above args
                                 try:
-                                    self.process3 = await asyncio.create_subprocess_shell(arg4)
-                                    await self.process3.wait()
+                                    self.process2 = await asyncio.create_subprocess_shell(arg3)
+                                    await self.process2.wait()
                                 except Exception as e:
                                     print('{}: {}'.format(type(e).__name__, e))
-                                    await ctx.reply('Error transcoding resized with average bitrate video!')
+                                    await ctx.reply('Error transcoding resized video!')
                                     return
 
-                                #Increase attemps by 1
-                                attempts += 1
-                                #Increase by 100 kilobits, to decrease the average bitrate by 100 kilotbits
-                                bitrate_decrease += 100
+                                #If the returncode is 0, i.e. no errors happened
+                                if self.process2.returncode == 0:
+                                    
+                                    #Check if the new lower-resolution version is under 50MB's.
+                                    #as a last resort, If not, enter an endless loop and keep trying a lower bitrate until one works
+                                    bitrate_decrease = 0
+                                    attempts = 0
+                                    while int(os.stat(f'{data_dir}{filename}.tmp').st_size / (1024 * 1024)) > 50:
+                                        
+                                        #Attempt to parse, convert from string, to float, to int, and save the video duration
+                                        #100% accuracy down to the exact millisecond isn't required, so we just get the whole number instead
+                                        try:
+                                            video_duration = int(float(video_duration['duration']))
+                                        except Exception as e:
+                                            print('{}: {}'.format(type(e).__name__, e))
+                                            await ctx.reply('Error parsing video duration, manual conversion required!')
+                                            return
+                                    
+                                        #calculate the average bitrate required to reach around 50MB's
+                                        #by multiplying 50 by 8192 (convert megabits to kilobits) 
+                                        #dividing that by the video length, and subtracting the audio bitrate
+                                        #Audio bitrate is hardcoded for now.
+                                        bitrate = (50 * 8192) / video_duration - 192 - bitrate_decrease
+
+                                        #Transcode original video into an h264 stream, with an average bitrate calculated from the above code, and scale the video to the new resolution
+                                        #In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
+                                        #or the audio stream's bitrate (I don't know how Youtube handles muted videos)
+                                        arg4 = f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac -b:v {bitrate}k -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 {data_dir}{filename}.tmp'
+                                    
+                                        try:
+                                            self.process3 = await asyncio.create_subprocess_shell(arg4)
+                                            await self.process3.wait()
+                                        except Exception as e:
+                                            print('{}: {}'.format(type(e).__name__, e))
+                                            await ctx.reply('Error transcoding resized with average bitrate video!')
+                                            return
+
+                                        #Increase attemps by 1
+                                        attempts += 1
+                                        #Increase by 100 kilobits, to decrease the average bitrate by 100 kilotbits
+                                        bitrate_decrease += 100
+                                    
+                                    #Attempt to delete the original video, and then rename the transcoded .tmp video to .mp4
+                                    try:
+                                        os.remove(f'{data_dir}{filename}.mp4')
+                                        os.rename(f'{data_dir}{filename}.tmp', f'{data_dir}{filename}.mp4')
+                                    
+                                    except Exception as e:
+                                        print('{}: {}'.format(type(e).__name__, e))
+                                        await ctx.reply('Error moving/removing file!')
+                                        return
+                                    
+                                    #If the bitrate option was reached, this would be at least 1
+                                    #Otherwise if it's 0, it means it never attempted to transcode with a variable bitrate
+                                    if attempts == 0:
+                                        await ctx.reply(f'Success! Data quantized and bit-crunched to <{data_domain}{filename}.mp4>\nResized to {self.frame_width}:{self.frame_height}')
+                                    else:
+                                        await ctx.reply(f'Success! Data quantized and bit-crunched to <{data_domain}{filename}.mp4>\nUsing {bitrate}k/s and Resized to {self.frame_width}:{self.frame_height} with {attempts} attemp(s)')
+                                
+                                #Else statement for the process returncode, from the initial ffmpeg command
+                                else:
+                                    await ctx.reply('Non-0 exit status code detected!')
                             
-                            #Attempt to delete the original video, and then rename the transcoded .tmp video to .mp4
-                            try:
-                                os.remove(f'/var/www/aaaa/{filename}.mp4')
-                                os.rename(f'/var/www/aaaa/{filename}.tmp', f'/var/www/aaaa/{filename}.mp4')
-                            
-                            except Exception as e:
-                                print('{}: {}'.format(type(e).__name__, e))
-                                await ctx.reply('Error moving/removing file!')
-                                return
-                            
-                            #If the bitrate option was reached, this would be at least 1
-                            #Otherwise if it's 0, it means it never attempted to transcode with a variable bitrate
-                            if attempts == 0:
-                                await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>\nResized to {self.frame_width}:{self.frame_height}')
+                            #Else statement if file was under 50MB's        
                             else:
-                                await ctx.reply(f'Success! Data quantized and bit-crunched to <https://aaaa.lobadk.com/{filename}.mp4>\nUsing {bitrate}k/s and Resized to {self.frame_width}:{self.frame_height} with {attempts} attemp(s)')
-                        
-                        #Else statement for the process returncode, from the initial ffmpeg command
-                        else:
-                            await ctx.reply('Non-0 exit status code detected!')
-                    
-                    #Else statement if file was under 50MB's        
+                                await ctx.reply(f'Success! Data quantized to <{data_domain}{filename}.mp4>')
+
+                    #Else statement if the URL is a Youtube playlist
                     else:
-                        await ctx.reply(f'Success! Data quantized to <https://aaaa.lobadk.com/{filename}.mp4>')
+                        await ctx.send('Playlists not supported')
 
-                
-
-            elif mode.upper() == 'YT' and location.lower() == 'possum':
-                await ctx.send('Oppossum location not allowed with YT download mode!')
-
-            elif location.lower() == 'aaaa' or location.lower() == 'possum':
-                await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
-                try:
-                    while True:
-                        if os.path.splitext(URL)[1]:
-                            filename = filename + os.path.splitext(URL)[1].lower()
-                        if location.lower() == 'aaaa':
-                            root = 'https://aaaa.lobadk.com/'
-                            arg = f'wget -nc -O /var/www/aaaa/{filename} {URL}'
-                        elif location.lower() == 'possum':
-                            root = 'https://possum.lobadk.com/'
-                            arg = f'wget -nc -O /var/www/possum/{filename} {URL}'
-                        process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
-                        stdout, stderr = await process.communicate()
-                        if 'already there; not retrieving' in stderr.decode():
-                            if not filename.lower() == 'rand':
-                                await ctx.send('Filename already exists, consider using a different name')
-                                return
+                else:
+                    await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
+                    try:
+                        while True:
+                            if os.path.splitext(URL)[1]:
+                                filename = filename + os.path.splitext(URL)[1].lower()
+                            arg = f'wget -nc -O {data_dir}{filename} {URL}'
+                            process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
+                            stdout, stderr = await process.communicate()
+                            if 'already there; not retrieving' in stderr.decode():
+                                if not filename.lower() == 'rand':
+                                    await ctx.send('Filename already exists, consider using a different name')
+                                    return
+                                else:
+                                    filename = "".join(random.choice(characters) for _ in range(8))
+                                    continue
                             else:
-                                filename = "".join(random.choice(characters) for _ in range(8))
-                                continue
-                        else:
-                            await ctx.send(f'Success! Data quantized to <{root}{filename}>')
-                            return
+                                await ctx.send(f'Success! Data quantized to <{data_domain}{filename}>')
+                                return
 
-                except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
-            
+                    except Exception as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                        
             else:
                 await ctx.send('Only `aaaa` and `possum` are valid parameters!')
-                    
         else:
             await ctx.send('Command requires 3 arguments:\n```?quantize <URL> <filename> <aaaa|possum>``` or ```?quantize <URL> <filename> <aaaa|possum> YT``` to use yt-dlp to download it')
 
@@ -333,11 +340,12 @@ class Entanglement(commands.Cog):
     @commands.is_owner()
     async def requantize(self, ctx, current_filename='', new_filename=''):
         if current_filename and new_filename:
+            data_dir = self.aaaa_dir
             allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
             if not '/' in current_filename and allowed.match(new_filename):
                 await ctx.send('Attempting to requantize data...')
                 try:
-                    os.rename(f'/var/www/aaaa/{current_filename}', f'/var/www/aaaa/{new_filename}')
+                    os.rename(f'{data_dir}{current_filename}', f'{data_dir}{new_filename}')
                     await ctx.send('Success!')
                 except FileNotFoundError:
                     await ctx.send('Error! Data does not exist')
@@ -386,38 +394,56 @@ class Entanglement(commands.Cog):
     @commands.is_owner()
     async def update(self, ctx):
         try:
-            process = await asyncio.create_subprocess_shell('git pull', stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-            stderr, stdout = await process.communicate()
-            stdout = stdout.decode()
-            stdout = stdout.replace("b'","")
-            stdout = stdout.replace("\\n'","")
-            stderr = stderr.decode()
-            stderr = stderr.replace("b'","")
-            stderr = stderr.replace("\\n'","")
-            if 'Already up to date' in stderr or 'Already up-to-date' in stderr:
-                await ctx.send(stderr)
-            elif stderr:
-                await ctx.send(stderr)
-                await asyncio.sleep(2)
-                for extension in self.initial_extensions:
-                    try:
-                        await self.bot.reload_extension(f'cogs.{extension}')
-                        await ctx.send(f'Purging {extension}!')
-                    except commands.ExtensionNotLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'{extension} is not running, or could not be found')
-                    except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'{extension} could not be found!')
-                    except commands.NoEntryPointError as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'successfully loaded {extension}, but no setup was found!')
-            elif stdout:
-                await ctx.send(stdout)
-            
+            process = await asyncio.create_subprocess_shell('git pull', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            stdout, stderr = await process.communicate()
+       
         except Exception as e:
             print('{}: {}'.format(type(e).__name__, e))
             await ctx.send('Error running command')
+
+        #For some reason after decoding Git's output stream, "b'" and "\\n'" shows up everywhere in the output
+        #This removes any of them, cleaning up the output
+        stdout = stdout.decode()
+        stdout = stdout.replace("b'","")
+        stdout = stdout.replace("\\n'","")
+        stderr = stderr.decode()
+        stderr = stderr.replace("b'","")
+        stderr = stderr.replace("\\n'","")
+
+        #For some reason Git on Windows returns the string without hyphens, while Linux returns it with hyphens
+        if 'Already up to date' in stderr or 'Already up-to-date' in stderr:
+            await ctx.send(stderr)
+        
+        elif stderr:
+            await ctx.send(stderr)
+            await asyncio.sleep(2)
+
+            process2 = await asyncio.create_subprocess_shell('git diff --name-only HEAD~1 HEAD', stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+
+            stderr, stdout = await process2.communicate()
+
+            extensions = stdout.split('\n')
+
+            for extension in extensions:
+                try:
+                    await self.bot.reload_extension(f'cogs.{os.path.basename(extension)[:-3]}')
+                    await ctx.send(f'Purging updated {extension}!')
+                
+                except commands.ExtensionNotLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{extension} is not running, or could not be found')
+                
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'{extension} could not be found!')
+                
+                except commands.NoEntryPointError as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.send(f'successfully loaded {extension}, but no setup was found!')
+        
+        elif stdout:
+            await ctx.send(stdout)
+        
 
 ######################################################################################################
 
@@ -425,24 +451,33 @@ class Entanglement(commands.Cog):
     @commands.is_owner()
     async def dequantise(self, ctx, filename="", location=""):
         if filename and location:
-            allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
-            if allowed.match(filename):
-                try:
-                    await ctx.send(f'Dequantising and purging {filename}...')
-                    if location.lower() == 'aaaa':
-                        os.remove(f'/var/www/aaaa/{filename}')
-                    elif location.lower() == 'possum':
-                        os.remove(f'/var/www/possum/{filename}')
-                    else:
-                        await ctx.send('Only `aaaa` and `possum` are valid locations!')
-                        return
-                    await ctx.send('Success!')
-                except FileNotFoundError:
-                    await ctx.send('Dataset not found. Did you spell it correctly?')
-                except:
-                    await ctx.send('Error dequantising dataset!')
+
+            if location.lower() == 'aaaa':
+                data_dir = self.aaaa_dir
+            elif location.lower() == 'possum':
+                data_dir = self.possum_dir
+
+                #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
+                allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$')
+                if allowed.match(filename):
+
+                    try:
+                        os.remove(f'/var/www/{data_dir}/{filename}')
+                        await ctx.send(f'Successfully dequantised and purged {filename}!')
+                    
+                    except FileNotFoundError:
+                        await ctx.send('Dataset not found. Did you spell it correctly?')
+                    
+                    except Exception as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.send('Error dequantising dataset!')
+                
+                else:
+                    await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```?dequantise name.extension aaaa|possum```')
+            
             else:
-                await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```?dequantise name.extension aaaa|possum```')
+                await ctx.send('Only `aaaa` and `possum` are valid parameters!')
+        
         else:
             await ctx.send('Filename and location required!\n`?dequantise|dequantize <filename> aaaa|possum`')
 
