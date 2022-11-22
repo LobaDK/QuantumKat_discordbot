@@ -261,7 +261,7 @@ class Entanglement(commands.Cog):
                                         #Transcode original video into an h264 stream, with an average bitrate calculated from the above code, and scale the video to the new resolution
                                         #In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
                                         #or the audio stream's bitrate (I don't know how Youtube handles muted videos)
-                                        arg4 = f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac -b:v {bitrate}k -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 {data_dir}{filename}.tmp'
+                                        arg4 = f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac -b:v {str(int(bitrate))}k -b:a 192k -movflags +faststart -vf scale={self.frame_width}:{self.frame_height} -f mp4 {data_dir}{filename}.tmp'
                                     
                                         try:
                                             self.process3 = await asyncio.create_subprocess_shell(arg4)
