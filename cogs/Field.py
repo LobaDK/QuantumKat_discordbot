@@ -14,6 +14,8 @@ from num2words import num2words
 class Field(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        #Open the file and load each joke per line into a list
         jokefile = open('./files/quantumjokes.txt', 'r')
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
@@ -245,13 +247,24 @@ class Field(commands.Cog):
 
         if ctx.message.content.startswith('?ping'):
             pingresponse = 'pong'
+        
         elif ctx.message.content.startswith('?pong'):
             pingresponse = 'ping'
+        
         if ping_mode:
             if ping_mode.lower() == 'latency':
+                
+                #Get current local time on the machine clock and multiply by 1000 to get milliseconds
                 local_time_in_ms = (round(time.time() * 1000))
+
+                #Get the time the message was sent in milliseconds by multiplying by 1000
                 message_timestamp = (round(ctx.message.created_at.timestamp() * 1000))
+
+                #Get latency in milliseconds by subtracting the current time, with the time the message was sent
                 latency = local_time_in_ms - message_timestamp
+
+                #If the latency is negative i.e. system clock is behind the real world by more than the latency
+                #Get a rough estimate of the latency instead, by taking the offset, turning it into milliseconds, and adding it to the latency
                 if latency < 0:
                     c = ntplib.NTPClient()
                     response = c.request('pool.ntp.org', version=3)
