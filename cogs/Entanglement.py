@@ -305,32 +305,52 @@ class Entanglement(commands.Cog):
                     else:
                         await ctx.send('Playlists not supported')
 
+                #Else statement if mode is not equals YT
                 else:
                     await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
-                    try:
-                        while True:
-                            if os.path.splitext(URL)[1]:
-                                filename = filename + os.path.splitext(URL)[1].lower()
-                            arg = f'wget -nc -O {data_dir}{filename} {URL}'
-                            process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
-                            stdout, stderr = await process.communicate()
-                            if 'already there; not retrieving' in stderr.decode():
-                                if not filename.lower() == 'rand':
-                                    await ctx.send('Filename already exists, consider using a different name')
-                                    return
-                                else:
-                                    filename = "".join(random.choice(characters) for _ in range(8))
-                                    continue
-                            else:
-                                await ctx.send(f'Success! Data quantized to <{data_domain}{filename}>')
-                                return
+                    while True:
 
-                    except Exception as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                        #If URL contains a file extension at the end, and the filename does not, split and add the extension to the filename
+                        if os.path.splitext(URL)[1] and not os.path.splitext(filename)[1]:
+                            filename = filename + os.path.splitext(URL)[1].lower()
                         
+                        elif os.path.splitext(filename)[1]:
+                            pass
+
+                        else:
+                            await ctx.send('No file extension was found for the file!')
+                            return
+                        
+                        arg = f'wget -nc -O {data_dir}{filename} {URL}'
+                        
+                        try:
+                            process = await asyncio.create_subprocess_shell(arg, stderr=asyncio.subprocess.PIPE)
+                        
+                        except Exception as e:
+                            print('{}: {}'.format(type(e).__name__, e))
+                            await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                            return
+
+                        stdout, stderr = await process.communicate()
+
+                        #If the file already exist, either notify the user, or if they chose a random filename, loop back to the start and try again with a new one
+                        if 'already there; not retrieving' in stderr.decode():
+                            
+                            if not filename.lower() == 'rand':
+                                await ctx.send('Filename already exists, consider using a different name')
+                                return
+                            
+                            else:
+                                filename = "".join(random.choice(characters) for _ in range(8))
+                                continue
+                        else:
+                            await ctx.send(f'Success! Data quantized to <{data_domain}{filename}>')
+            
+            #Else statement if location is not equals aaaa or possum            
             else:
                 await ctx.send('Only `aaaa` and `possum` are valid parameters!')
+        
+        #Else statement if the URL, filename or location variables are empty
         else:
             await ctx.send('Command requires 3 arguments:\n```?quantize <URL> <filename> <aaaa|possum>``` or ```?quantize <URL> <filename> <aaaa|possum> YT``` to use yt-dlp to download it')
 
@@ -340,20 +360,28 @@ class Entanglement(commands.Cog):
     @commands.is_owner()
     async def requantize(self, ctx, current_filename='', new_filename=''):
         if current_filename and new_filename:
+
             data_dir = self.aaaa_dir
-            allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$') #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
-            if not '/' in current_filename and allowed.match(new_filename):
+            
+            #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
+            allowed = re.compile('^[\w]*(\.){1,}[\w]{1,}$')
+            if not '/' in current_filename and allowed.match(current_filename) and allowed.match(new_filename):
                 await ctx.send('Attempting to requantize data...')
+                
                 try:
                     os.rename(f'{data_dir}{current_filename}', f'{data_dir}{new_filename}')
-                    await ctx.send('Success!')
+                
                 except FileNotFoundError:
                     await ctx.send('Error! Data does not exist')
+                
                 except FileExistsError:
                     await ctx.send('Error! Cannot requantize, data already exists')
+                
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send('Critical error! Check logs for info')
+                await ctx.send('Success!')
+
             else:
                 await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
         else:
@@ -365,28 +393,37 @@ class Entanglement(commands.Cog):
     @commands.is_owner()
     async def git(self, ctx, *, git_arguments):
         if git_arguments:
+
+            #Only allow alphanumeric, underscores, hyphens and whitespaces
             allowed = re.compile('^[\w\s-]*$')
             if allowed.match(git_arguments):
+
                 cmd = f'git {git_arguments}'
+                
                 try:
                     process = await asyncio.create_subprocess_shell(cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-                    stderr, stdout = await process.communicate()
-                    stdout = stdout.decode()
-                    stdout = stdout.replace("b'","")
-                    stdout = stdout.replace("\\n'","")
-                    stderr = stderr.decode()
-                    stderr = stderr.replace("b'","")
-                    stderr = stderr.replace("\\n'","")
-                    if stderr:
-                        await ctx.send(stderr)
-                    elif stdout:
-                        await ctx.send(stdout)
-                    else:
-                        await ctx.message.add_reaction('👍')
-                    
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send('Error running command')
+                    return
+                    
+                stderr, stdout = await process.communicate()
+                stdout = stdout.decode()
+                stdout = stdout.replace("b'","")
+                stdout = stdout.replace("\\n'","")
+                stderr = stderr.decode()
+                stderr = stderr.replace("b'","")
+                stderr = stderr.replace("\\n'","")
+                
+                if stderr:
+                    await ctx.send(stderr)
+                
+                elif stdout:
+                    await ctx.send(stdout)
+                
+                else:
+                    await ctx.message.add_reaction('👍')
+                    
 
 ######################################################################################################
 
@@ -460,7 +497,7 @@ class Entanglement(commands.Cog):
             #Each displayed file is on a newline, so split by the newlines to save them as a list
             extensions = stderr3.split('\n')
 
-            #Iterate through each listed files
+            #Iterate through each listed file
             for extension in extensions:
                 if extension.endswith('.py'):
                     try:
@@ -501,7 +538,6 @@ class Entanglement(commands.Cog):
 
                     try:
                         os.remove(f'/var/www/{data_dir}/{filename}')
-                        await ctx.send(f'Successfully dequantised and purged {filename}!')
                     
                     except FileNotFoundError:
                         await ctx.send('Dataset not found. Did you spell it correctly?')
@@ -510,6 +546,8 @@ class Entanglement(commands.Cog):
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send('Error dequantising dataset!')
                 
+                    await ctx.send(f'Successfully dequantised and purged {filename}!')
+                    
                 else:
                     await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```?dequantise name.extension aaaa|possum```')
             

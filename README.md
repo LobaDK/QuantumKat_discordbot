@@ -22,13 +22,13 @@ The cogs are split up into different groups of purposes/accessibility. 'Field' i
 'Entanglement' contains bot-owner only commands, for management of the bot's features. 
 'Activity' is anything that requires or uses a loop, and also limited to the bot owner.
 'Tunnel' is background code for handling exceptions, or listening to specific actions.
-'Control' is anything used to control either the bot, or manage the users in the server.
+'Control' is anything used to control either the bot, or manage the users in the server, and is a mix of bot-owner, server-owner and admin/mod-limited commands.
 
 # Features
 
 ## Standard commands
 ### Random meme/shitpost and opossums
-No, the last part is not a joke. The bot features a command (?ar) which returns a random file from my shitpost subdomain https://aaaa.lobadk.com, as well as a command that returns random images and videos of opossums from https://possum.lobadk.com.
+No, the last part is not a joke. The bot features a command (?ar) which returns a random file from my shitpost subdomain https://aaaa.lobadk.com, as well as ?or which returns random images and videos of opossums from https://possum.lobadk.com.
 
 Also features the ?a, ?aaaasearch and ?aaaarandomsearch commands for appending filenames to the shitpost URL for faster linking, searching for a filename and getting the results, and searching for a filename and getting a random result returned, respectively.
 
@@ -36,7 +36,7 @@ Also features the ?a, ?aaaasearch and ?aaaarandomsearch commands for appending f
 The ?qball, or ?quantumball, command picks a random either positive, neutral, or negative answer, slightly edited to feel more in theme, with the positive ones having a slightly higher chance of happening (so think carefully of how you ask that question).
 
 ### Pet, hug, quantum-pet and quantum-hug
-?pet, ?hug, ?quantumpet and ?quantumhug
+?pet, ?hug, ?quantumpet and ?quantumhug.
 Because who doesn't need to be petted or hugged by several QuantumKat's at the same time?
 
 ### Rock, Paper, Scissors
@@ -50,7 +50,7 @@ Test with ?ping|pong if the bot responds, and optionally how long the response t
 The ?observe command shuts down the bot entirely.
 
 ### Reload, start and stop cogs/extensions
-The commands ?stabilise, ?entangle and ?unentangle reloads the cogs, starts a stopped cog, and stops a running cog, respectively.
+The commands ?stabilise, ?entangle and ?unentangle reloads, starts, and stops a cog, respectively.
 
 ### Download, rename and remove files
 The ?quantise command allows files to be downloaded to the /var/www/aaaa and /var/www/possum folders, including support for YouTube. Personally, this is used to add more shitposts and opossums to my server
@@ -58,9 +58,9 @@ The ?quantise command allows files to be downloaded to the /var/www/aaaa and /va
 The ?requantise command renames files, and ?dequantise deletes them.
 
 ### Git commands
-The ?git command passes any parameters included, to the actual git program running on the server, returning whatever output it gives. Useful for swapping branches/versions, or check it's status, without needing to SSH into the actual server. Input is limited to alphanumeric, underscores and hyphens to still allow parameters that requires either of those, but not enough to allow command chaining
+The ?git command passes any parameters included, to the actual git program running on the server, returning whatever output it gives. Useful for swapping branches/versions, or check it's status, without needing to SSH into the actual server. Input is limited to alphanumeric, underscores and hyphens to still allow parameters that requires either of those, but not enough to allow command chaining and arbitary commands.
 
-### Updatting
+### Updating
 The ?update command runs a 'git pull' to fetch the newest branch version, and checks for changed files between the current running version, and the new one, and reloads any affected cogs/extensions automatically.
 
 ### Controlling the Activity
