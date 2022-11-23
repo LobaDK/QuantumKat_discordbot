@@ -30,6 +30,8 @@ class Control(commands.Cog):
                         print('{}: {}'.format(type(e).__name__, e))
                 else:
                     await ctx.send('Guild does not exist or the bot is not in it, did you enter the correct ID?')
+            else:
+                await ctx.send('Server ID can only be a number!')
         else:
             await ctx.send('Server ID required!')
 
@@ -48,10 +50,41 @@ class Control(commands.Cog):
         else:
             await ctx.send('Command only works in a server')
 
+    @commands.is_owner()
+    @commands.command()
+    async def ListPermissions(self, ctx, Server_ID=""):
+        if Server_ID and ctx.guild is None:
+            if Server_ID.isnumeric():
+                permissions = []
+                guild = self.bot.get_guild(int(Server_ID))
+                
+                if guild is not None:
+                    
+                    for permission in guild.me.guild_permissions:
+                        if permission[1] == True:
+                            permissions.append(permission[0])
+                    await ctx.send('I have the following permissions in {guild_name}:\n{permissions}'.format(guild_name = guild.name, permissions = '\n'.join(permissions)))
+                
+                else:
+                    await ctx.send('Guild does not exist or the bot is not in it, did you enter the correct ID?')
+            
+            else:
+                await ctx.send('Server ID can only be a number!')
+
+        elif ctx.guild is not None and not Server_ID:
+            permissions = []
+            
+            for permission in ctx.guild.me.guild_permissions:
+                if permission[1] == True:
+                    permissions.append(permission[0])
+            await ctx.send('I have the following permissions in {guild_name}:\n{permissions}'.format(guild_name = ctx.guild.name, permissions = '\n'.join(permissions)))
+            
+        else:
+            await ctx.send("Syntax is:\n```?ListPermissions optional<Server ID>```\nServer ID may only be provided in DM's")
+
     @commands.command()
     async def test(self, ctx):
         await ctx.send('*Meows*')
-        
 
     print('Started Control!')
 async def setup(bot):

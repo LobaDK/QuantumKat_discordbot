@@ -72,7 +72,7 @@ class Field(commands.Cog):
             elif quantummode == 'quantumloop':
                 petloop = ""
                 for _ in range(0,random.randint(8,40)):
-                    petloop = petloop + random.choice(['pet','pat','petting'])
+                    petloop = petloop + random.choice(['pet','pat','petting', 'patting'])
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}')
