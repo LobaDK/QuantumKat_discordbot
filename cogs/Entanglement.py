@@ -351,6 +351,7 @@ class Entanglement(commands.Cog):
                             continue
                     else:
                         await ctx.send(f'Success! Data quantized to <{data_domain}{filename}>')
+                        break
         
         
         #Else statement if the URL, filename or location variables are empty
