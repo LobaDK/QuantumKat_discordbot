@@ -141,9 +141,9 @@ class Field(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['rockpaperscissor'], brief='Rock, Paper, Scissors game.', description='A Rock, Paper, Scissors game. Supports one argument, being the chosen gesture. Emote is also supported. Is not rigged.')
-    async def rps(self, ctx, *, item=""):
+    async def rps(self, ctx, *, item="".lower()):
         substring = ['rock','rocks','paper','papers','scissor','scissors','✂️','🪨','🧻']
-        if any(_ in item.lower() for _ in substring):
+        if any(_ in item for _ in substring):
             whowin = random.choices(['I win!','You win!'], k=1, weights=[100,5])[0]
             if item == 'scissor':
                 item = item + 's'
