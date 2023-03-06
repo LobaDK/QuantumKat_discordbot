@@ -28,15 +28,16 @@ bot = commands.Bot(command_prefix='?', help_command=commands.DefaultHelpCommand(
 
 @bot.event
 async def on_ready():
+    bot.appinfo = await bot.application_info()
     quantum = ['reality', 'universe', 'dimension', 'timeline']
     print(f'''
-        {bot.user} has appeared from the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!
-        \n----------info----------
-        \nApplication ID: {discord.Appinfo.id}
-        \nApplication name: {discord.Aappinfo.name}
-        \nApplication owner: {discord.Appinfo.owner}
-        \nLatency to Discord: {discord.Client.latency * 1000}ms.
-        \n\nStarted at {datetime.now()}\n
+----------info----------
+Application ID: {bot.appinfo.id}
+Application name: {bot.appinfo.name}
+Application owner: {bot.appinfo.owner}
+Latency to Discord: {int(bot.latency * 1000)}ms.
+\nStarted at {datetime.now()}\n
+{bot.user} has appeared from the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!
     ''')
     #channel = bot.get_channel(873703927621758986)
     #await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
