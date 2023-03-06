@@ -1,3 +1,4 @@
+from datetime import datetime
 import asyncio
 import random
 from num2words import num2words
@@ -28,7 +29,15 @@ bot = commands.Bot(command_prefix='?', help_command=commands.DefaultHelpCommand(
 @bot.event
 async def on_ready():
     quantum = ['reality', 'universe', 'dimension', 'timeline']
-    print(f'{bot.user} has appeared from the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
+    print(f'''
+        {bot.user} has appeared from the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!
+        \n----------info----------
+        \nApplication ID: {discord.Appinfo.id}
+        \nApplication name: {discord.Aappinfo.name}
+        \nApplication owner: {discord.Appinfo.owner}
+        \nLatency to Discord: {discord.Client.latency * 1000}ms.
+        \n\nStarted at {datetime.now()}\n
+    ''')
     #channel = bot.get_channel(873703927621758986)
     #await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
 
