@@ -1,6 +1,7 @@
 from discord.ext import commands
 import sys
 import traceback
+from datetime import datetime
 
 class Tunnel(commands.Cog):
     def __init__(self, bot):
@@ -26,7 +27,12 @@ class Tunnel(commands.Cog):
             return
         
         else:
-            print((f'Ignoring exception in command {ctx.command}'), file=sys.stderr)
+            print((f'''
+Exception caused in command {ctx.command}
+User: {ctx.author}, {ctx.author.id}
+Message ID: {ctx.id}
+Time: {datetime.now()}
+            '''), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     print('Started Tunnel!')
