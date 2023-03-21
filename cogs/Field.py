@@ -3,10 +3,11 @@ import re
 import time
 import glob
 import ntplib
+import warnings
 from urllib.parse import urljoin
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, UserWarning
 from discord.ext import commands
 from num2words import num2words
 
@@ -19,6 +20,8 @@ class Field(commands.Cog):
         jokefile = open('./files/quantumjokes.txt', 'r')
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
+
+        warnings.filterwarnings('ignore', category=UserWarning, module='bs4')
 
 ###################################################################################################### command splitter for easier reading and navigating
 
