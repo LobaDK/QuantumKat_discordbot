@@ -1,7 +1,9 @@
-from discord.ext import commands
 import sys
 import traceback
 from datetime import datetime
+
+from discord.ext import commands
+
 
 class Tunnel(commands.Cog):
     def __init__(self, bot):
