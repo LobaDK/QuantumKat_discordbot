@@ -1,11 +1,11 @@
-from datetime import datetime
 import asyncio
-import random
-from num2words import num2words
 import os
+import random
+from datetime import datetime
 
 import discord
 from discord.ext import commands
+from num2words import num2words
 
 with open('./files/token', 'r') as tokenfile:
     token = tokenfile.read().strip()

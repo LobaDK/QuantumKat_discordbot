@@ -1,12 +1,13 @@
+import glob
 import random
 import re
 import time
-import glob
-import ntplib
+import warnings
 from urllib.parse import urljoin
 
+import bs4
+import ntplib
 import requests
-from bs4 import BeautifulSoup
 from discord.ext import commands
 from num2words import num2words
 
@@ -20,13 +21,15 @@ class Field(commands.Cog):
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
 
+        warnings.filterwarnings('ignore', category=UserWarning, module='bs4')
+
 ###################################################################################################### command splitter for easier reading and navigating
 
     async def arpr(self, ctx, url):
         links = []
         for _ in range(ctx.message.content.split(" ")[0].count("r")):
             response = requests.get(url)
-            soup = BeautifulSoup(response.text, 'lxml')
+            soup = bs4.BeautifulSoup(response.text, 'lxml')
             link = soup.find('body')
             links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
         await ctx.send('\n'.join(links))
@@ -172,7 +175,7 @@ class Field(commands.Cog):
             allowed = re.compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
             if allowed.match(search_keyword):
                 response = requests.get(f'https://aaaa.lobadk.com/?search={search_keyword}')
-                soup = BeautifulSoup(response.text, 'lxml')
+                soup = bs4.BeautifulSoup(response.text, 'lxml')
                 links = []
 
                 for link in soup.find_all('a'):
@@ -225,7 +228,7 @@ class Field(commands.Cog):
                 SearchURL = f'https://aaaa.lobadk.com/?search={search_keyword}'
                 URL = 'https://aaaa.lobadk.com/'
                 response = requests.get(SearchURL)
-                soup = BeautifulSoup(response.text, 'lxml')
+                soup = bs4.BeautifulSoup(response.text, 'lxml')
                 for link in soup.find_all('a'):
                     temp = link.get('href')
                     if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
