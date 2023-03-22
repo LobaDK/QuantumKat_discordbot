@@ -32,7 +32,7 @@ class Tunnel(commands.Cog):
             print((f'''
 Exception caused in command {ctx.command}
 User: {ctx.author}, {ctx.author.id}
-Message ID: {ctx.id}
+Message ID: {ctx.message.id}
 Time: {datetime.now()}
             '''), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
