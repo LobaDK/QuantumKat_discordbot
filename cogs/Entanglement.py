@@ -4,6 +4,7 @@ import os
 import random
 import re
 import string
+import psutil
 
 from discord.ext import commands
 from num2words import num2words
@@ -561,6 +562,16 @@ class Entanglement(commands.Cog):
         else:
             await ctx.send('Filename and location required!\n`?dequantise|dequantize <filename> aaaa|possum`')
 
+######################################################################################################
+
+    @commands.command()
+    @commands.is_owner()
+    async def status(self, ctx):
+        await ctx.send(f'''
+Current CPU Usage: {psutil.cpu_percent(1)}%
+RAM: {int(psutil.virtual_memory().used / 1024 / 1024)}MB / {int(psutil.virtual_memory().total / 1024 / 1024)}MB | {psutil.virtual_memory().percent}%
+Primary disk: {int(psutil.disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(psutil.disk_usage('/').total / 1024 / 1024 / 1000)}GB | {psutil.disk_usage('/').percent}%
+''')
 
     print('Started Entanglement!')
 async def setup(bot):
