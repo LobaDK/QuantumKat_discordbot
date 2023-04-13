@@ -21,7 +21,7 @@ class Activity(commands.Cog):
         self.vibrateList = ['Vibrating',
                        'Vibrated']
 
-        self.normal_nounList = ["a chair",
+        self.nounList = ["a chair",
                     "a table",
                     "a vase",
                     "a long-lost creditcard",
@@ -40,13 +40,6 @@ class Activity(commands.Cog):
                     "Earth",
                     'the void']
 
-        self.glitched_nounList = ['a̵̛̮͐̀̾̉́̽̕ń̸̘͎̞͇̠͎̃̐͋ͅ ̵͔͇̜͇̾̕é̶̮̗̥̺̝̫̩͓̱̲̜̯̔͋́͆̀̂̌ṙ̴̙̒r̷̟͎̗͓͖͓̝̓͗̏̏ͅo̷͕̪͇͐̾̎͊r̷̨̧̺͚̭͇͎̈́̂̓̏̒̿̽͒̕͝,' #<- an error
-                                'r̷̢̪̱͔͖͚̙̀̈́͑e̶̡͖͙̰̰̮̼̘̜͙̣͂̈̀̂̿̆̄̽͝ͅd̸̟̰̺̗͖̩̪̜͖̜͍̐̑̎̾̔̀̎́͘a̵̜͚̠̐ͅc̸̟̦̋̐̌͋̈́t̷̺͉̥̳͇̙̗̫̪̟̒̐̈́̍ȩ̷̠̻̰̰̱̜̭̻̞̭̈́̀̂̂͜ḑ̷̫̰͛̀̿͐̑̂͂͗', #<- redacted
-                                'a̷̬̩̦͍͍͖̣͉̥͒̆̊͌͠ͅ ̵̳̮͎͇̝̑̂̏q̸̬̟͍͕͍̫͚͇̾ṷ̷͙̃̏̒a̷̡̟̣̞̤̦̳͌̊͒̋̒͑̄̌̊͝ͅͅṇ̷̢̨̙̥̭́́̑̊ẗ̸̨̜͕̪̳́̌̀̅̇̐͝͝u̶̡͙̘͔̘̻͇̩̭̫̽̈́̒̿̓͋̒̒͛̈́͝m̴̧͕̫̤̼͈͊̇́̾̋̎͝ͅ ̴̛̟̘̝͖̠̮̿̕c̵͙͍͍̲̠̦͈̀̒̓̆̂͂͒̎͐̑͌͝ą̵̛̥͙̪̎͐͐͊͌̽̒̑̽͝t̷̡̛̙̻͙͓͉̤͚̝̺̎͑̿̏̔̀̈̉͝', #<- a quantum cat
-                                't̴̢͓̳̪̞̭͉̣̹̘̰̙̆̃̄͛̂̏͒̂͑̏͘h̵̢̡̺̖̺͔̞͓͖̝̊̐̈́̽̍͐͊̊̈̑̌ͅe̵͙͒̿̈́ ̶̭̘̪̈́̉̀͗̕͝v̵̠̽͝o̶͖̿͂̑̕i̶̺͐̈́̾̿͆d̷̡͖̰̩̝͉̯̋̈̈́̓̍̐̈́̕͜', #<- the void
-                                'e̸̟̺̰̰̤̩͔̻͕̾̕r̴̗̪̳̟͊͛̓r̵͎̹̹͈͔̐̉͂̓̉̑̌̉̓̕͝͝ȍ̷̮͋̋̈́̃̿ŕ̶̻̬̜͉͎', #<- error
-                                'ę̶̀̎́͘r̵͔̰̫͚͚̒͆͒͘͝͠͠ŕ̷̲͂͂̆̆̈́͗͂̚͠͝͝ở̶̬̪̠̲̦̭̞̟̖̤̹r̴̹̫̭͔̰͖͔̫͔͓̪̦͎͋̄̂ͅę̷͇͖̩̝̝̻͎͉̀̈̍̉̈́͆̌͛̚͠r̴̡̗̺̥̻̬̼̓̋̽̀͌͌͠ͅŗ̴̫̭͚͖̦̭̘̖̒̇͜ͅo̸̳̭̖͔͎̥̝̜̿̋͑̈̒̚̚ṙ̵̢̨̨̻̥̼̪͖͖̫̟͚̗́̍̽̇̀͋̇̿́̆̊̀̚ė̶̙̳̩̲̙͚͍͎͔͚̮̏͝r̵̞̞̯͙̞̰͎̗̖͚̘̪̘͋̔̓͂͘ͅr̴̛̩̘̟͕̤͖̖̺̖̄̐̆́̀̅̔̓̔̋͘͜o̵̻͊̀r̷̝͙͖͎̬͚̮̠͑́̈͆̀͝ȩ̴̛͕͈͇͉́̂̎͐̔́͗̿̏̀̃̄r̵̰̞̖̪̲̜̞̓̾̆̄͊ͅŗ̶̧̫̘̲̣̣̣̀ö̴͓̫̦̲̘́̀͋͂̋͂̿͂ŗ̵̬͇̱̙̅̽͂̄͒̔̈́̋͝'] #<- errorerrorerrorerror
-
         self.locationList = ['dimension',
                         'universe',
                         'timeline',
@@ -60,11 +53,6 @@ class Activity(commands.Cog):
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
                     '{purge} {noun} in the {ordinal} {location}']
         
-        list_type = random.choices(['use_normal', 'use_glitched'], weights=[10, 1], k=1)[0]
-        if list_type == 'use_normal':
-            self.nounList = self.normal_nounList
-        elif list_type == 'use_glitched':
-            self.nounList = self.glitched_nounList
         self.change_activity.start()
 
 ###################################################################################################### command splitter for easier reading and navigating
