@@ -60,7 +60,7 @@ class Activity(commands.Cog):
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
                     '{purge} {noun} in the {ordinal} {location}']
         
-        list_type = random.choices(['use_normal', 'use_glitched'], weights=[30, 1], k=1)[0]
+        list_type = random.choices(['use_normal', 'use_glitched'], weights=[10, 1], k=1)[0]
         if list_type == 'use_normal':
             self.nounList = self.normal_nounList
         elif list_type == 'use_glitched':
@@ -79,7 +79,7 @@ class Activity(commands.Cog):
         self.change_activity.change_interval(minutes=(random.randint(30,180)))
 
         purrHz = random.randint(1,100_000)
-        ordinal = num2words(random.randint(0,100_00), to='ordinal_num')
+        ordinal = num2words(random.randint(0,10_000), to='ordinal_num')
 
         await self.bot.change_presence(activity=discord.Game(name=random.choice(self.messages).format(hiss=random.choice(self.hissList),
                                                                                                     purge=random.choice(self.purgeList),
