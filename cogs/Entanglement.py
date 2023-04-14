@@ -504,7 +504,7 @@ class Entanglement(commands.Cog):
 
             #Iterate through each listed file
             for extension in extensions:
-                if extension.endswith('.py'):
+                if extension.startswith('cogs/') and extension.endswith('.py'):
                     try:
                         await self.bot.reload_extension(f'cogs.{os.path.basename(extension)[:-3]}')
                         await ctx.send(f'Purging updated {os.path.basename(extension)[:-3]}!')
