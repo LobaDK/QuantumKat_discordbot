@@ -31,7 +31,7 @@ class Control(commands.Cog):
                         await ctx.send(e)
                         print('{}: {}'.format(type(e).__name__, e))
                 else:
-                    await ctx.send('Guild does not exist or the bot is not in it, did you enter the correct ID?')
+                    await ctx.send('Server does not exist or the bot is not in it, did you enter the correct ID?')
             else:
                 await ctx.send('Server ID can only be a number!')
         else:
@@ -53,7 +53,7 @@ class Control(commands.Cog):
             await ctx.send('Command only works in a server')
 
     @commands.is_owner()
-    @commands.command()
+    @commands.command(aliases=['LP'], brief='(Bot owner only) Lists permissions given to the bot.', description='Lists the permissions given to the bot. If no server ID is provided, it will show the permissions from the server the command was use in. Supports a single optional argument as the server ID.')
     async def ListPermissions(self, ctx, Server_ID=""):
         if Server_ID and ctx.guild is None:
             if Server_ID.isnumeric():
@@ -68,7 +68,7 @@ class Control(commands.Cog):
                     await ctx.send('I have the following permissions in {guild_name}:\n{permissions}'.format(guild_name = guild.name, permissions = '\n'.join(permissions)))
                 
                 else:
-                    await ctx.send('Guild does not exist or the bot is not in it, did you enter the correct ID?')
+                    await ctx.send('Server does not exist or the bot is not in it, did you enter the correct ID?')
             
             else:
                 await ctx.send('Server ID can only be a number!')

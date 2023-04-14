@@ -19,7 +19,9 @@ class Activity(commands.Cog):
                     'Purred']
 
         self.vibrateList = ['Vibrating',
-                       'Vibrated']
+                       'Vibrated',
+                       'Fluctuating',
+                       'Fluctuated']
 
         self.nounList = ["a chair",
                     "a table",
@@ -51,7 +53,9 @@ class Activity(commands.Cog):
                     '{purr} at {noun} in the {ordinal} {location}',
                     '{vibrate} at {purrHz}hz in the {ordinal} {location}',
                     '{purr} at {purrHz}hz in the {ordinal} {location}',
-                    '{purge} {noun} in the {ordinal} {location}']
+                    '{purge} {noun} in the {ordinal} {location}',
+                    'Segfault in... ErrorIt?656E64       rebooting faulty... rF7_Q>~bTV',
+                    '69 74 77 61 73 6e 27 74 73 75 70 70 6f 73 65 64 74 6f 65 6e 64']
         
         self.change_activity.start()
 

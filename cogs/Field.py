@@ -2,15 +2,16 @@ import glob
 import random
 import re
 import time
-import warnings
 from urllib.parse import urljoin
 
-import bs4
+from bs4 import BeautifulSoup
 import ntplib
 import requests
 from discord.ext import commands
-from num2words import num2words
 
+from Fields.HugCommand import HugCommand
+from Fields.PetCommand import PetCommand
+from Fields.ArPrCommand import arpr
 
 class Field(commands.Cog):
     def __init__(self, bot):
@@ -21,91 +22,31 @@ class Field(commands.Cog):
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
 
-        warnings.filterwarnings('ignore', category=UserWarning, module='bs4')
-
 ###################################################################################################### command splitter for easier reading and navigating
-
-    async def arpr(self, ctx, url):
-        links = []
-        for _ in range(ctx.message.content.split(" ")[0].count("r")):
-            response = requests.get(url)
-            soup = bs4.BeautifulSoup(response.text, 'lxml')
-            link = soup.find('body')
-            links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
-        await ctx.send('\n'.join(links))
-
-######################################################################################################
 
     @commands.command(aliases=['arr','arrr','arrrr','arrrrr'], brief='Returns a random file from aaaa.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from aaaa.lobadk.com.")
     async def ar(self, ctx):
         url = 'https://aaaa.lobadk.com/botrandom'
-        await self.arpr(ctx, url)
+        await arpr(ctx, url)
         
 ######################################################################################################
 
     @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
     async def pr(self, ctx):
         url = 'https://possum.lobadk.com/botrandom'
-        await self.arpr(ctx, url)
+        await arpr(ctx, url)
 
 ######################################################################################################
 
     @commands.command(aliases=['pæt','pets','pæts'], brief='Pets another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 1 and 20 long pet.')
     async def pet(self, ctx, *, optional_user_or_object=""):
-        quantum_amount = random.randint(1,20)
-        if quantum_amount == 1:
-            verb = 'time'
-        else:
-            verb = 'times'
-        
-        pets = 'pe' + 't' * quantum_amount + 's'
-        
-        if not optional_user_or_object:
-            await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {pets}')
-            return
-        
-        mention = f'<@{self.bot.user.id}>'
-        if mention in optional_user_or_object:
-            quantumspan = random.randint(0,100)
-            quantummode = random.choices(['purr','frequency','quantumloop'], k=1, weights=[10,10,2])[0]
-            if quantummode == 'purr':
-                await ctx.send(f'Quantum purrs across {quantumspan} {random.choices(["dimension","universe","reality","timeline","dimension, universe, realitie and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else random.choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
-            elif quantummode == 'frequency':
-                await ctx.send(f'Quantum vibrates at {random.randint(1,100_000)}hz')
-            elif quantummode == 'quantumloop':
-                petloop = ""
-                for _ in range(0,random.randint(8,40)):
-                    petloop = petloop + random.choice(['pet','pat','petting', 'patting'])
-                await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
-        else:
-            await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}')
+        await PetCommand(self, ctx, optional_user_or_object)
 
 ######################################################################################################
 
     @commands.command(aliases=['hugs'], brief='Hugs another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 1 and 20 long hug.')
     async def hug(self, ctx, *, optional_user_or_object=""):
-        quantum_amount = random.randint(1,20)
-        if quantum_amount == 1:
-            verb = 'time'
-        else:
-            verb = 'times'
-        quantumspan = random.randint(0,100)
-
-        hugs = 'hu' + 'g' * quantum_amount + 's'
-
-        if not optional_user_or_object:
-            await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {hugs}')
-            return
-
-        mention = f'<@{self.bot.user.id}>'
-        if mention in optional_user_or_object:
-            quantummode = random.choice(['purr','frequency'])
-            if quantummode == 'purr':
-                await ctx.send(f'Quantum purrs and entangles {ctx.author.mention} to the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
-            elif quantummode == 'frequency':
-                await ctx.send(f'Quantum vibrates at {random.randint(1,100_000)}hz, teleporting {random.choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {random.choice(["dimension","universe","reality","timeline"])}')
-        else:
-            await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {hugs}')
+        await HugCommand(self, ctx, optional_user_or_object)
 
 ######################################################################################################
 
@@ -175,7 +116,7 @@ class Field(commands.Cog):
             allowed = re.compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
             if allowed.match(search_keyword):
                 response = requests.get(f'https://aaaa.lobadk.com/?search={search_keyword}')
-                soup = bs4.BeautifulSoup(response.text, 'lxml')
+                soup = BeautifulSoup(response.text, 'lxml')
                 links = []
 
                 for link in soup.find_all('a'):
@@ -228,7 +169,7 @@ class Field(commands.Cog):
                 SearchURL = f'https://aaaa.lobadk.com/?search={search_keyword}'
                 URL = 'https://aaaa.lobadk.com/'
                 response = requests.get(SearchURL)
-                soup = bs4.BeautifulSoup(response.text, 'lxml')
+                soup = BeautifulSoup(response.text, 'lxml')
                 for link in soup.find_all('a'):
                     temp = link.get('href')
                     if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
