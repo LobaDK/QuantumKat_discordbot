@@ -96,6 +96,7 @@ class Activity(commands.Cog):
     async def ActivityStop(self, ctx):
         if self.change_activity.is_running():
             self.change_activity.cancel()
+            await ctx.message.add_reaction('👌')
         else:
             await ctx.send('Activity is not running!')
 
@@ -105,6 +106,7 @@ class Activity(commands.Cog):
     @commands.is_owner()
     async def ActivityRestart(self, ctx):
         self.change_activity.restart()
+        await ctx.message.add_reaction('👌')
 
 ######################################################################################################
 
@@ -113,6 +115,7 @@ class Activity(commands.Cog):
     async def ActivityStart(self, ctx):
         if not self.change_activity.is_running():
             self.change_activity.start()
+            await ctx.message.add_reaction('👌')
         else:
             await ctx.send('Activity is already running!')
 
