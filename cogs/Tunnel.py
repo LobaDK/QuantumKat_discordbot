@@ -1,6 +1,5 @@
 import sys
 import traceback
-import os
 from datetime import datetime
 
 from discord.ext import commands
