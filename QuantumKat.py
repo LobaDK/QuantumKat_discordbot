@@ -25,7 +25,7 @@ intents = Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix='?', help_command=commands.DefaultHelpCommand(sort_commands=False, show_parameter_descriptions=False, width=100), intents=intents, owner_id=[int(environ.get('OWNER_ID'))])
+bot = commands.Bot(command_prefix='?', help_command=commands.DefaultHelpCommand(sort_commands=False, show_parameter_descriptions=False, width=100), intents=intents, owner_ids=[int(environ.get('OWNER_ID'))])
 
 @bot.event
 async def on_ready():
@@ -36,7 +36,7 @@ async def on_ready():
 Application ID: {bot.appinfo.id}
 Application name: {bot.appinfo.name}
 Application owner: {bot.appinfo.owner}
-Application owner ID: {bot.owner_id[0]}
+Application owner IDs: {bot.owner_ids}
 Latency to Discord: {int(bot.latency * 1000)}ms.
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000), to="ordinal_num")} {choice(quantum)}!
