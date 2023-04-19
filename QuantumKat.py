@@ -49,8 +49,8 @@ Latency to Discord: {int(bot.latency * 1000)}ms.
 #otherwise would require a manual restart from an SSH connection
 @bot.listen('on_message')
 async def listen_for_reboot(message):
-    if message.author.id == bot.owner_id[0]:
-        if message.content == '?reboot':
+    if message.content == '?reboot':
+        if message.author.id == bot.owner_id[0]:
             if not message.channel.guild == None:
                 await message.channel.reply('Shutting down extensions and rebooting...')
             else:
