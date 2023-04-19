@@ -51,10 +51,8 @@ Latency to Discord: {int(bot.latency * 1000)}ms.
 async def listen_for_reboot(message):
     if message.content == '?reboot':
         if message.author.id == bot.owner_ids[0]:
-            if not message.channel.guild == None:
-                await message.channel.reply('Shutting down extensions and rebooting...')
-            else:
-                await message.channel.send('Shutting down extensions and rebooting...')
+            
+            await message.channel.send('Shutting down extensions and rebooting...')
             
             for cog in initial_extensions:
                 try:
