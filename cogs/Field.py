@@ -1,4 +1,4 @@
-import random
+from random import choice
 
 from discord.ext import commands
 from Fields.aaaaCountCommand import aaaaCountCommand
@@ -84,7 +84,7 @@ class Field(commands.Cog):
 
     @commands.command(aliases=['qjoke', 'joke', 'qj'], brief='Fetch a random quantum joke.', description='Fetches a random quantum joke stored in a text file. Supports no arguments.')
     async def quantumjoke(self, ctx):
-        await ctx.send(random.choice(self.jokes).strip())
+        await ctx.send(choice(self.jokes).strip())
 
 ######################################################################################################
 

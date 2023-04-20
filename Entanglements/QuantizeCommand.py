@@ -14,7 +14,7 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
             data_dir = self.aaaa_dir
             data_domain = self.aaaa_domain
         
-        elif location.lower()== 'possum':
+        elif location.lower() == 'possum':
             data_dir = self.possum_dir
             data_domain = self.possum_domain
 
@@ -30,17 +30,17 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
         #Strips all greater-than and less-than symbols from the URL string
         #Allows the user to supply a URL without making it embed
         if URL.startswith('<') or URL.endswith('>'):
-            URL = URL.replace('<','')
-            URL = URL.replace('>','')
+            URL = URL.replace('<', '')
+            URL = URL.replace('>', '')
 
         if mode.upper() == 'YT':
             
             #Disallow playlists
             if not "&list=" in URL and not "playlist" in URL:
             
-                #Download the best (up to 1080p) MP4 video and m4a audio, and then combines them
-                #Or a single video with audio included (up to 1080p), if that's the best option
-                arg = f'yt-dlp -f bv[ext=mp4]["height<=1080"]+ba[ext=m4a]/b[ext=mp4]["height<=1080"] "{URL}" -o "{data_dir}{filename}.%(ext)s"'
+                #Download the best (up to 720p) MP4 video and m4a audio, and then combines them
+                #Or a single video with audio included (up to 720p), if that's the best option
+                arg = f'yt-dlp -f bv[ext=mp4]["height<=720"]+ba[ext=m4a]/b[ext=mp4]["height<=720"] "{URL}" -o "{data_dir}{filename}.%(ext)s"'
                 
                 await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
                 
@@ -74,7 +74,7 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
                     #If the downloaded video file is larger than 50MB's
                     if int(stat(f'{data_dir}{filename}.mp4').st_size / (1024 * 1024)) > 50:
                         await ctx.reply('Dataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
-                        #Try and first lower the resolution of the original video by 1.5 e.g. 1080p turns into 720p. 
+                        #Try and first lower the resolution of the original video by 1.5 e.g. 720p turns into 720p. 
                         #For Discord embeds, this doesn't hurt viewability much, if at all
                         
                         #Get JSON output of the first video stream's metadata. Youtube only allows a single video stream, so this should always work
