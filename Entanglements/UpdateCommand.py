@@ -80,9 +80,9 @@ async def UpdateCommand(self, ctx):
                 return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
             
             try:
-                await self.bot.wait_for('message', check=check, timeout=30)
+                await self.bot.wait_for('message', check=check, timeout=10)
             except TimeoutError:
-                await ctx.reply('No valid reply sent within 30 seconds')
+                await ctx.reply('No valid reply sent within 10 seconds')
             else:
                 await RebootCommand(ctx, self.bot)
         
