@@ -1,10 +1,9 @@
 from asyncio import create_subprocess_shell, subprocess, TimeoutError, sleep
 from discord.ext import commands
-from os import path
+from os import path, listdir
 from discord import Message
 
 from QuantumKats.RebootCommand import RebootCommand
-from functions.getCogs import getCogs
 
 async def UpdateCommand(self, ctx):
     #Attempt to get the current commit HASH before updating
@@ -86,7 +85,10 @@ async def UpdateCommand(self, ctx):
             else:
                 await RebootCommand(ctx, self.bot)
         
-        extensions = await getCogs()
+        extensions = []
+        for cog in listdir('./cogs'):
+            if cog.endswith('.py'):
+                extensions.append(f'cogs.{cog[:-3]}')
 
         for extension in extensions:
             if extension in output:
