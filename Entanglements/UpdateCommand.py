@@ -3,7 +3,8 @@ from discord.ext import commands
 from os import path
 from discord import Message
 
-from QuantumKatCommands.RebootCommand import RebootCommand
+from QuantumKats.RebootCommand import RebootCommand
+from functions.getCogs import getCogs
 
 async def UpdateCommand(self, ctx):
     #Attempt to get the current commit HASH before updating
@@ -70,38 +71,40 @@ async def UpdateCommand(self, ctx):
         stderr3 = stderr3.decode().replace("b'","")
 
         #Each displayed file is on a newline, so split by the newlines to save them as a list
-        extensions = stderr3.split('\n')
+        output = stderr3.split('\n')
 
         #Iterate through each listed file
-        for extension in extensions:
-            if extension == 'QuantumKat.py':
-                await ctx.send('Main script updated, reboot?')
-                def check(m: Message):  # m = discord.Message.
-                    return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
-                
-                try:
-                    await self.bot.wait_for('message', check=check, timeout=30)
-                except TimeoutError:
-                    await ctx.reply('No valid reply sent within 30 seconds')
-                else:
-                    await RebootCommand(ctx, self.bot)
+        if 'QuantumKat.py' in output:
+            await ctx.send('Main script updated, reboot?')
+            def check(m: Message):  # m = discord.Message.
+                return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
             
-            if extension.startswith('cogs/') and extension.endswith('.py'):
+            try:
+                await self.bot.wait_for('message', check=check, timeout=30)
+            except TimeoutError:
+                await ctx.reply('No valid reply sent within 30 seconds')
+            else:
+                await RebootCommand(ctx, self.bot)
+        
+        extensions = await getCogs()
+
+        for extension in extensions:
+            if extension in output:
                 try:
-                    await self.bot.reload_extension(f'cogs.{path.basename(extension)[:-3]}')
-                    await ctx.send(f'Purging updated {path.basename(extension)[:-3]}!')
+                    await self.bot.reload_extension(extension)
+                    await ctx.send(f'Purging updated {path.basename(extension)}!')
                 
                 except commands.ExtensionNotLoaded as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{path.basename(extension)[:-3]} is not running, or could not be found')
+                    await ctx.send(f'{path.basename(extension)} is not running, or could not be found')
                 
                 except commands.ExtensionNotFound as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{path.basename(extension)[:-3]} could not be found!')
+                    await ctx.send(f'{path.basename(extension)} could not be found!')
                 
                 except commands.NoEntryPointError as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {path.basename(extension)[:-3]}, but no setup was found!')
+                    await ctx.send(f'successfully loaded {path.basename(extension)}, but no setup was found!')
             
     
     elif stdout2:

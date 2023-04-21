@@ -15,7 +15,7 @@ from Fields.QuantumPetCommand import QuantumPetCommand
 from Fields.RPSCommand import RPSCommand
 
 
-class Field(commands.Cog):
+class Fields(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -110,6 +110,6 @@ class Field(commands.Cog):
     async def QuantumBall(self, ctx):
         await QuantumBallCommand(self, ctx)
 
-    print('Started Field!')
+    print('Started Fields!')
 async def setup(bot):
-    await bot.add_cog(Field(bot))
+    await bot.add_cog(Fields(bot))

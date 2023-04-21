@@ -13,7 +13,7 @@ from Entanglements.UnentangleCommand import UnentangleCommand
 from Entanglements.UpdateCommand import UpdateCommand
 
 
-class Entanglement(commands.Cog):
+class Entanglements(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
@@ -100,6 +100,6 @@ class Entanglement(commands.Cog):
 
 ######################################################################################################
 
-    print('Started Entanglement!')
+    print('Started Entanglements!')
 async def setup(bot):
-    await bot.add_cog(Entanglement(bot))
+    await bot.add_cog(Entanglements(bot))

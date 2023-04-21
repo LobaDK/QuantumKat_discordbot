@@ -10,7 +10,8 @@ from dotenv import load_dotenv
 from num2words import num2words
 from shutil import which
 
-from QuantumKatCommands.RebootCommand import RebootCommand
+from QuantumKats.RebootCommand import RebootCommand
+from functions.getCogs import getCogs
 
 # If False, will exit if a required program is mising
 # Can be to True for debugging without needing them installed
@@ -31,16 +32,16 @@ intents.members = True
 bot = commands.Bot(command_prefix='?', help_command=commands.DefaultHelpCommand(sort_commands=False, show_parameter_descriptions=False, width=100), intents=intents, owner_ids=[int(environ.get('OWNER_ID'))])
 
 # Get and add cogs to a list
-initial_extensions = []
-for cog in listdir('./cogs'):
-    if cog.endswith('.py'):
-        initial_extensions.append(f'cogs.{cog[:-3]}')
+initial_extensions = getCogs()
 
 def ffmpegInstalled():
     return which('ffmpeg') is not None
 
 def ytdlpInstalled():
     return which('yt-dlp') is not None
+
+def wgetInstalled():
+    return which('wget') is not None
 
 async def setup(bot):
     if not ffmpegInstalled():
@@ -56,6 +57,13 @@ async def setup(bot):
             exit()
         else:
             print('No yt-dlp executable found')
+
+    if not wgetInstalled():
+        if not ignoreMissingExe:
+            print('Exiting due to wget not being found')
+            exit()
+        else:
+            print('No wget executable found')
     
     # Iterate through each cog and start it
     for extension in initial_extensions:
