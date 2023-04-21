@@ -80,13 +80,13 @@ async def UpdateCommand(self, ctx):
                     return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
                 
                 try:
-                    await self.bot.wait_for('message', check=check, timeout=60)
+                    await self.bot.wait_for('message', check=check, timeout=30)
                 except TimeoutError:
-                    await ctx.send('No valid reply sent within 60 seconds')
+                    await ctx.reply('No valid reply sent within 30 seconds')
                 else:
                     await RebootCommand(ctx, self.bot)
             
-            elif extension.startswith('cogs/') and extension.endswith('.py'):
+            if extension.startswith('cogs/') and extension.endswith('.py'):
                 try:
                     await self.bot.reload_extension(f'cogs.{path.basename(extension)[:-3]}')
                     await ctx.send(f'Purging updated {path.basename(extension)[:-3]}!')
