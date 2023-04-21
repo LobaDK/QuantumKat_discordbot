@@ -40,63 +40,63 @@ class Entanglement(commands.Cog):
     @commands.command(aliases=['stabilize', 'restart', 'reload'], brief="(Bot owner only) Reloads cogs/extensions.", description="Reloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments. Special character '*' can be used to reload all.")
     @commands.is_owner()
     async def stabilise(self, ctx, *, module : str=''):
-        StabiliseCommand(self, ctx, module)
+        await StabiliseCommand(self, ctx, module)
 
 ######################################################################################################
 
     @commands.command(aliases=['load', 'start'], brief="(Bot owner only) Starts/Loads a cog/extension.", description="Starts/Loads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
     @commands.is_owner()
     async def entangle(self, ctx, *, module : str=''):
-        Entanglecommand(self, ctx, module)
+        await Entanglecommand(self, ctx, module)
 
 ######################################################################################################
 
     @commands.command(aliases=['unload', 'stop'], brief="(Bot owner only) Stops/Unloads a cog/extension.", description="Stops/Unloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
     @commands.is_owner()
     async def unentangle(self, ctx, *, module : str=''):
-        UnentangleCommand(self, ctx, module)
+        await UnentangleCommand(self, ctx, module)
 
 ######################################################################################################
 
     @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa/possum.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com or possum.lobadk.com, for easier file adding. Requires at least 3 arguments, and supports 4 arguments. The first argument is the file URL, the second is the filename to be used, with a special 'rand' parameter that produces a random 8 character long base62 filename, the third is the location, specified with 'aaaa' or 'possum', the fourth (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
     @commands.is_owner()
     async def quantize(self, ctx, URL="", filename="", location="", mode=""):
-        QuantizeCommand(self, ctx, URL, filename, location, mode)
+        await QuantizeCommand(self, ctx, URL, filename, location, mode)
 
 ######################################################################################################
 
     @commands.command(aliases=['requantise'], brief="(Bot owner only) Rename a file on aaaa.lobadk.com.", description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when chosing a new name.")
     @commands.is_owner()
     async def requantize(self, ctx, current_filename='', new_filename=''):
-        RequantizeCommand(self, ctx, current_filename, new_filename)
+        await RequantizeCommand(self, ctx, current_filename, new_filename)
 
 ######################################################################################################
 
     @commands.command(brief="(Bot owner only) Runs git commands in the bots directory.", description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.")
     @commands.is_owner()
     async def git(self, ctx, *, git_arguments):
-        GitCommand(self, ctx, git_arguments)
+        await GitCommand(self, ctx, git_arguments)
 
 ######################################################################################################
 
     @commands.command(brief="(Bot owner only) Fetches new updates and reloads all changed/updated cogs/extensions.", description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.")
     @commands.is_owner()
     async def update(self, ctx):
-        UpdateCommand(self, ctx)
+        await UpdateCommand(self, ctx)
 
 ######################################################################################################
 
     @commands.command(aliases=['dequantize'], brief='(Bot owner only) Delete the specified file.', description='Attempts to delete the specified file. Supports and requires 2 arguments, being the filename, and location (aaaa|possum).')
     @commands.is_owner()
     async def dequantise(self, ctx, filename="", location=""):
-        DequantizeCommand(self, ctx, filename, location)
+        await DequantizeCommand(self, ctx, filename, location)
 
 ######################################################################################################
 
     @commands.command()
     @commands.is_owner()
     async def status(self, ctx):
-        StatusCommand(self, ctx)
+        await StatusCommand(self, ctx)
 
 ######################################################################################################
 
