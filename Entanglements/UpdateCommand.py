@@ -86,7 +86,7 @@ async def UpdateCommand(self, ctx):
             else:
                 await RebootCommand(ctx, self.bot)
         
-        extensions = getCogs()
+        extensions = await getCogs()
 
         for extension in extensions:
             if extension in output:

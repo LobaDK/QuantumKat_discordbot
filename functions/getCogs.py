@@ -1,6 +1,6 @@
 from os import listdir
 
-def getCogs():
+async def getCogs():
     extensions = []
     for cog in listdir('./cogs'):
         if cog.endswith('.py'):
