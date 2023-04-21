@@ -1,6 +1,5 @@
-from asyncio import create_subprocess_shell, subprocess, TimeoutError
+from asyncio import create_subprocess_shell, subprocess, TimeoutError, sleep
 from discord.ext import commands
-from time import sleep
 from os import path
 from discord import Message
 
