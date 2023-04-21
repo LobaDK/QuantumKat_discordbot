@@ -1,6 +1,6 @@
 from asyncio import run
 from datetime import datetime
-from os import environ, execl, listdir
+from os import environ, listdir
 from random import choice, randint
 from sys import argv, executable
 
@@ -9,6 +9,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from num2words import num2words
 
+from QuantumKatCommands.RebootCommand import RebootCommand
 load_dotenv()
 
 initial_extensions = []
@@ -50,16 +51,7 @@ Latency to Discord: {int(bot.latency * 1000)}ms.
 @bot.listen('on_message')
 async def listen_for_reboot(message):
     if message.content == '?reboot':
-        if message.author.id == bot.owner_ids[0]:
-            
-            await message.channel.send('Shutting down extensions and rebooting...')
-            
-            for cog in initial_extensions:
-                try:
-                    await bot.unload_extension(cog)
-                except commands.ExtensionNotLoaded:
-                    continue
-            
-            execl(executable, executable, * argv)
+        if message.author.id in bot.owner_ids:
+            await RebootCommand(message, bot)
 
 run(setup(bot))

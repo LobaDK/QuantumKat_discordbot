@@ -1,7 +1,10 @@
-from asyncio import create_subprocess_shell, subprocess
+from asyncio import create_subprocess_shell, subprocess, TimeoutError
 from discord.ext import commands
 from time import sleep
 from os import path
+from discord import Message
+
+from QuantumKatCommands.RebootCommand import RebootCommand
 
 async def UpdateCommand(self, ctx):
     #Attempt to get the current commit HASH before updating
@@ -72,7 +75,19 @@ async def UpdateCommand(self, ctx):
 
         #Iterate through each listed file
         for extension in extensions:
-            if extension.startswith('cogs/') and extension.endswith('.py'):
+            if extension == 'QuantumKat.py':
+                await ctx.send('Main script updated, reboot?')
+                def check(m: Message):  # m = discord.Message.
+                    return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
+                
+                try:
+                    await self.bot.wait_for('message', check=check, timeout=60)
+                except TimeoutError:
+                    await ctx.send('No valid reply sent within 60 seconds')
+                else:
+                    await RebootCommand(ctx, self.bot)
+            
+            elif extension.startswith('cogs/') and extension.endswith('.py'):
                 try:
                     await self.bot.reload_extension(f'cogs.{path.basename(extension)[:-3]}')
                     await ctx.send(f'Purging updated {path.basename(extension)[:-3]}!')
@@ -88,6 +103,7 @@ async def UpdateCommand(self, ctx):
                 except commands.NoEntryPointError as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.send(f'successfully loaded {path.basename(extension)[:-3]}, but no setup was found!')
+            
     
     elif stdout2:
         await ctx.send(stdout2)
