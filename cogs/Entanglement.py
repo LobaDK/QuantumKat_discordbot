@@ -588,11 +588,11 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @commands.command()
     @commands.is_owner()
     async def reboot(self, ctx):
-        await ctx.reply('Shutting down extensions and rebooting...', silent=True)   
+        await ctx.send('Shutting down extensions and rebooting...')   
         for cog in listdir('./cogs'):
             if cog.endswith('.py'):
                 try:
-                    await self.bot.unload_extension(cog)
+                    await self.bot.unload_extension(f'cogs.{cog[:-3]}')
                 except commands.ExtensionNotLoaded:
                     continue
         
