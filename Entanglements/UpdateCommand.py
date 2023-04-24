@@ -85,10 +85,10 @@ async def UpdateCommand(self, ctx):
         extensions = []
         for cog in listdir('./cogs'):
             if cog.endswith('.py'):
-                extensions.append(cog[:-3])
+                extensions.append(f'cogs.{cog[:-3]}')
 
         for extension in extensions:
-            if extension in output:
+            if extension[5:] in output:
                 try:
                     await self.bot.reload_extension(extension)
                     await ctx.send(f'Purging updated {path.basename(extension)}!')
