@@ -10,8 +10,6 @@ from dotenv import load_dotenv
 from num2words import num2words
 from shutil import which
 
-from QuantumKats.RebootCommand import RebootCommand
-
 # If False, will exit if a required program is mising
 # Can be to True for debugging without needing them installed
 ignoreMissingExe = False
@@ -88,14 +86,5 @@ Latency to Discord: {int(bot.latency * 1000)}ms.
     ''')
     #channel = bot.get_channel(873703927621758986)
     #await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
-
-#Uses os.execl to replace the running script with a new version. 
-#Useful if an update has changed parts of the main file, which
-#otherwise would require a manual restart from an SSH connection
-@bot.listen('on_message')
-async def listen_for_reboot(message):
-    if message.content == '?reboot':
-        if message.author.id in bot.owner_ids:
-            await RebootCommand(message, bot)
 
 run(setup(bot))
