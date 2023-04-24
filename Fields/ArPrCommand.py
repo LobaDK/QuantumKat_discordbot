@@ -11,4 +11,4 @@ async def arpr(ctx, url):
         soup = BeautifulSoup(response.text, 'lxml')
         link = soup.find('body')
         links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
-    await ctx.send('\n'.join(links))
+    await ctx.reply('\n'.join(links))
