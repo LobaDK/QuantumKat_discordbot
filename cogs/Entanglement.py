@@ -4,7 +4,7 @@ from os import execl, listdir, path, remove, rename, stat
 from random import choice, randint
 from string import ascii_letters, digits
 from sys import argv, executable
-from time import sleep
+from asyncio import sleep
 
 from discord import Message
 from discord.ext import commands

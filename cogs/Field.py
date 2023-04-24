@@ -9,6 +9,7 @@ from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
 from requests import get, head
+from re import compile
 
 warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 
