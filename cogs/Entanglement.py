@@ -32,7 +32,7 @@ class Entanglements(commands.Cog):
     @commands.command(brief="(Bot owner only) Stops the bot.", description="Stops and disconnects the bot. Supports no arguments.")
     @commands.is_owner()
     async def observe(self, ctx):
-        await ctx.send("QuantumKat's superposition has collapsed!")
+        await ctx.reply("QuantumKat's superposition has collapsed!")
         await self.bot.close()
 
 ######################################################################################################

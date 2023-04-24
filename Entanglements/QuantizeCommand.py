@@ -19,7 +19,7 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
             data_domain = self.possum_domain
 
         else:
-            await ctx.send('Only `aaaa` and `possum` are valid parameters!')
+            await ctx.reply('Only `aaaa` and `possum` are valid parameters!')
             return
             
         #If the filename is 'rand' generate a random 8-character long base62 filename using the previously created 'characters' variable
@@ -42,7 +42,7 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
                 #Or a single video with audio included (up to 720p), if that's the best option
                 arg = f'yt-dlp -f bv[ext=mp4]["height<=720"]+ba[ext=m4a]/b[ext=mp4]["height<=720"] "{URL}" -o "{data_dir}{filename}.%(ext)s"'
                 
-                await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
+                await ctx.reply('Creating quantum tunnel... Tunnel created! Quantizing data...')
                 
                 #Attempt to run command with above args
                 try:
@@ -60,11 +60,11 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
                 #simply print the output
                 #To-do: Figure out which kind of fatal messages it can return, and attempt to look for/parse them
                 if stderr:
-                    await ctx.send(stderr.decode())
+                    await ctx.reply(stderr.decode())
 
                 #If a file with the same name already exists, yt-dlp returns this string somewhere in it's output
                 if 'has already been downloaded' in stdout.decode():
-                    await ctx.send('Filename already exists, consider using a different name')
+                    await ctx.reply('Filename already exists, consider using a different name')
                     return
                 
                 #If this piece of code is reached, it's assumed that everything went well.
@@ -185,11 +185,11 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
 
             #Else statement if the URL is a Youtube playlist
             else:
-                await ctx.send('Playlists not supported')
+                await ctx.reply('Playlists not supported')
 
         #Else statement if mode is not equals YT
         else:
-            await ctx.send('Creating quantum tunnel... Tunnel created! Quantizing data...')
+            await ctx.reply('Creating quantum tunnel... Tunnel created! Quantizing data...')
             while True:
 
                 #If URL contains a file extension at the end, and the filename does not, split and add the extension to the filename
@@ -200,7 +200,7 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
                     pass
 
                 else:
-                    await ctx.send('No file extension was found for the file!')
+                    await ctx.reply('No file extension was found for the file!')
                     return
                 
                 arg = f'wget -nc -O {data_dir}{filename} {URL}'
@@ -210,7 +210,7 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
                 
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send('Error, quantization tunnel collapsed unexpectedly!')
+                    await ctx.reply('Error, quantization tunnel collapsed unexpectedly!')
                     return
 
                 stdout, stderr = await process.communicate()
@@ -219,17 +219,17 @@ async def QuantizeCommand(self, ctx, URL, filename, location, mode):
                 if 'already there; not retrieving' in stderr.decode():
                     
                     if not filename.lower() == 'rand':
-                        await ctx.send('Filename already exists, consider using a different name')
+                        await ctx.reply('Filename already exists, consider using a different name')
                         return
                     
                     else:
                         filename = "".join(choice(characters) for _ in range(8))
                         continue
                 else:
-                    await ctx.send(f'Success! Data quantized to <{data_domain}{filename}>')
+                    await ctx.reply(f'Success! Data quantized to <{data_domain}{filename}>')
                     break
     
     
     #Else statement if the URL, filename or location variables are empty
     else:
-        await ctx.send('Command requires 3 arguments:\n```?quantize <URL> <filename> <aaaa|possum>``` or ```?quantize <URL> <filename> <aaaa|possum> YT``` to use yt-dlp to download it')
+        await ctx.reply('Command requires 3 arguments:\n```?quantize <URL> <filename> <aaaa|possum>``` or ```?quantize <URL> <filename> <aaaa|possum> YT``` to use yt-dlp to download it')

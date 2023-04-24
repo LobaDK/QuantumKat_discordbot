@@ -14,7 +14,7 @@ async def GitCommand(self, ctx, git_arguments):
                 process = await create_subprocess_shell(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
-                await ctx.send('Error running command')
+                await ctx.reply('Error running command')
                 return
                 
             stderr, stdout = await process.communicate()
@@ -26,10 +26,10 @@ async def GitCommand(self, ctx, git_arguments):
             stderr = stderr.replace("\\n'","")
             
             if stderr:
-                await ctx.send(stderr)
+                await ctx.reply(stderr)
             
             elif stdout:
-                await ctx.send(stdout)
+                await ctx.reply(stdout)
             
             else:
                 await ctx.message.add_reaction('👍')

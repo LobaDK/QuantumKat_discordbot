@@ -11,7 +11,7 @@ async def UpdateCommand(self, ctx):
         process1 = await create_subprocess_shell('git rev-parse --short HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except Exception as e:
         print('{}: {}'.format(type(e).__name__, e))
-        await ctx.send('Error getting current Git information')
+        await ctx.reply('Error getting current Git information')
         return
 
     stderr1, stdout1 = await process1.communicate()
@@ -30,7 +30,7 @@ async def UpdateCommand(self, ctx):
     
     except Exception as e:
         print('{}: {}'.format(type(e).__name__, e))
-        await ctx.send('Error running update')
+        await ctx.reply('Error running update')
         return
 
     #For some reason after decoding Git's output stream, "b'" and "\\n'" shows up everywhere in the output
@@ -46,13 +46,13 @@ async def UpdateCommand(self, ctx):
 
     #For some reason Git on Windows returns the string without hyphens, while Linux returns it with hyphens
     if 'Already up to date' in stderr2 or 'Already up-to-date' in stderr2:
-        await ctx.send(stderr2)
+        await ctx.reply(stderr2)
     
     elif stderr2:
 
         #Send the output of Git, which displays whichs files has been updated, and how much
         #Then sleep 2 seconds to allow the text to be sent, and read
-        await ctx.send(stderr2)
+        await ctx.reply(stderr2)
         await sleep(2)
 
         #Attempt to get a list of files that changed between the pre-update version, using the previously required HASH, and now
@@ -60,7 +60,7 @@ async def UpdateCommand(self, ctx):
             process3 = await create_subprocess_shell(f'git diff --name-only {current_version} HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except Exception as e:
             print('{}: {}'.format(type(e).__name__, e))
-            await ctx.send('Error running file-change check. Manual reloading required')
+            await ctx.reply('Error running file-change check. Manual reloading required')
             return
         
         #Save the output (filenames) in stdout2
@@ -71,7 +71,7 @@ async def UpdateCommand(self, ctx):
 
         #Iterate through each listed file
         if 'QuantumKat.py' in output:
-            await ctx.send('Main script updated, reboot?')
+            await ctx.reply('Main script updated, reboot?')
             def check(m: Message):  # m = discord.Message.
                 return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
             
@@ -91,21 +91,21 @@ async def UpdateCommand(self, ctx):
             if extension[5:] in output:
                 try:
                     await self.bot.reload_extension(extension)
-                    await ctx.send(f'Purging updated {path.basename(extension[5:])}!')
+                    await ctx.reply(f'Purging updated {path.basename(extension[5:])}!')
                 
                 except commands.ExtensionNotLoaded as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{path.basename(extension[5:])} is not running, or could not be found')
+                    await ctx.reply(f'{path.basename(extension[5:])} is not running, or could not be found')
                 
                 except commands.ExtensionNotFound as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{path.basename(extension[5:])} could not be found!')
+                    await ctx.reply(f'{path.basename(extension[5:])} could not be found!')
                 
                 except commands.NoEntryPointError as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {path.basename(extension[5:])}, but no setup was found!')
+                    await ctx.reply(f'successfully loaded {path.basename(extension[5:])}, but no setup was found!')
             
     
     elif stdout2:
-        await ctx.send(stdout2)
+        await ctx.reply(stdout2)
     

@@ -9,23 +9,23 @@ async def RequantizeCommand(self, ctx, current_filename, new_filename):
         #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
         allowed = compile('^[\w]*(\.){1,}[\w]{1,}$')
         if not '/' in current_filename and allowed.match(current_filename) and allowed.match(new_filename):
-            await ctx.send('Attempting to requantize data...')
+            await ctx.reply('Attempting to requantize data...')
             
             try:
                 rename(f'{data_dir}{current_filename}', f'{data_dir}{new_filename}')
             
             except FileNotFoundError:
-                await ctx.send('Error! Data does not exist')
+                await ctx.reply('Error! Data does not exist')
             
             except FileExistsError:
-                await ctx.send('Error! Cannot requantize, data already exists')
+                await ctx.reply('Error! Cannot requantize, data already exists')
             
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
-                await ctx.send('Critical error! Check logs for info')
-            await ctx.send('Success!')
+                await ctx.reply('Critical error! Check logs for info')
+            await ctx.reply('Success!')
 
         else:
-            await ctx.send('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
+            await ctx.reply('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```')
     else:
-        await ctx.send('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')
+        await ctx.reply('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```')

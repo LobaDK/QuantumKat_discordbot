@@ -8,16 +8,16 @@ async def Entanglecommand(self, ctx, module):
                 cog = cog.replace(cog[0], cog[0].upper(), 1)
                 try:
                     await self.bot.load_extension(f'cogs.{cog}')
-                    await ctx.send(f'Successfully entangled to {cog}')
+                    await ctx.reply(f'Successfully entangled to {cog}')
                 except commands.ExtensionNotFound as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{cog} could not be found!')
+                    await ctx.reply(f'{cog} could not be found!')
                 except commands.ExtensionAlreadyLoaded as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{cog} is already loaded!')
+                    await ctx.reply(f'{cog} is already loaded!')
                 except commands.NoEntryPointError as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {cog}, but no setup was found!')
+                    await ctx.reply(f'successfully loaded {cog}, but no setup was found!')
                 except commands.ExtensionFailed as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'Loading {cog} failed due to an error!')
+                    await ctx.reply(f'Loading {cog} failed due to an error!')
