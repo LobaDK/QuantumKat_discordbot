@@ -6,4 +6,4 @@ async def aaaaCountCommand(self, ctx):
     for extension in extensions:
         current_extension = glob.glob(f'/var/www/aaaa/{extension}')
         all_files += current_extension
-    await ctx.send(f'There are currently {len(all_files)} quantised datasets.')
+    await ctx.reply(f'There are currently {len(all_files)} quantised datasets.')
