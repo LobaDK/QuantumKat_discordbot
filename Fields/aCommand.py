@@ -7,8 +7,8 @@ async def aCommand(self, ctx, filename):
         if not allowed.match(filename):
             URL = f'https://aaaa.lobadk.com/{filename}'
             if head(URL).status_code == 200:
-                await ctx.send(URL)
+                await ctx.reply(URL)
             else:
-                await ctx.send('File not found')
+                await ctx.reply('File not found')
     else:
-        await ctx.send('Filename required!\n```?a example.mp4```')
+        await ctx.reply('Filename required!\n```?a example.mp4```')
