@@ -67,10 +67,7 @@ async def UpdateCommand(self, ctx):
         stderr3, stdout3 = await process3.communicate()
 
         #Decode and remove "b'" characters
-        stderr3 = stderr3.decode().replace("b'","")
-
-        #Each displayed file is on a newline, so split by the newlines to save them as a list
-        output = stderr3.split('\n')
+        output = stderr3.decode().replace("b'","")
 
         #Iterate through each listed file
         if 'QuantumKat.py' in output:
@@ -88,7 +85,7 @@ async def UpdateCommand(self, ctx):
         extensions = []
         for cog in listdir('./cogs'):
             if cog.endswith('.py'):
-                extensions.append(f'cogs.{cog[:-3]}')
+                extensions.append(cog[:-3])
 
         for extension in extensions:
             if extension in output:
