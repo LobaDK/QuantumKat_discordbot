@@ -84,7 +84,7 @@ class Fields(commands.Cog):
 
     @commands.command(aliases=['qjoke', 'joke', 'qj'], brief='Fetch a random quantum joke.', description='Fetches a random quantum joke stored in a text file. Supports no arguments.')
     async def quantumjoke(self, ctx):
-        await ctx.send(choice(self.jokes).strip())
+        await ctx.reply(choice(self.jokes).strip())
 
 ######################################################################################################
 
