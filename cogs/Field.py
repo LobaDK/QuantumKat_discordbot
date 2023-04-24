@@ -30,7 +30,7 @@ class Fields(commands.Cog):
             soup = BeautifulSoup(response.text, 'lxml')
             link = soup.find('body')
             links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
-        await ctx.send('\n'.join(links))
+        await ctx.reply('\n'.join(links), silent=True)
 
 ######################################################################################################
 
@@ -156,14 +156,14 @@ class Fields(commands.Cog):
                             "paper": "scissors",
                             "scissors": "rock"}
 
-                await ctx.send(f"{winItem[item]}. {whowin} You do know I'm a quantum kat, right?")
+                await ctx.reply(f"{winItem[item]}. {whowin} You do know I'm a quantum kat, right?", silent=True)
             else:
                 winItem = {"paper": "rock",
                             "scissors": "paper",
                             "rock": "scissors"}
-                await ctx.send(f'{winItem[item]}. {whowin}')
+                await ctx.reply(f'{winItem[item]}. {whowin}', silent=True)
         else:
-            await ctx.send('Rock, paper or scissors required')
+            await ctx.reply('Rock, paper or scissors required', silent=True)
 
 ######################################################################################################
 
@@ -183,16 +183,16 @@ class Fields(commands.Cog):
                     links.append(temp)
 
                 if len(links) == 0:
-                    await ctx.send('Search returned nothing')
+                    await ctx.reply('Search returned nothing', silent=True)
                 else:
                     if len(' '.join(links)) > 4000:
-                        await ctx.send('Too many results! Try narrowing down the search')
+                        await ctx.reply('Too many results! Try narrowing down the search', silent=True)
                     else:
-                        await ctx.send(' '.join(links))
+                        await ctx.reply(' '.join(links), silent=True)
             else:
-                await ctx.send('At least two alphanumeric characters are required, or 1 alphanumeric character and a `.` at the start or end')
+                await ctx.reply('At least two alphanumeric characters are required, or 1 alphanumeric character and a `.` at the start or end', silent=True)
         else:
-            await ctx.send('Search too short! A minimum of 2 characters are required')
+            await ctx.reply('Search too short! A minimum of 2 characters are required', silent=True)
 
 ######################################################################################################
 
@@ -203,17 +203,17 @@ class Fields(commands.Cog):
             if not allowed.match(filename):
                 URL = f'https://aaaa.lobadk.com/{filename}'
                 if head(URL).status_code == 200:
-                    await ctx.reply(URL)
+                    await ctx.reply(URL, silent=True)
                 else:
-                    await ctx.reply('File not found')
+                    await ctx.reply('File not found', silent=True)
         else:
-            await ctx.reply('Filename required!\n```?a example.mp4```')
+            await ctx.reply('Filename required!\n```?a example.mp4```', silent=True)
 
 ######################################################################################################
 
     @commands.command(aliases=['qjoke', 'joke', 'qj'], brief='Fetch a random quantum joke.', description='Fetches a random quantum joke stored in a text file. Supports no arguments.')
     async def quantumjoke(self, ctx):
-        await ctx.reply(choice(self.jokes).strip())
+        await ctx.reply(choice(self.jokes).strip(), silent=True)
 
 ######################################################################################################
 
@@ -233,13 +233,13 @@ class Fields(commands.Cog):
                         continue
                     links.append(temp)
                 if len(links) == 0:
-                    await ctx.send('Search returned empty!')
+                    await ctx.reply('Search returned empty!', silent=True)
                 else:    
-                    await ctx.send(urljoin(URL, choice(links)))
+                    await ctx.reply(urljoin(URL, choice(links)), silent=True)
             else:
-                await ctx.send('Invalid character found in search parameter!')
+                await ctx.reply('Invalid character found in search parameter!', silent=True)
         else:
-            await ctx.send('Search parameter required!\n```?ars example```')
+            await ctx.reply('Search parameter required!\n```?ars example```', silent=True)
 
 ######################################################################################################
 
@@ -272,14 +272,14 @@ class Fields(commands.Cog):
                     response = c.request('pool.ntp.org', version=3)
                     offset = round(response.offset * 1000)
                     latency += offset
-                    await ctx.send(f'A negative latency value was detected. Used pool.ntp.org to attempt to correct, with a {round(offset)}ms offset.')
+                    await ctx.reply(f'A negative latency value was detected. Used pool.ntp.org to attempt to correct, with a {round(offset)}ms offset.', silent=True)
 
 
-                await ctx.send(f'{pingresponse}! Took {latency * 2}ms. {choice(LatencyResponses)}\nConnection to discord: {round(self.bot.latency * 1000)}ms')
+                await ctx.reply(f'{pingresponse}! Took {latency * 2}ms. {choice(LatencyResponses)}\nConnection to discord: {round(self.bot.latency * 1000)}ms', silent=True)
             else:
-                await ctx.send("Only 'latency' parameter allowed")
+                await ctx.reply("Only 'latency' parameter allowed", silent=True)
         else:
-            await ctx.send(pingresponse)
+            await ctx.reply(pingresponse, silent=True)
 
 ######################################################################################################
 
@@ -290,7 +290,7 @@ class Fields(commands.Cog):
         for extension in extensions:
             current_extension = glob(f'/var/www/aaaa/{extension}')
             all_files += current_extension
-        await ctx.reply(f'There are currently {len(all_files)} quantised datasets.')
+        await ctx.reply(f'There are currently {len(all_files)} quantised datasets.', silent=True)
 
 
 ######################################################################################################
@@ -305,7 +305,7 @@ class Fields(commands.Cog):
 
         amount = randint(100, 100_000)
 
-        await ctx.send(choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=choice(['realities','universes','dimensions','timelines']), affirmative_answer=choice(affirmative_answers_list), reason=choice(reason_list), non_committal_answer=choice(non_committal_answers_list), negative_answer=choice(negative_answers_list)))
+        await ctx.reply(choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=choice(['realities','universes','dimensions','timelines']), affirmative_answer=choice(affirmative_answers_list), reason=choice(reason_list), non_committal_answer=choice(non_committal_answers_list), negative_answer=choice(negative_answers_list)), silent=True)
 
     print('Started Fields!')
 async def setup(bot):
