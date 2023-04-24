@@ -91,19 +91,19 @@ async def UpdateCommand(self, ctx):
             if extension[5:] in output:
                 try:
                     await self.bot.reload_extension(extension)
-                    await ctx.send(f'Purging updated {path.basename(extension)}!')
+                    await ctx.send(f'Purging updated {path.basename(extension[5:])}!')
                 
                 except commands.ExtensionNotLoaded as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{path.basename(extension)} is not running, or could not be found')
+                    await ctx.send(f'{path.basename(extension[5:])} is not running, or could not be found')
                 
                 except commands.ExtensionNotFound as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'{path.basename(extension)} could not be found!')
+                    await ctx.send(f'{path.basename(extension[5:])} could not be found!')
                 
                 except commands.NoEntryPointError as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.send(f'successfully loaded {path.basename(extension)}, but no setup was found!')
+                    await ctx.send(f'successfully loaded {path.basename(extension[5:])}, but no setup was found!')
             
     
     elif stdout2:
