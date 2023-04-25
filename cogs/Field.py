@@ -1,4 +1,4 @@
-import warnings
+from warnings import filterwarnings
 from glob import glob
 from random import choice, choices, randint
 from time import time
@@ -11,11 +11,12 @@ from num2words import num2words
 from requests import get, head
 from re import compile
 
-warnings.filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 
 class Fields(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        
+        filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 
         #Open the file and load each joke per line into a list
         jokefile = open('./files/quantumjokes.txt', 'r')

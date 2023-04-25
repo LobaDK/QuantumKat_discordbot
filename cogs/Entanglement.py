@@ -4,7 +4,7 @@ from os import execl, listdir, path, remove, rename, stat
 from random import choice, randint
 from string import ascii_letters, digits
 from sys import argv, executable
-from asyncio import sleep
+from asyncio import sleep as asyncsleep
 
 from discord import Message
 from discord.ext import commands
@@ -479,7 +479,7 @@ class Entanglements(commands.Cog):
             #Send the output of Git, which displays whichs files has been updated, and how much
             #Then sleep 2 seconds to allow the text to be sent, and read
             await ctx.reply(stderr2, silent=True)
-            await sleep(2)
+            await asyncsleep(2)
 
             #Attempt to get a list of files that changed between the pre-update version, using the previously required HASH, and now
             try:

@@ -1,6 +1,5 @@
-import random
-
-import discord
+from random import randint, choice
+from discord import Game
 from discord.ext import commands, tasks
 from num2words import num2words
 
@@ -66,19 +65,19 @@ class Activity(commands.Cog):
 
 ######################################################################################################
 
-    @tasks.loop(minutes=random.randint(30,180), count=None, reconnect=True)
+    @tasks.loop(minutes=randint(30,180), count=None, reconnect=True)
     async def change_activity(self):
-        self.change_activity.change_interval(minutes=(random.randint(10,180)))
+        self.change_activity.change_interval(minutes=(randint(10,180)))
 
-        purrHz = random.randint(1,100_000)
-        ordinal = num2words(random.randint(0,10_000), to='ordinal_num')
+        purrHz = randint(1,100_000)
+        ordinal = num2words(randint(0,10_000), to='ordinal_num')
 
-        await self.bot.change_presence(activity=discord.Game(name=random.choice(self.messages).format(hiss=random.choice(self.hissList),
-                                                                                                    purge=random.choice(self.purgeList),
-                                                                                                    purr=random.choice(self.purrList),
-                                                                                                    vibrate=random.choice(self.vibrateList),
-                                                                                                    noun=random.choice(self.nounList),
-                                                                                                    location=random.choice(self.locationList),
+        await self.bot.change_presence(activity=Game(name=choice(self.messages).format(hiss=choice(self.hissList),
+                                                                                                    purge=choice(self.purgeList),
+                                                                                                    purr=choice(self.purrList),
+                                                                                                    vibrate=choice(self.vibrateList),
+                                                                                                    noun=choice(self.nounList),
+                                                                                                    location=choice(self.locationList),
                                                                                                     purrHz=purrHz,
                                                                                                     ordinal=ordinal)))
 

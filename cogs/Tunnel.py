@@ -1,9 +1,10 @@
-import sys
-import traceback
+from sys import stderr
+from traceback import print_exception
 from datetime import datetime
 
 from discord.ext import commands
-import discord
+from discord import Client
+
 
 
 class Tunnel(commands.Cog):
@@ -37,11 +38,11 @@ Exception caused in command: {ctx.command}
 User: {ctx.author}, {ctx.author.id}
 Message ID: {ctx.message.id}
 Time: {datetime.now()}
-            '''), file=sys.stderr)
+            '''), file=stderr)
 
-            traceback.print_exception(type(error), error, error.__traceback__)
+            print_exception(type(error), error, error.__traceback__)
             
-            owner = discord.Client.get_user(self.bot, self.bot.owner_ids[0])
+            owner = Client.get_user(self.bot, self.bot.owner_ids[0])
             await owner.send(f'Exception caused in command: {ctx.command}\nUser: {ctx.author}, {ctx.author.id}\nMessage ID: {ctx.message.id}\nTime: {datetime.now()}\n\n{trace}')
 
     print('Started Tunnel!')

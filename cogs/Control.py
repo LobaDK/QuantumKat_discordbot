@@ -1,4 +1,4 @@
-import random
+from random import choice
 
 from discord.ext import commands
 
@@ -45,7 +45,7 @@ class Control(commands.Cog):
             or ctx.author.id == application.owner.id 
             or ctx.author.guild_permissions.administrator 
             or ctx.author.guild_permissions.moderate_members):
-                await ctx.send(f'*Poofs to another {random.choice(["universe", "reality", "dimension", "timeline"])}*')
+                await ctx.send(f'*Poofs to another {choice(["universe", "reality", "dimension", "timeline"])}*')
                 await ctx.guild.leave()
             else:
                 await ctx.send('Only server and bot owner, and mods can use this!')
