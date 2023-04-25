@@ -46,16 +46,16 @@ class Entanglements(commands.Cog):
                 for extension in self.initial_extensions:
                     try:
                         await self.bot.reload_extension(f'cogs.{extension}')
-                        await ctx.reply(f'Purging {extension}!', silent=True)
+                        await ctx.send(f'Purging {extension}!')
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{extension} is not running, or could not be found', silent=True)
+                        await ctx.send(f'{extension} is not running, or could not be found')
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{extension} could not be found!', silent=True)
+                        await ctx.send(f'{extension} could not be found!')
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'successfully loaded {extension}, but no setup was found!', silent=True)
+                        await ctx.send(f'successfully loaded {extension}, but no setup was found!')
             else:
                 cogs = module.split()
                 for cog in cogs:
@@ -197,7 +197,7 @@ class Entanglements(commands.Cog):
                         #If the downloaded video file is larger than 50MB's
                         if int(stat(f'{data_dir}{filename}.mp4').st_size / (1024 * 1024)) > 50:
                             await ctx.reply('Dataset exceeded recommended limit! Crunching some bits... this might take a ***bit***', silent=True)
-                            #Try and first lower the resolution of the original video by 1.5 e.g. 720p turns into 720p. 
+                            #Try and first lower the resolution of the original video by 1.5 e.g. 720p turns into 480. 
                             #For Discord embeds, this doesn't hurt viewability much, if at all
                             
                             #Get JSON output of the first video stream's metadata. Youtube only allows a single video stream, so this should always work
@@ -517,19 +517,19 @@ class Entanglements(commands.Cog):
                 if extension[5:] in output:
                     try:
                         await self.bot.reload_extension(extension)
-                        await ctx.reply(f'Purging updated {path.basename(extension[5:])}!', silent=True)
+                        await ctx.send(f'Purging updated {path.basename(extension[5:])}!')
                     
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{path.basename(extension[5:])} is not running, or could not be found', silent=True)
+                        await ctx.send(f'{path.basename(extension[5:])} is not running, or could not be found')
                     
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{path.basename(extension[5:])} could not be found!', silent=True)
+                        await ctx.send(f'{path.basename(extension[5:])} could not be found!')
                     
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'successfully loaded {path.basename(extension[5:])}, but no setup was found!', silent=True)
+                        await ctx.send(f'successfully loaded {path.basename(extension[5:])}, but no setup was found!')
                 
         
         elif stdout2:
