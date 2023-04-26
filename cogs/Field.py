@@ -3,12 +3,13 @@ from glob import glob
 from random import choice, choices, randint
 from time import time
 from urllib.parse import urljoin
+from os import path
 
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
-from requests import get, head
+from requests import get
 from re import compile
 
 
@@ -25,28 +26,40 @@ class Fields(commands.Cog):
 
 ###################################################################################################### command splitter for easier reading and navigating
 
-    async def arpr(self, ctx, url):
+    async def arpr(self, ctx, url, folder):
         links = []
+        files = self.getfiles(folder)
         for _ in range(ctx.message.content.split(" ")[0].count("r")):
-            response = get(url)
-            soup = BeautifulSoup(response.text, 'lxml')
-            link = soup.find('body')
-            links.append(url.replace('botrandom', '') + link.get_text().replace('./', ''))
+            file = choice(files)
+            links.append(url + path.basename(file))
         await ctx.reply('\n'.join(links), silent=True)
+
+######################################################################################################
+
+    async def getfiles(self, folder):
+        files = []
+        extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
+        for file in glob(f'{folder}*'):
+            if file.endswith(extensions):
+                files.append(file)
+        
+        return files
 
 ######################################################################################################
 
     @commands.command(aliases=['arr','arrr','arrrr','arrrrr'], brief='Returns a random file from aaaa.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from aaaa.lobadk.com.")
     async def ar(self, ctx):
-        url = 'https://aaaa.lobadk.com/botrandom'
-        await self.arpr(ctx, url)
+        url = 'https://aaaa.lobadk.com/'
+        folder = '/var/www/aaaa/'
+        await self.arpr(ctx, url, folder)
         
 ######################################################################################################
 
     @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
     async def pr(self, ctx):
-        url = 'https://possum.lobadk.com/botrandom'
-        await self.arpr(ctx, url)
+        url = 'https://possum.lobadk.com/'
+        folder = '/var/www/possum'
+        await self.arpr(ctx, url, folder)
 
 ######################################################################################################
 
