@@ -192,7 +192,7 @@ class Fields(commands.Cog):
                 p = await create_subprocess_shell(f'find /var/www/aaaa/ -maxdepth 1 -type f -iname *{search_keyword}*', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 await p.wait()
                 stdout, stderr = await p.communicate()
-                for file in stdout.split('\n'):
+                for file in stdout.decode().split('\n'):
                     if file.endswith(extensions):
                         files.append(url + path.basename(file))
 
