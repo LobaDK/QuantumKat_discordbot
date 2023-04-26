@@ -28,7 +28,7 @@ class Fields(commands.Cog):
 
     async def arpr(self, ctx, url, folder):
         links = []
-        files = self.getfiles(folder)
+        files = await self.getfiles(folder)
         for _ in range(ctx.message.content.split(" ")[0].count("r")):
             file = choice(files)
             links.append(url + path.basename(file))
