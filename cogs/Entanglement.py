@@ -46,7 +46,7 @@ class Entanglements(commands.Cog):
                 for extension in self.initial_extensions:
                     try:
                         await self.bot.reload_extension(f'cogs.{extension}')
-                        await msg.edit(content=msg.content + f'\nPurging {extension}!')
+                        msg = await msg.edit(content=msg.content + f'\nPurging {extension}!')
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{extension} is not running, or could not be found')
@@ -196,7 +196,7 @@ class Entanglements(commands.Cog):
 
                             #If the downloaded video file is larger than 50MB's
                             if int(stat(f'{data_dir}{filename}.mp4').st_size / (1024 * 1024)) > 50:
-                                await msg.edit(content=msg.content + '\nDataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
+                                msg = await msg.edit(content=msg.content + '\nDataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
                                 #Try and first lower the resolution of the original video by 1.5 e.g. 720p turns into 480. 
                                 #For Discord embeds, this doesn't hurt viewability much, if at all
                                 
@@ -499,14 +499,14 @@ class Entanglements(commands.Cog):
 
             #Iterate through each listed file
             if 'QuantumKat.py' in output:
-                await msg.edit(content=msg.content + '\nMain script updated, reboot?')
+                msg = await msg.edit(content=msg.content + '\nMain script updated, reboot?')
                 def check(m: Message):  # m = discord.Message.
                     return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
                 
                 try:
                     await self.bot.wait_for('message', check=check, timeout=10)
                 except TimeoutError:
-                    await msg.edit(content=msg.content + '\nNot rebooting...')
+                    msg = await msg.edit(content=msg.content + '\nNot rebooting...')
                 else:
                     await ctx.invoke(self.bot.get_command('reboot'))
             
@@ -519,7 +519,7 @@ class Entanglements(commands.Cog):
                 if extension[5:] in output:
                     try:
                         await self.bot.reload_extension(extension)
-                        await msg.edit(content=msg.content + f'\nPurging updated {path.basename(extension[5:])}!')
+                        msg = await msg.edit(content=msg.content + f'\nPurging updated {path.basename(extension[5:])}!')
                     
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
