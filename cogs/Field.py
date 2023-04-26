@@ -4,6 +4,7 @@ from random import choice, choices, randint, sample
 from time import time
 from urllib.parse import urljoin
 from os import path
+from asyncio import create_subprocess_shell, subprocess
 
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 from discord.ext import commands
@@ -184,23 +185,24 @@ class Fields(commands.Cog):
         if len(search_keyword) >= 2:
             allowed = compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
             if allowed.match(search_keyword):
-                response = get(f'https://aaaa.lobadk.com/?search={search_keyword}')
-                soup = BeautifulSoup(response.text, 'lxml')
-                links = []
+                files = []
+                extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
+                url = 'https://aaaa.lobadk.com/'
 
-                for link in soup.find_all('a'):
-                    temp = link.get('href')
-                    if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-                        continue
-                    links.append(temp)
+                p = await create_subprocess_shell(f'find /var/www/aaaa/ -maxdepth 1 -type f -iname *{search_keyword}*', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                await p.wait()
+                stdout, stderr = await p.communicate()
+                for file in stdout.split('\n'):
+                    if file.endswith(extensions):
+                        files.append(url + path.basename(file))
 
-                if len(links) == 0:
+                if len(files) == 0:
                     await ctx.reply('Search returned nothing', silent=True)
                 else:
-                    if len(' '.join(links)) > 4000:
+                    if len(' '.join(files)) > 4000:
                         await ctx.reply('Too many results! Try narrowing down the search', silent=True)
                     else:
-                        await ctx.reply(' '.join(links), silent=True)
+                        await ctx.reply(' '.join(files), silent=True)
             else:
                 await ctx.reply('At least two alphanumeric characters are required, or 1 alphanumeric character and a `.` at the start or end', silent=True)
         else:
