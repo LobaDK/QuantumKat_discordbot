@@ -372,21 +372,21 @@ class Entanglements(commands.Cog):
             #allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
             allowed = compile('^[\w]*(\.){1,}[\w]{1,}$')
             if not '/' in current_filename and allowed.match(current_filename) and allowed.match(new_filename):
-                await ctx.reply('Attempting to requantize data...', silent=True)
+                msg = await ctx.reply('Attempting to requantize data...', silent=True)
                 
                 try:
                     rename(f'{data_dir}{current_filename}', f'{data_dir}{new_filename}')
                 
                 except FileNotFoundError:
-                    await ctx.reply('Error! Data does not exist', silent=True)
+                    await msg.edit(content=msg.content + '\nError! Data does not exist')
                 
                 except FileExistsError:
-                    await ctx.reply('Error! Cannot requantize, data already exists', silent=True)
+                    await msg.edit(content=msg.content + '\nError! Cannot requantize, data already exists')
                 
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.reply('Critical error! Check logs for info', silent=True)
-                await ctx.reply('Success!', silent=True)
+                await msg.edit(content=msg.content + '\nSuccess!')
 
             else:
                 await ctx.reply('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```', silent=True)

@@ -203,13 +203,32 @@ class Fields(commands.Cog):
         if filename:
             allowed = compile('[^\w.\-]')
             if not allowed.match(filename):
+
+                links = []
+                SearchURL = f'https://aaaa.lobadk.com/?search={filename}'
+                response = get(SearchURL)
+                soup = BeautifulSoup(response.text, 'lxml')
+                for link in soup.find_all('a'):
+                    temp = link.get('href')
+                    if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
+                        continue
+                    links.append(temp)
+                
                 URL = f'https://aaaa.lobadk.com/{filename}'
+                
                 if head(URL).status_code == 200:
                     await ctx.reply(URL, silent=True)
+                
+                elif len(links) == 1:
+                    await ctx.reply(urljoin(URL, links[0]))
+                
                 else:
-                    await ctx.reply('File not found', silent=True)
+                    if len(links) == 0:
+                        await ctx.reply('File not found', silent=True)
+                    else:
+                        await ctx.reply(f'Found {len(links)} files. Please be more precise!')
         else:
-            await ctx.reply('Filename required!\n```?a example.mp4```', silent=True)
+            await ctx.reply('At least a partial filename is required!\n```?a example```', silent=True)
 
 ######################################################################################################
 
