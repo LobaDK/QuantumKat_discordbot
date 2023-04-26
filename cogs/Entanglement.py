@@ -478,7 +478,7 @@ class Entanglements(commands.Cog):
 
             #Send the output of Git, which displays whichs files has been updated, and how much
             #Then sleep 2 seconds to allow the text to be sent, and read
-            await ctx.reply(stderr2, silent=True)
+            msg = await ctx.reply(stderr2, silent=True)
             await asyncsleep(2)
 
             #Attempt to get a list of files that changed between the pre-update version, using the previously required HASH, and now
@@ -486,7 +486,7 @@ class Entanglements(commands.Cog):
                 process3 = await create_subprocess_shell(f'git diff --name-only {current_version} HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
-                await ctx.reply('Error running file-change check. Manual reloading required', silent=True)
+                await msg.edit(content=msg.content + '\nError running file-change check. Manual reloading required')
                 return
             
             #Save the output (filenames) in stdout2
@@ -497,14 +497,14 @@ class Entanglements(commands.Cog):
 
             #Iterate through each listed file
             if 'QuantumKat.py' in output:
-                await ctx.reply('Main script updated, reboot?', silent=True)
+                await msg.edit(content=msg.content + '\nMain script updated, reboot?')
                 def check(m: Message):  # m = discord.Message.
                     return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
                 
                 try:
                     await self.bot.wait_for('message', check=check, timeout=10)
                 except TimeoutError:
-                    await ctx.reply('No valid reply sent within 10 seconds', silent=True)
+                    await msg.edit(content=msg.content + '\nNot rebooting...')
                 else:
                     await ctx.invoke(self.bot.get_command('reboot'))
             
@@ -517,19 +517,19 @@ class Entanglements(commands.Cog):
                 if extension[5:] in output:
                     try:
                         await self.bot.reload_extension(extension)
-                        await ctx.send(f'Purging updated {path.basename(extension[5:])}!')
+                        await msg.edit(content=msg.content + f'\nPurging updated {path.basename(extension[5:])}!')
                     
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'{path.basename(extension[5:])} is not running, or could not be found')
+                        await msg.edit(content=msg.content + f'\n{path.basename(extension[5:])} is not running, or could not be found')
                     
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'{path.basename(extension[5:])} could not be found!')
+                        await msg.edit(content=msg.content + f'\n{path.basename(extension[5:])} could not be found!')
                     
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'successfully loaded {path.basename(extension[5:])}, but no setup was found!')
+                        await msg.edit(content=msg.content + f'\nsuccessfully loaded {path.basename(extension[5:])}, but no setup was found!')
                 
         
         elif stdout2:
