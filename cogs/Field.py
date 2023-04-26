@@ -1,6 +1,6 @@
 from warnings import filterwarnings
 from glob import glob
-from random import choice, choices, randint
+from random import choice, choices, randint, sample
 from time import time
 from urllib.parse import urljoin
 from os import path
@@ -27,21 +27,18 @@ class Fields(commands.Cog):
 ###################################################################################################### command splitter for easier reading and navigating
 
     async def arpr(self, ctx, url, folder):
-        links = []
-        files = await self.getfiles(folder)
-        for _ in range(ctx.message.content.split(" ")[0].count("r")):
-            file = choice(files)
-            links.append(url + path.basename(file))
+        files = await self.getfiles(url, folder)
+        links = sample(files, k=ctx.message.content.split(" ")[0].count("r"))
         await ctx.reply('\n'.join(links), silent=True)
 
 ######################################################################################################
 
-    async def getfiles(self, folder):
+    async def getfiles(self, url, folder):
         files = []
         extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
         for file in glob(f'{folder}*'):
             if file.endswith(extensions):
-                files.append(file)
+                files.append(url + path.basename(file))
         
         return files
 
