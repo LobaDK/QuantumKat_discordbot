@@ -58,7 +58,7 @@ class Fields(commands.Cog):
     @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
     async def pr(self, ctx):
         url = 'https://possum.lobadk.com/'
-        folder = '/var/www/possum'
+        folder = '/var/www/possum/'
         await self.arpr(ctx, url, folder)
 
 ######################################################################################################
