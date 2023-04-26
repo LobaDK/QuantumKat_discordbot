@@ -215,11 +215,8 @@ class Fields(commands.Cog):
                     links.append(temp)
                 
                 URL = f'https://aaaa.lobadk.com/{filename}'
-                
-                if head(URL).status_code == 200:
-                    await ctx.reply(URL, silent=True)
-                
-                elif len(links) == 1:
+
+                if len(links) == 1:
                     await ctx.reply(urljoin(URL, links[0]))
                 
                 else:
