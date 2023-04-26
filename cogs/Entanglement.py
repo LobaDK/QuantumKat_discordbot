@@ -46,7 +46,7 @@ class Entanglements(commands.Cog):
                 for extension in self.initial_extensions:
                     try:
                         await self.bot.reload_extension(f'cogs.{extension}')
-                        await msg.edit(msg.content + f'\nPurging {extension}!')
+                        await msg.edit(content=msg.content + f'\nPurging {extension}!')
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{extension} is not running, or could not be found')
