@@ -187,14 +187,13 @@ class Fields(commands.Cog):
             if allowed.match(search_keyword):
                 files = []
                 extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
-                url = 'https://aaaa.lobadk.com/'
 
                 p = await create_subprocess_shell(f'find /var/www/aaaa/ -maxdepth 1 -type f -iname *{search_keyword}*', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 await p.wait()
                 stdout, stderr = await p.communicate()
                 for file in stdout.decode().split('\n'):
                     if file.endswith(extensions):
-                        files.append(url + path.basename(file))
+                        files.append(path.basename(file))
 
                 if len(files) == 0:
                     await ctx.reply('Search returned nothing', silent=True)
