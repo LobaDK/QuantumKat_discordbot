@@ -20,6 +20,13 @@ class Fields(commands.Cog):
         
         filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 
+        self.aURL = 'https://aaaa.lobadk.com/'
+        self.a_folder = '/var/www/aaaa/'
+        self.pURL = 'https://possum.lobadk.com/'
+        self.p_folder = '/var/www/possum/'
+
+        self.extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
+
         #Open the file and load each joke per line into a list
         jokefile = open('./files/quantumjokes.txt', 'r')
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
@@ -36,10 +43,22 @@ class Fields(commands.Cog):
 
     async def getfiles(self, url, folder):
         files = []
-        extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
         for file in glob(f'{folder}*'):
-            if file.endswith(extensions):
+            if file.endswith(self.extensions):
                 files.append(url + path.basename(file))
+        
+        return files
+
+######################################################################################################
+
+    async def searchfiles(self, search_keyword):
+        files = []
+        p = await create_subprocess_shell(f'find {self.a_folder} -maxdepth 1 -type f -iname "*{search_keyword}*"', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        await p.wait()
+        stdout, stderr = await p.communicate()
+        for file in stdout.decode().split('\n'):
+            if file.endswith(self.extensions):
+                files.append(path.basename(file))
         
         return files
 
@@ -47,17 +66,13 @@ class Fields(commands.Cog):
 
     @commands.command(aliases=['arr','arrr','arrrr','arrrrr'], brief='Returns a random file from aaaa.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from aaaa.lobadk.com.")
     async def ar(self, ctx):
-        url = 'https://aaaa.lobadk.com/'
-        folder = '/var/www/aaaa/'
-        await self.arpr(ctx, url, folder)
+        await self.arpr(ctx, self.aURL, self.a_folder)
         
 ######################################################################################################
 
     @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
     async def pr(self, ctx):
-        url = 'https://possum.lobadk.com/'
-        folder = '/var/www/possum/'
-        await self.arpr(ctx, url, folder)
+        await self.arpr(ctx, self.pURL, self.p_folder)
 
 ######################################################################################################
 
@@ -185,20 +200,13 @@ class Fields(commands.Cog):
         if len(search_keyword) >= 2:
             allowed = compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
             if allowed.match(search_keyword):
-                files = []
-                extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
 
-                p = await create_subprocess_shell(f'find /var/www/aaaa/ -maxdepth 1 -type f -iname *{search_keyword}*', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                await p.wait()
-                stdout, stderr = await p.communicate()
-                for file in stdout.decode().split('\n'):
-                    if file.endswith(extensions):
-                        files.append(path.basename(file))
+                files = self.searchfiles(search_keyword)
 
                 if len(files) == 0:
                     await ctx.reply('Search returned nothing', silent=True)
                 else:
-                    if len(' '.join(files)) > 4000:
+                    if len(' '.join(files)) >= 4000:
                         await ctx.reply('Too many results! Try narrowing down the search', silent=True)
                     else:
                         await ctx.reply(' '.join(files), silent=True)
@@ -215,20 +223,10 @@ class Fields(commands.Cog):
             allowed = compile('[^\w.\-]')
             if not allowed.match(filename):
 
-                links = []
-                SearchURL = f'https://aaaa.lobadk.com/?search={filename}'
-                response = get(SearchURL)
-                soup = BeautifulSoup(response.text, 'lxml')
-                for link in soup.find_all('a'):
-                    temp = link.get('href')
-                    if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-                        continue
-                    links.append(temp)
-                
-                URL = f'https://aaaa.lobadk.com/{filename}'
+                links = self.searchfiles(filename)
 
                 if len(links) == 1:
-                    await ctx.reply(urljoin(URL, links[0]))
+                    await ctx.reply(urljoin(self.aURL, links[0]))
                 
                 else:
                     if len(links) == 0:
@@ -251,20 +249,13 @@ class Fields(commands.Cog):
         if search_keyword:
             allowed = compile('[^\w.\-]')
             if not allowed.match(search_keyword):
-                links = []
-                SearchURL = f'https://aaaa.lobadk.com/?search={search_keyword}'
-                URL = 'https://aaaa.lobadk.com/'
-                response = get(SearchURL)
-                soup = BeautifulSoup(response.text, 'lxml')
-                for link in soup.find_all('a'):
-                    temp = link.get('href')
-                    if temp.startswith('http') or temp.startswith(',') or temp.startswith('.'):
-                        continue
-                    links.append(temp)
+                
+                links = self.searchfiles(search_keyword)
+                
                 if len(links) == 0:
                     await ctx.reply('Search returned empty!', silent=True)
                 else:    
-                    await ctx.reply(urljoin(URL, choice(links)), silent=True)
+                    await ctx.reply(urljoin(self.aURL, choice(links)), silent=True)
             else:
                 await ctx.reply('Invalid character found in search parameter!', silent=True)
         else:
@@ -314,11 +305,7 @@ class Fields(commands.Cog):
 
     @commands.command(aliases=['acount', 'countaaaa', 'counta'], brief='Counts the images and videos stored on aaaa.lobadk.com.', description="Counts the amount of images and videos that are stored on aaaa.lobadk.com, excluding any unrelated files, as well as folders.")
     async def aaaacount(self, ctx):
-        extensions = ['*.gif', '*.jpeg', '*.jpg', '*.mov', '*.mp3', '*.mp4', '*.png', '*.webm', '*.webp']
-        all_files = []
-        for extension in extensions:
-            current_extension = glob(f'/var/www/aaaa/{extension}')
-            all_files += current_extension
+        all_files = self.getfiles(self.aURL, self.a_folder)
         await ctx.reply(f'There are currently {len(all_files)} quantised datasets.', silent=True)
 
 
