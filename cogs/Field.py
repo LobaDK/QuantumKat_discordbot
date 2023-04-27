@@ -201,7 +201,7 @@ class Fields(commands.Cog):
             allowed = compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
             if allowed.match(search_keyword):
 
-                files = self.searchfiles(search_keyword)
+                files = await self.searchfiles(search_keyword)
 
                 if len(files) == 0:
                     await ctx.reply('Search returned nothing', silent=True)
@@ -223,7 +223,7 @@ class Fields(commands.Cog):
             allowed = compile('[^\w.\-]')
             if not allowed.match(filename):
 
-                links = self.searchfiles(filename)
+                links = await self.searchfiles(filename)
 
                 if len(links) == 1:
                     await ctx.reply(urljoin(self.aURL, links[0]))
@@ -250,7 +250,7 @@ class Fields(commands.Cog):
             allowed = compile('[^\w.\-]')
             if not allowed.match(search_keyword):
                 
-                links = self.searchfiles(search_keyword)
+                links = await self.searchfiles(search_keyword)
                 
                 if len(links) == 0:
                     await ctx.reply('Search returned empty!', silent=True)
@@ -305,7 +305,7 @@ class Fields(commands.Cog):
 
     @commands.command(aliases=['acount', 'countaaaa', 'counta'], brief='Counts the images and videos stored on aaaa.lobadk.com.', description="Counts the amount of images and videos that are stored on aaaa.lobadk.com, excluding any unrelated files, as well as folders.")
     async def aaaacount(self, ctx):
-        all_files = self.getfiles(self.aURL, self.a_folder)
+        all_files = await self.getfiles(self.aURL, self.a_folder)
         await ctx.reply(f'There are currently {len(all_files)} quantised datasets.', silent=True)
 
 
