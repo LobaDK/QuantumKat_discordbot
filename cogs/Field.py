@@ -1,4 +1,3 @@
-from warnings import filterwarnings
 from glob import glob
 from random import choice, choices, randint, sample
 from time import time
@@ -6,19 +5,15 @@ from urllib.parse import urljoin
 from os import path
 from asyncio import create_subprocess_shell, subprocess
 
-from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
-from requests import get
 from re import compile
 
 
 class Fields(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        
-        filterwarnings("ignore", category=MarkupResemblesLocatorWarning)
 
         self.aURL = 'https://aaaa.lobadk.com/'
         self.a_folder = '/var/www/aaaa/'

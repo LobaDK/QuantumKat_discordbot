@@ -463,7 +463,7 @@ class Entanglements(commands.Cog):
             return
 
         #For some reason after decoding Git's output stream, "b'" and "\\n'" shows up everywhere in the output
-        #This removes any of them, cleaning up the output Test
+        #This removes any of them, cleaning up the output
         stdout2 = stdout2.decode()
         stdout2 = stdout2.replace("b'","")
         stdout2 = stdout2.replace("\\n'","")
@@ -492,7 +492,7 @@ class Entanglements(commands.Cog):
                 await msg.edit(content=msg.content + '\nError running file-change check. Manual reloading required')
                 return
             
-            #Save the output (filenames) in stdout2
+            #Save the output (filenames) in stderr3
             stderr3, stdout3 = await process3.communicate()
 
             #Decode and remove "b'" characters

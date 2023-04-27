@@ -97,7 +97,7 @@ class Activity(commands.Cog):
             self.change_activity.cancel()
             await ctx.message.add_reaction('👌')
         else:
-            await ctx.send('Activity is not running!')
+            await ctx.reply('Activity is not running!', silent=True)
 
 ######################################################################################################
 
@@ -116,7 +116,7 @@ class Activity(commands.Cog):
             self.change_activity.start()
             await ctx.message.add_reaction('👌')
         else:
-            await ctx.send('Activity is already running!')
+            await ctx.reply('Activity is already running!', silent=True)
 
 ######################################################################################################
 
