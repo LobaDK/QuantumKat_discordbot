@@ -163,7 +163,7 @@ class Entanglements(commands.Cog):
                 
                     #Download the best (up to 720p) MP4 video and m4a audio, and then combines them
                     #Or a single video with audio included (up to 720p), if that's the best option
-                    arg = f'yt-dlp -f bv[ext=mp4]["height<=720"]+ba[ext=m4a]/b[ext=mp4]["height<=720"] "{URL}" --no-playlist -o "{data_dir}{filename}.%(ext)s"'
+                    arg = f'yt-dlp -f bv[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720] {URL} --no-playlist -o "{data_dir}{filename}.%(ext)s"'
                     
                     msg = await ctx.reply('Creating quantum tunnel... Tunnel created! Quantizing data...', silent=True)
                         
