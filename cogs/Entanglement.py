@@ -493,20 +493,14 @@ class Entanglements(commands.Cog):
 
         current_version = stderr1.decode().replace('\n', '')
 
-        try:
-            process2 = await create_subprocess_shell('git pull', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            
-            #DO NOT CHANGE ORDER
-            #Git's output seems to be reversed, and most information gets piped to STDERR instead for some reason
-            #STDOUT may also sometimes contain either the data, or some other random data, or part of the whole output, from STDERR
-            #"Aready up to date" is piped to STDUT, but output from file changes when doing "git pull" for example
-            #Are outputted to STDERR instead, hence why it is also reversed here
-            stderr2, stdout2 = await process2.communicate()
+        process2 = await create_subprocess_shell('git pull', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        except Exception as e:
-            print('{}: {}'.format(type(e).__name__, e))
-            await ctx.reply('Error running update', silent=True)
-            return
+        #DO NOT CHANGE ORDER
+        #Git's output seems to be reversed, and most information gets piped to STDERR instead for some reason
+        #STDOUT may also sometimes contain either the data, or some other random data, or part of the whole output, from STDERR
+        #"Aready up to date" is piped to STDUT, but output from file changes when doing "git pull" for example
+        #Are outputted to STDERR instead, hence why it is also reversed here
+        stderr2, stdout2 = await process2.communicate()
 
         #For some reason after decoding Git's output stream, "b'" and "\\n'" shows up everywhere in the output
         #This removes any of them, cleaning up the output
