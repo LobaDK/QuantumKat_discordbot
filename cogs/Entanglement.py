@@ -603,7 +603,7 @@ class Entanglements(commands.Cog):
             if allowed.match(filename):
 
                 try:
-                    remove(f'/var/www/{data_dir}/{filename}')
+                    remove(f'/var/www/{data_dir}{filename}')
                 
                 except FileNotFoundError:
                     await ctx.reply('Dataset not found. Did you spell it correctly?', silent=True)
