@@ -37,6 +37,9 @@ for cog in listdir('./cogs'):
 def ffmpegInstalled():
     return which('ffmpeg') is not None
 
+def ffprobeInstalled():
+    return which('ffprobe') is not None
+
 def ytdlpInstalled():
     return which('yt-dlp') is not None
 
@@ -50,6 +53,13 @@ async def setup(bot):
             exit()
         else:
             print('No ffmpeg executable found')
+
+    if not ffprobeInstalled():
+        if not ignoreMissingExe:
+            print('Exiting due to ffprobe not being found')
+            exit()
+        else:
+            print('No ffprobe executable found')
 
     if not ytdlpInstalled():
         if not ignoreMissingExe:

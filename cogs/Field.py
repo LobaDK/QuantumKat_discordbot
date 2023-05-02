@@ -27,14 +27,10 @@ class Fields(commands.Cog):
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
 
-###################################################################################################### command splitter for easier reading and navigating
-
     async def arpr(self, ctx, url, folder):
         files = await self.getfiles(url, folder)
         links = sample(files, k=ctx.message.content.split(" ")[0].count("r"))
         await ctx.reply('\n'.join(links), silent=True)
-
-######################################################################################################
 
     async def getfiles(self, url, folder):
         files = []
@@ -43,8 +39,6 @@ class Fields(commands.Cog):
                 files.append(url + path.basename(file))
         
         return files
-
-######################################################################################################
 
     async def searchfiles(self, search_keyword):
         files = []
