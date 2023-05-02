@@ -393,10 +393,14 @@ class Entanglements(commands.Cog):
                                 message = f'\nSuccess! Data quantized and bit-crunched to <{data_domain}{filename}.mp4>\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attemp(s)'
 
                             await msg.edit(content=msg.content + message)
-
+                            
                         #Else statement for the process returncode, from the initial ffmpeg command
                         else:
                             await ctx.reply('Non-0 exit status code detected!', silent=True)
+
+                    #If the file is under 50MB's
+                    else:
+                        await msg.edit(content=msg.content + f'\nSuccess! Data quantized to <{data_domain}{filename}.mp4>')
 
                 else:
                     ctx.reply('No output detected in yt-dlp!', silent=True)
@@ -603,7 +607,6 @@ class Entanglements(commands.Cog):
             if allowed.match(filename):
 
                 try:
-                    print(data_dir + filename)
                     remove(data_dir + filename)
                 
                 except FileNotFoundError:
