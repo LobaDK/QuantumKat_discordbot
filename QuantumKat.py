@@ -43,9 +43,6 @@ def ffprobeInstalled():
 def ytdlpInstalled():
     return which('yt-dlp') is not None
 
-def wgetInstalled():
-    return which('wget') is not None
-
 async def setup(bot):
     if not ffmpegInstalled():
         if not ignoreMissingExe:
@@ -67,13 +64,6 @@ async def setup(bot):
             exit()
         else:
             print('No yt-dlp executable found')
-
-    if not wgetInstalled():
-        if not ignoreMissingExe:
-            print('Exiting due to wget not being found')
-            exit()
-        else:
-            print('No wget executable found')
     
     # Iterate through each cog and start it
     for extension in initial_extensions:
