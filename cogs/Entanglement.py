@@ -229,7 +229,7 @@ class Entanglements(commands.Cog):
                 #and the input filename does not
                 #split and add the extension to the filename
                 if Path(URL).suffix and not Path(filename).suffix:
-                    filename = filename + Path(URL).suffix.lower()
+                    filename = filename + Path(URL).suffix[:4].lower()
 
                 #If the filename doesn't contain a file extension either
                 elif not Path(filename).suffix:
