@@ -1,12 +1,14 @@
 from asyncio import create_subprocess_shell, subprocess
 from json import loads
-from os import execl, listdir, path, remove, rename, stat
+from os import execl, listdir, remove, rename, stat
 from random import choice, randint
 from string import ascii_letters, digits
 from sys import argv, executable
 from asyncio import sleep as asyncsleep
 from shlex import quote
 from re import compile
+from pathlib import Path
+from requests import get
 
 from discord import Message
 from discord.ext import commands
@@ -218,39 +220,24 @@ class Entanglements(commands.Cog):
         
         msg = await msg.edit(content=msg.content + ' Tunnel created!')
 
-        #If mode is 'wget' i.e. normal downloads
-        if mode.casefold() == 'wget':
+        #If mode is 'normal' i.e. normal downloads
+        if mode.casefold() == 'normal':
             
             while True:
 
                 #If the URL contains a file extension at the end
                 #and the input filename does not
                 #split and add the extension to the filename
-                if path.splitext(URL)[1] and not path.splitext(filename)[1]:
-                    filename = filename + path.splitext(URL)[1].lower()
+                if Path(URL).suffix and not Path(filename).suffix:
+                    filename = filename + Path(URL).suffix.lower()
 
                 #If the filename doesn't contain a file extension either
-                elif not path.splitext(filename)[1]:
+                elif not Path(filename).suffix:
                     await ctx.reply('No file extension was found for the filename!', silent=True)
                     return
 
-                #Use shlex's quote module for shell escaping
-                arg = f'wget -nc -O {quote(data_dir + filename)} {quote(URL)}'
-
-                msg = await msg.edit(content=msg.content + f' Retrieving {filename}')
-
-                try:
-                    process = await create_subprocess_shell(arg, stderr=subprocess.PIPE)
-                
-                except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.reply('Error, quantization tunnel collapsed unexpectedly!', silent=True)
-                    return
-
-                _, stderr = await process.communicate()
-
-                #If the file already exist, either notify the user, or if they chose a random filename, loop back to the start and try again with a new one
-                if 'already there; not retrieving' in stderr.decode():
+                #If the filename already exists
+                if Path(data_dir, filename).exists():
                     
                     #If the old filename is not 'rand' and thus not supposed to be randomly generated
                     if not oldfilename.lower() == 'rand':
@@ -261,9 +248,24 @@ class Entanglements(commands.Cog):
                     else:
                         filename = await self.generatefilename()
                         continue
-                
-                #If the iflename does not already exist
-                else:
+
+                #Request and write file data
+                with open(f'{Path(data_dir, filename)}', 'wb') as quantizer:
+                    msg = await msg.edit(content=msg.content + f' Retrieving {filename}')
+                    
+                    response = get(URL, stream=True)
+
+                    if not response.ok:
+                        print(f'URL: {URL}\nStatus code: {response.status_code}')
+                        await ctx.reply('Error connecting to server!')
+                        return
+                    
+                    for block in response.iter_content(1024):
+                        if not block:
+                            break
+
+                        quantizer.write(block)
+
                     await msg.edit(content=msg.content + f'\nSuccess! Data quantized to <{data_domain}{filename}>')
                     return
 
@@ -406,9 +408,9 @@ class Entanglements(commands.Cog):
                     ctx.reply('No output detected in yt-dlp!', silent=True)
                     return
 
-        #If mode is not 'wget' or 'yt'
+        #If mode is not 'normal' or 'yt'
         else:
-            await ctx.reply("Only 'wget'|'yt' are valid download modes!", silent=True)
+            await ctx.reply("Only 'normal'|'yt' are valid download modes!", silent=True)
             return
 
 ######################################################################################################
@@ -565,19 +567,19 @@ class Entanglements(commands.Cog):
                 if extension[5:] in output:
                     try:
                         await self.bot.reload_extension(extension)
-                        msg = await msg.edit(content=msg.content + f'\nPurging updated {path.basename(extension[5:])}!')
+                        msg = await msg.edit(content=msg.content + f'\nPurging updated {extension[5:]}!')
                     
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\n{path.basename(extension[5:])} is not running, or could not be found')
+                        await msg.edit(content=msg.content + f'\n{extension[5:]} is not running, or could not be found')
                     
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\n{path.basename(extension[5:])} could not be found!')
+                        await msg.edit(content=msg.content + f'\n{extension[5:]} could not be found!')
                     
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\nsuccessfully loaded {path.basename(extension[5:])}, but no setup was found!')
+                        await msg.edit(content=msg.content + f'\nsuccessfully loaded {extension[5:]}, but no setup was found!')
                 
         
         elif stdout2:
