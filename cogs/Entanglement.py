@@ -30,10 +30,10 @@ class Entanglements(commands.Cog):
     possum_dir = '/var/www/possum/'
     possum_domain = 'https://possum.lobadk.com/'
 
-    characters = ascii_letters + digits
+    characters = f'{ascii_letters}{digits}'
 
     async def getvideometadata(self, ctx, data_dir, filename):
-        arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json {quote(data_dir + filename)}.mp4'
+        arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json {quote(f"{data_dir}{filename}.mp4")}'
 
         #Attempt to run command with above args
         stream = await create_subprocess_shell(arg2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -61,7 +61,7 @@ class Entanglements(commands.Cog):
         #Transcode original video into an h264 stream, with an average bitrate calculated from the above code, and scale the video to the new resolution
         #In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
         #or the audio stream's bitrate (I don't know how Youtube handles muted videos)
-        arg4 = f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac -b:v {str(int(bitrate))}k -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(data_dir + filename + ".tmp")}'
+        arg4 = f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac -b:v {str(int(bitrate))}k -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(f"{data_dir}{filename}.tmp")}'
 
         try:
             process3 = await create_subprocess_shell(arg4)
@@ -101,7 +101,7 @@ class Entanglements(commands.Cog):
                 for extension in self.initial_extensions:
                     try:
                         await self.bot.reload_extension(f'cogs.{extension}')
-                        msg = await msg.edit(content=msg.content + f'\nPurging {extension}!')
+                        msg = await msg.edit(content=f'{msg.content}\nPurging {extension}!')
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{extension} is not running, or could not be found')
@@ -114,7 +114,7 @@ class Entanglements(commands.Cog):
             else:
                 cogs = module.split()
                 for cog in cogs:
-                    if cog[0].islower:
+                    if cog[0].islower():
                         cog = cog.replace(cog[0], cog[0].upper(), 1)
                         try:
                             await self.bot.reload_extension(f'cogs.{cog}')
@@ -140,7 +140,7 @@ class Entanglements(commands.Cog):
         if module:
             cogs = module.split()
             for cog in cogs:
-                if cog[0].islower:
+                if cog[0].islower():
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
                     try:
                         await self.bot.load_extension(f'cogs.{cog}')
@@ -166,7 +166,7 @@ class Entanglements(commands.Cog):
         if module:
             cogs = module.split()
             for cog in cogs:
-                if cog[0].islower:
+                if cog[0].islower():
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
                     try:
                         await self.bot.unload_extension(f'cogs.{cog}')
@@ -218,7 +218,7 @@ class Entanglements(commands.Cog):
             URL = URL.replace('<', '')
             URL = URL.replace('>', '')
         
-        msg = await msg.edit(content=msg.content + ' Tunnel created!')
+        msg = await msg.edit(content=f'{msg.content} Tunnel created!')
 
         #If mode is 'normal' i.e. normal downloads
         if mode.casefold() == 'normal':
@@ -229,7 +229,7 @@ class Entanglements(commands.Cog):
                 #and the input filename does not
                 #split and add the extension to the filename
                 if Path(URL).suffix and not Path(filename).suffix:
-                    filename = filename + Path(URL).suffix[:4].lower()
+                    filename = f'{filename}{Path(URL).suffix[:4].lower()}'
 
                 #If the filename doesn't contain a file extension either
                 elif not Path(filename).suffix:
@@ -240,7 +240,7 @@ class Entanglements(commands.Cog):
                 if Path(data_dir, filename).exists():
                     
                     #If the old filename is not 'rand' and thus not supposed to be randomly generated
-                    if not oldfilename.lower() == 'rand':
+                    if not oldfilename.casefold() == 'rand':
                         await ctx.reply('Filename already exists, consider using a different name', silent=True)
                         return
                     
@@ -251,7 +251,7 @@ class Entanglements(commands.Cog):
 
                 #Request and write file data
                 with open(f'{Path(data_dir, filename)}', 'wb') as quantizer:
-                    msg = await msg.edit(content=msg.content + f' Retrieving {filename}')
+                    msg = await msg.edit(content=f'{msg.content} Retrieving {filename}')
                     
                     response = get(URL, stream=True)
 
@@ -266,7 +266,7 @@ class Entanglements(commands.Cog):
 
                         quantizer.write(block)
 
-                    await msg.edit(content=msg.content + f'\nSuccess! Data quantized to <{data_domain}{filename}>')
+                    await msg.edit(content=f'{msg.content} \nSuccess! Data quantized to {data_domain}{filename}', suppress=True)
                     return
 
         #If mode is 'yt' i.e. requires yt-dlp
@@ -281,9 +281,9 @@ class Entanglements(commands.Cog):
 
             #Download the best (up to 720p) MP4 video and m4a audio, and then combines them
             #Or a single video with audio included (up to 720p), if that's the best option
-            arg = f'yt-dlp -f "bv[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720]" {quote(URL)} --no-playlist -o {quote(data_dir + filename + ".%(ext)s")}'
+            arg = f'yt-dlp -f "bv[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720]" {quote(URL)} --no-playlist -o {quote(f"{data_dir}{filename}.%(ext)s")}'
 
-            msg = await msg.edit(content=msg.content + f' Retrieving {filename}')
+            msg = await msg.edit(content=f'{msg.content} Retrieving {filename}')
 
             #Make the bot show as 'typing' in the channel while it is downloading the video
             async with ctx.typing():
@@ -319,8 +319,8 @@ class Entanglements(commands.Cog):
                 elif stdout:
                     
                     #Check if the downloaded file is above 50MB's
-                    if int(stat(quote(data_dir + filename) + '.mp4').st_size / (1024 * 1024)) > 50:
-                        msg = await msg.edit(content=msg.content + '\nDataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
+                    if int(stat(quote(f'{data_dir}{filename}.mp4')).st_size / (1024 * 1024)) > 50:
+                        msg = await msg.edit(content=f'{msg.content} \nDataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
 
                         #We wanna try and lower the resolution first by 1.5 
                         #as that should hurt quality and viewability in 
@@ -346,7 +346,7 @@ class Entanglements(commands.Cog):
                         #and downscale the video to the new resolution.
                         #Currently audio is encoded regardless if it's there or not
                         #so in the future we should check if audio is actually present.
-                        arg3 = f'ffmpeg -y -i {quote(data_dir + filename + ".mp4")} -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(data_dir + filename + ".tmp")}'
+                        arg3 = f'ffmpeg -y -i {quote(f"{data_dir}{filename}.mp4")} -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(f"{data_dir}{filename}.tmp")}'
                         
                         #Attempt to run command with above args
                         try:
@@ -390,11 +390,11 @@ class Entanglements(commands.Cog):
                             #If the bitrate option was reached, this would be at least 1
                             #Otherwise if it's 0, it means it never attempted to transcode with a variable bitrate
                             if attempts == 0:
-                                message = f'\nSuccess! Data quantized and bit-crunched to <{data_domain}{filename}.mp4>\nResized to {frame_width}:{frame_height}'
+                                message = f'\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nResized to {frame_width}:{frame_height}'
                             else:
-                                message = f'\nSuccess! Data quantized and bit-crunched to <{data_domain}{filename}.mp4>\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attemp(s)'
+                                message = f'\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attemp(s)'
 
-                            await msg.edit(content=msg.content + message)
+                            await msg.edit(content=f'{msg.content}{message}', suppress=True)
                             
                         #Else statement for the process returncode, from the initial ffmpeg command
                         else:
@@ -402,7 +402,7 @@ class Entanglements(commands.Cog):
 
                     #If the file is under 50MB's
                     else:
-                        await msg.edit(content=msg.content + f'\nSuccess! Data quantized to <{data_domain}{filename}.mp4>')
+                        await msg.edit(content=f'{msg.content}\nSuccess! Data quantized to {data_domain}{filename}.mp4', suppress=True)
 
                 else:
                     ctx.reply('No output detected in yt-dlp!', silent=True)
@@ -431,15 +431,19 @@ class Entanglements(commands.Cog):
                     rename(f'{data_dir}{current_filename}', f'{data_dir}{new_filename}')
                 
                 except FileNotFoundError:
-                    await msg.edit(content=msg.content + '\nError! Data does not exist')
+                    await msg.edit(content=f'{msg.content}\nError! Data does not exist')
+                    return
                 
                 except FileExistsError:
-                    await msg.edit(content=msg.content + '\nError! Cannot requantize, data already exists')
+                    await msg.edit(content=f'{msg.content}\nError! Cannot requantize, data already exists')
+                    return
                 
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.reply('Critical error! Check logs for info', silent=True)
-                await msg.edit(content=msg.content + '\nSuccess!')
+                    return
+
+                await msg.edit(content=f'{msg.content}\nSuccess!')
 
             else:
                 await ctx.reply('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```', silent=True)
@@ -536,7 +540,7 @@ class Entanglements(commands.Cog):
                 process3 = await create_subprocess_shell(f'git diff --name-only {current_version} HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
-                await msg.edit(content=msg.content + '\nError running file-change check. Manual reloading required')
+                await msg.edit(content=f'{msg.content}\nError running file-change check. Manual reloading required')
                 return
             
             #Save the output (filenames) in stderr3
@@ -547,14 +551,14 @@ class Entanglements(commands.Cog):
 
             #Iterate through each listed file
             if 'QuantumKat.py' in output:
-                msg = await msg.edit(content=msg.content + '\nMain script updated, reboot?')
+                msg = await msg.edit(content=f'{msg.content}\nMain script updated, reboot?')
                 def check(m: Message):  # m = discord.Message.
-                    return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
+                    return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.casefold() == 'yes'
                 
                 try:
                     await self.bot.wait_for('message', check=check, timeout=10)
                 except TimeoutError:
-                    msg = await msg.edit(content=msg.content + '\nNot rebooting...')
+                    msg = await msg.edit(content=f'{msg.content}\nNot rebooting...')
                 else:
                     await ctx.invoke(self.bot.get_command('reboot'))
             
@@ -567,19 +571,19 @@ class Entanglements(commands.Cog):
                 if extension[5:] in output:
                     try:
                         await self.bot.reload_extension(extension)
-                        msg = await msg.edit(content=msg.content + f'\nPurging updated {extension[5:]}!')
+                        msg = await msg.edit(content=f'{msg.content}\nPurging updated {extension[5:]}!')
                     
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\n{extension[5:]} is not running, or could not be found')
+                        await msg.edit(content=f'{msg.content}\n{extension[5:]} is not running, or could not be found')
                     
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\n{extension[5:]} could not be found!')
+                        await msg.edit(content=f'{msg.content}\n{extension[5:]} could not be found!')
                     
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\nsuccessfully loaded {extension[5:]}, but no setup was found!')
+                        await msg.edit(content=f'{msg.content}\nsuccessfully loaded {extension[5:]}, but no setup was found!')
                 
         
         elif stdout2:
@@ -609,7 +613,7 @@ class Entanglements(commands.Cog):
             if allowed.match(filename):
 
                 try:
-                    remove(data_dir + filename)
+                    remove(f'{data_dir}{filename}')
                 
                 except FileNotFoundError:
                     await ctx.reply('Dataset not found. Did you spell it correctly?', silent=True)

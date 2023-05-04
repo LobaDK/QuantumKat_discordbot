@@ -73,7 +73,7 @@ class Fields(commands.Cog):
         else:
             verb = 'times'
 
-        pets = 'pe' + 't' * quantum_amount + 's'
+        pets = 'pe' + ('t' * quantum_amount) + 's'
 
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {pets}')
@@ -90,7 +90,7 @@ class Fields(commands.Cog):
             elif quantummode == 'quantumloop':
                 petloop = ""
                 for _ in range(0,randint(8,40)):
-                    petloop = petloop + choice(['pet','pat','petting', 'patting'])
+                    petloop = f"{petloop}{choice(['pet','pat','petting', 'patting'])}"
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}')
@@ -106,7 +106,7 @@ class Fields(commands.Cog):
             verb = 'times'
         quantumspan = randint(0,100)
 
-        hugs = 'hu' + 'g' * quantum_amount + 's'
+        hugs = 'hu' + ('g' * quantum_amount) + 's'
 
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {hugs}')
@@ -128,13 +128,13 @@ class Fields(commands.Cog):
     async def quantumpet(self, ctx, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
         quantum_amount = randint(100,1000)
-        qpets = 'pe' + 't' * int(str(quantum_amount)[:2]) + 's'
+        qpets = 'pe' + ('t' * int(str(quantum_amount)[:2])) + 's'
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
         elif mention in optional_user_or_object:
             quantumpetloop = ""
             for _ in range(0,randint(8,40)):
-                quantumpetloop = quantumpetloop + choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])
+                quantumpetloop = f"{quantumpetloop}{choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])}"
             await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {optional_user_or_object}')
@@ -145,13 +145,13 @@ class Fields(commands.Cog):
     async def quantumhug(self, ctx, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
         quantum_amount = randint(100,1000)
-        qhugs = 'hu' + 'g' * int(str(quantum_amount)[:2]) + 's'
+        qhugs = 'hu' + ('g' * int(str(quantum_amount)[:2])) + 's'
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {ctx.author.mention}')
         elif mention in optional_user_or_object:
             quantumhugloop = ""
             for _ in range(0,randint(8,40)):
-                quantumhugloop = quantumhugloop + choice(['Quantum hugging the','QuantumKat','QuantumKatting the','Quantum hug'])
+                quantumhugloop = f"{quantumhugloop}{choice(['Quantum hugging the','QuantumKat','QuantumKatting the','Quantum hug'])}"
             await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {optional_user_or_object}')
@@ -165,7 +165,7 @@ class Fields(commands.Cog):
         if any(_ in item for _ in substring):
             whowin = choices(['I win!','You win!'], k=1, weights=[100,5])[0]
             if item == 'scissor':
-                item = item + 's'
+                item = f'{item}s'
             elif item == 'rocks' or item == 'papers':
                 item = item[:-1]
             if whowin == 'I win!':
@@ -263,7 +263,7 @@ class Fields(commands.Cog):
             pingresponse = 'ping'
         
         if ping_mode:
-            if ping_mode.lower() == 'latency':
+            if ping_mode.casefold() == 'latency':
                 
                 #Get current local time on the machine clock and multiply by 1000 to get milliseconds
                 local_time_in_ms = (round(time() * 1000))
