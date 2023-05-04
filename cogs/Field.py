@@ -2,6 +2,7 @@ from glob import glob
 from random import choice, choices, randint, sample
 from time import time
 from urllib.parse import urljoin
+from urllib import parse
 from pathlib import Path
 from asyncio import create_subprocess_shell, subprocess
 
@@ -36,7 +37,7 @@ class Fields(commands.Cog):
         files = []
         for file in glob(f'{folder}*'):
             if file.endswith(self.extensions):
-                files.append(Path(url, Path(file).name))
+                files.append(parse.urljoin(url, str(Path(file).name)))
         
         return files
 
@@ -47,7 +48,7 @@ class Fields(commands.Cog):
         stdout, stderr = await p.communicate()
         for file in stdout.decode().split('\n'):
             if file.endswith(self.extensions):
-                files.append(Path(file).name)
+                files.append(str(Path(file).name))
         
         return files
 
