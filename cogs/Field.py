@@ -94,7 +94,7 @@ class Fields(commands.Cog):
                     petloop = f"{petloop}{choice(['pet','pat','petting', 'patting'])}"
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
         else:
-            await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}')
+            await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}', silent=True)
 
 ######################################################################################################
 
@@ -121,7 +121,7 @@ class Fields(commands.Cog):
             elif quantummode == 'frequency':
                 await ctx.send(f'Quantum vibrates at {randint(1,100_000)}hz, teleporting {choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension","universe","reality","timeline"])}')
         else:
-            await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {hugs}')
+            await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {hugs}', silent=True)
 
 ######################################################################################################
 
@@ -138,7 +138,7 @@ class Fields(commands.Cog):
                 quantumpetloop = f"{quantumpetloop}{choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])}"
             await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
-            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {optional_user_or_object}')
+            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {optional_user_or_object}', silent=True)
 
 ######################################################################################################
 
@@ -155,7 +155,7 @@ class Fields(commands.Cog):
                 quantumhugloop = f"{quantumhugloop}{choice(['Quantum hugging the','QuantumKat','QuantumKatting the','Quantum hug'])}"
             await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
-            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {optional_user_or_object}')
+            await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {optional_user_or_object}', silent=True)
 
 ######################################################################################################
 
