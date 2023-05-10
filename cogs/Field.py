@@ -79,20 +79,24 @@ class Fields(commands.Cog):
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {ctx.author.mention} and {pets}')
             return
-
+        
         mention = f'<@{self.bot.user.id}>'
         if mention in optional_user_or_object:
-            quantumspan = randint(0,100)
-            quantummode = choices(['purr','frequency','quantumloop'], k=1, weights=[10,10,2])[0]
-            if quantummode == 'purr':
+            async def quantumpurr(self, ctx, quantumspan):
+                quantumspan = randint(0,100)
                 await ctx.send(f'Quantum purrs across {quantumspan} {choices(["dimension","universe","reality","timeline","dimension, universe, realitie and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
-            elif quantummode == 'frequency':
+            
+            async def quantumfrequency(self, ctx):
                 await ctx.send(f'Quantum vibrates at {randint(1,100_000)}hz')
-            elif quantummode == 'quantumloop':
+
+            async def quantumloop(self, ctx):
                 petloop = ""
                 for _ in range(0,randint(8,40)):
                     petloop = f"{petloop}{choice(['pet','pat','petting', 'patting'])}"
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
+                    
+            await choices([quantumpurr, quantumfrequency, quantumloop], k=1, weights=[10,10,2])[0]()
+        
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}', silent=True)
 
