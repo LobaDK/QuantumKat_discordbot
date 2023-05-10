@@ -116,21 +116,21 @@ class Entanglements(commands.Cog):
                 for cog in cogs:
                     if cog[0].islower():
                         cog = cog.replace(cog[0], cog[0].upper(), 1)
-                        try:
-                            await self.bot.reload_extension(f'cogs.{cog}')
-                            if len(cogs) == 1:
-                                await ctx.reply(f'Superposition irregularity detected in Quantum {cog}! Successfully entangled to the {num2words(randint(1,1000), to="ordinal_num")} {location}!', silent=True)
-                            else:
-                                await ctx.reply(f'Purrging {cog}!', silent=True)
-                        except commands.ExtensionNotFound as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply(f'{cog} could not be found!', silent=True)
-                        except commands.ExtensionNotLoaded as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply(f'{cog} is not running, or could not be found!', silent=True)
-                        except commands.NoEntryPointError as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply(f'successfully loaded {cog}, but no setup was found!', silent=True)
+                    try:
+                        await self.bot.reload_extension(f'cogs.{cog}')
+                        if len(cogs) == 1:
+                            await ctx.reply(f'Superposition irregularity detected in Quantum {cog}! Successfully entangled to the {num2words(randint(1,1000), to="ordinal_num")} {location}!', silent=True)
+                        else:
+                            await ctx.reply(f'Purrging {cog}!', silent=True)
+                    except commands.ExtensionNotFound as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.reply(f'{cog} could not be found!', silent=True)
+                    except commands.ExtensionNotLoaded as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.reply(f'{cog} is not running, or could not be found!', silent=True)
+                    except commands.NoEntryPointError as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.reply(f'successfully loaded {cog}, but no setup was found!', silent=True)
 
 ######################################################################################################
 
@@ -142,21 +142,21 @@ class Entanglements(commands.Cog):
             for cog in cogs:
                 if cog[0].islower():
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
-                    try:
-                        await self.bot.load_extension(f'cogs.{cog}')
-                        await ctx.reply(f'Successfully entangled to {cog}', silent=True)
-                    except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} could not be found!', silent=True)
-                    except commands.ExtensionAlreadyLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} is already loaded!', silent=True)
-                    except commands.NoEntryPointError as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'successfully loaded {cog}, but no setup was found!', silent=True)
-                    except commands.ExtensionFailed as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'Loading {cog} failed due to an error!', silent=True)
+                try:
+                    await self.bot.load_extension(f'cogs.{cog}')
+                    await ctx.reply(f'Successfully entangled to {cog}', silent=True)
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'{cog} could not be found!', silent=True)
+                except commands.ExtensionAlreadyLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'{cog} is already loaded!', silent=True)
+                except commands.NoEntryPointError as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'successfully loaded {cog}, but no setup was found!', silent=True)
+                except commands.ExtensionFailed as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'Loading {cog} failed due to an error!', silent=True)
 
 ######################################################################################################
 
@@ -168,15 +168,15 @@ class Entanglements(commands.Cog):
             for cog in cogs:
                 if cog[0].islower():
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
-                    try:
-                        await self.bot.unload_extension(f'cogs.{cog}')
-                        await ctx.reply(f'Successfully unentangled from {cog}', silent=True)
-                    except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} could not be found!', silent=True)
-                    except commands.ExtensionNotLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} not running, or could not be found!', silent=True)
+                try:
+                    await self.bot.unload_extension(f'cogs.{cog}')
+                    await ctx.reply(f'Successfully unentangled from {cog}', silent=True)
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'{cog} could not be found!', silent=True)
+                except commands.ExtensionNotLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'{cog} not running, or could not be found!', silent=True)
 
 ######################################################################################################
 
