@@ -95,7 +95,7 @@ class Fields(commands.Cog):
                     petloop = f"{petloop}{choice(['pet','pat','petting', 'patting'])}"
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
                     
-            await choices([quantumpurr, quantumfrequency, quantumloop], k=1, weights=[10,10,2])[0](ctx)
+            await choices([quantumpurr, quantumfrequency, quantumloop], k=1, weights=[10,10,2])[0](self, ctx)
         
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}', silent=True)
