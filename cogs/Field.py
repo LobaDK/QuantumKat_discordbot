@@ -90,9 +90,7 @@ class Fields(commands.Cog):
                 await ctx.send(f'Quantum vibrates at {randint(1,100_000)}hz')
 
             async def quantumloop(self, ctx):
-                petloop = ""
-                for _ in range(0,randint(8,40)):
-                    petloop = f"{petloop}{choice(['pet','pat','petting', 'patting'])}"
+                petloop = ''.join(choices(['pet', 'pat', 'petting', 'patting'], k=randint(8, 40)))
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
                     
             await choices([quantumpurr, quantumfrequency, quantumloop], k=1, weights=[10,10,2])[0](self, ctx)
@@ -137,9 +135,7 @@ class Fields(commands.Cog):
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
         elif mention in optional_user_or_object:
-            quantumpetloop = ""
-            for _ in range(0,randint(8,40)):
-                quantumpetloop = f"{quantumpetloop}{choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])}"
+            quantumpetloop = ''.join(choices(['Quantum petting the', 'QuantumKat', 'QuantumKatting the', 'Quantum pet'], k=randint(8, 40)))
             await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {optional_user_or_object}', silent=True)
@@ -154,9 +150,7 @@ class Fields(commands.Cog):
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {ctx.author.mention}')
         elif mention in optional_user_or_object:
-            quantumhugloop = ""
-            for _ in range(0,randint(8,40)):
-                quantumhugloop = f"{quantumhugloop}{choice(['Quantum hugging the','QuantumKat','QuantumKatting the','Quantum hug'])}"
+            quantumhugloop = ''.join(choices(['Quantum hugging the', 'QuantumKat', 'QuantumKatting the', 'Quantum hug'], k=randint(8, 40)))
             await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {optional_user_or_object}', silent=True)
