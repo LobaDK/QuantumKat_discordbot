@@ -13,7 +13,7 @@ from re import compile
 
 
 class Fields(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
         self.aURL = 'https://aaaa.lobadk.com/'
@@ -28,12 +28,12 @@ class Fields(commands.Cog):
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
 
-    async def arpr(self, ctx, url, folder):
+    async def arpr(self, ctx: commands.Context, url: str, folder: str):
         files = await self.getfiles(url, folder)
         links = sample(files, k=ctx.message.content.split(" ")[0].count("r"))
         await ctx.reply('\n'.join(links), silent=True)
 
-    async def getfiles(self, url, folder):
+    async def getfiles(self, url: str, folder: str) -> list:
         files = []
         for file in glob(f'{folder}*'):
             if file.endswith(self.extensions):
@@ -41,7 +41,7 @@ class Fields(commands.Cog):
         
         return files
 
-    async def searchfiles(self, search_keyword):
+    async def searchfiles(self, search_keyword: str) -> list:
         files = []
         p = await create_subprocess_shell(f'find {self.a_folder} -maxdepth 1 -type f -iname "*{search_keyword}*"', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         await p.wait()
@@ -55,19 +55,19 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['arr','arrr','arrrr','arrrrr'], brief='Returns a random file from aaaa.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from aaaa.lobadk.com.")
-    async def ar(self, ctx):
+    async def ar(self, ctx: commands.Context):
         await self.arpr(ctx, self.aURL, self.a_folder)
         
 ######################################################################################################
 
     @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
-    async def pr(self, ctx):
+    async def pr(self, ctx: commands.Context):
         await self.arpr(ctx, self.pURL, self.p_folder)
 
 ######################################################################################################
 
     @commands.command(aliases=['pæt','pets','pæts'], brief='Pets another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 1 and 20 long pet.')
-    async def pet(self, ctx, *, optional_user_or_object=""):
+    async def pet(self, ctx: commands.Context, *, optional_user_or_object=""):
         quantum_amount = randint(1,20)
         if quantum_amount == 1:
             verb = 'time'
@@ -101,7 +101,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['hugs'], brief='Hugs another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 1 and 20 long hug.')
-    async def hug(self, ctx, *, optional_user_or_object=""):
+    async def hug(self, ctx: commands.Context, *, optional_user_or_object=""):
         quantum_amount = randint(1,20)
         if quantum_amount == 1:
             verb = 'time'
@@ -128,7 +128,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['quantumpæt','qpet','qpæt','quantumpæts','quantumpets','qpets','qpæts'], brief='Pets another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 100 and 1000 long pet.')
-    async def quantumpet(self, ctx, *, optional_user_or_object=""):
+    async def quantumpet(self, ctx: commands.Context, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
         quantum_amount = randint(100,1000)
         qpets = 'pe' + ('t' * int(str(quantum_amount)[:2])) + 's'
@@ -143,7 +143,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['quantumhøg','qhug','qhøg','quantumhøgs','quantumhugs','qhugs','qhøgs'], brief='Hugs another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 100 and 1000 long hug.')
-    async def quantumhug(self, ctx, *, optional_user_or_object=""):
+    async def quantumhug(self, ctx: commands.Context, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
         quantum_amount = randint(100,1000)
         qhugs = 'hu' + ('g' * int(str(quantum_amount)[:2])) + 's'
@@ -158,7 +158,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['rockpaperscissor'], brief='Rock, Paper, Scissors game.', description='A Rock, Paper, Scissors game. Supports one argument, being the chosen gesture. Emote is also supported. Is not rigged.')
-    async def rps(self, ctx, *, item=""):
+    async def rps(self, ctx: commands.Context, *, item=""):
         substring = ['rock','rocks','paper','papers','scissor','scissors','✂️','🪨','🧻']
         item = item.lower()
         if any(_ in item for _ in substring):
@@ -184,7 +184,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['as','asearch'], brief='aaaa search function.', description='Searches aaaa with the given argument and returns the results. Only takes one, and limited to a minimum of two characters, being alphanumeric as well as a dot.')
-    async def aaaasearch(self, ctx, search_keyword=""):
+    async def aaaasearch(self, ctx: commands.Context, search_keyword=""):
         if len(search_keyword) >= 2:
             allowed = compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
             if allowed.match(search_keyword):
@@ -206,7 +206,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(brief='Appends filename to aaaa.lobadk.com.', description='Appends the provided filename to the end of aaaa.lobadk.com/, to quickly link the file. Only alphanumeric characters and a dot is allowed.')
-    async def a(self, ctx, filename=""):
+    async def a(self, ctx: commands.Context, filename=""):
         if filename:
             allowed = compile('[^\w.\-]')
             if not allowed.match(filename):
@@ -227,13 +227,13 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['qjoke', 'joke', 'qj'], brief='Fetch a random quantum joke.', description='Fetches a random quantum joke stored in a text file. Supports no arguments.')
-    async def quantumjoke(self, ctx):
+    async def quantumjoke(self, ctx: commands.Context):
         await ctx.reply(choice(self.jokes).strip(), silent=True)
 
 ######################################################################################################
 
     @commands.command(aliases=['ars', 'asr', 'aaaarandomsearch'], brief='Search aaaa.lobadk.com and return a random result.', description='Queries aaaa.lobadk.com with the provided search, and returns a random file from it. Supports one argument')
-    async def arsearch(self, ctx, search_keyword=""):
+    async def arsearch(self, ctx: commands.Context, search_keyword=""):
         if search_keyword:
             allowed = compile('[^\w.\-]')
             if not allowed.match(search_keyword):
@@ -252,7 +252,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['pong'], brief="Test if the bot works, and it's latency.", description="Tests if the bot is seeing the command as well as capable of responding. Supports one, but not required, argument, as 'latency'. If latency argument is used, tests and displays the one-way latency from your home, to Discord, and then to the bot (with a multiplication of 2 to simulate round-trip), as well as the round-trip latency between the bot and Discord.")
-    async def ping(self, ctx, ping_mode=""):
+    async def ping(self, ctx: commands.Context, ping_mode=""):
         LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "Let's just not tell your alternate-self from another dimension..."]
 
         if ctx.message.content.startswith('?ping'):
@@ -292,7 +292,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['acount', 'countaaaa', 'counta'], brief='Counts the images and videos stored on aaaa.lobadk.com.', description="Counts the amount of images and videos that are stored on aaaa.lobadk.com, excluding any unrelated files, as well as folders.")
-    async def aaaacount(self, ctx):
+    async def aaaacount(self, ctx: commands.Context):
         all_files = await self.getfiles(self.aURL, self.a_folder)
         await ctx.reply(f'There are currently {len(all_files)} quantised datasets.', silent=True)
 
@@ -300,7 +300,7 @@ class Fields(commands.Cog):
 ######################################################################################################
 
     @commands.command(aliases=['quantumball', 'qball'], brief='standard 8ball replies, but with some quantum mixed.', description='Uses the standard 8ball replies, but with some quantum related replies or addition to the messages. Accepts no arguments.')
-    async def QuantumBall(self, ctx):
+    async def QuantumBall(self, ctx: commands.Context):
         affirmative_answers_list = ['It is certain.', 'It is decidedly so.', 'Without a doubt.', 'Yes definitely.', 'You may rely on it.', 'As I see it, yes.', 'Most likely.', 'Outlook good.', 'Yes.', 'Signs point to yes.']
         non_committal_answers_list = ['Reply hazy, try again.', 'Ask again later.', 'Better not tell you now.', 'Cannot predict now.', 'Concentrate and ask again.']
         negative_answers_list = ["Don't count on it.", 'My reply is no.', 'My sources say no.', 'Outlook not so good.', 'Very doubtful.']
@@ -312,5 +312,5 @@ class Fields(commands.Cog):
         await ctx.reply(choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=choice(['realities','universes','dimensions','timelines']), affirmative_answer=choice(affirmative_answers_list), reason=choice(reason_list), non_committal_answer=choice(non_committal_answers_list), negative_answer=choice(negative_answers_list)), silent=True)
 
     print('Started Fields!')
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Fields(bot))
