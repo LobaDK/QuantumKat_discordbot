@@ -177,7 +177,13 @@ class Entanglements(commands.Cog):
 
 # command splitter for easier reading and navigating
 
-    @commands.command(aliases=['load', 'start'], brief="(Bot owner only) Starts/Loads a cog/extension.", description="Starts/Loads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
+    @commands.command(aliases=['load',
+                               'start'],
+                      brief="(Bot owner only) Starts/Loads a cog/extension.",
+                      description=("Starts/Loads the specified cogs/extensions"
+                                   ".Requires at least one argument, and "
+                                   "supports an arbitrary amount of "
+                                   "arguments."))
     @commands.is_owner()
     async def entangle(self, ctx, *, module: str = ''):
         if module:
@@ -187,7 +193,8 @@ class Entanglements(commands.Cog):
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
                 try:
                     await self.bot.load_extension(f'cogs.{cog}')
-                    await ctx.reply(f'Successfully entangled to {cog}', silent=True)
+                    await ctx.reply(f'Successfully entangled to {cog}',
+                                    silent=True)
                 except commands.ExtensionNotFound as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.reply(f'{cog} could not be found!', silent=True)
@@ -196,14 +203,22 @@ class Entanglements(commands.Cog):
                     await ctx.reply(f'{cog} is already loaded!', silent=True)
                 except commands.NoEntryPointError as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.reply(f'successfully loaded {cog}, but no setup was found!', silent=True)
+                    await ctx.reply((f'successfully loaded {cog}, '
+                                     'but no setup was found!'), silent=True)
                 except commands.ExtensionFailed as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.reply(f'Loading {cog} failed due to an error!', silent=True)
+                    await ctx.reply(f'Loading {cog} failed due to an error!',
+                                    silent=True)
 
 # command splitter for easier reading and navigating
 
-    @commands.command(aliases=['unload', 'stop'], brief="(Bot owner only) Stops/Unloads a cog/extension.", description="Stops/Unloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
+    @commands.command(aliases=['unload',
+                               'stop'],
+                      brief="(Bot owner only) Stops/Unloads a cog/extension.",
+                      description=("Stops/Unloads the specified cogs/"
+                                   "extensions. Requires at least one "
+                                   "argument, and supports an arbitrary "
+                                   "amount of arguments."))
     @commands.is_owner()
     async def unentangle(self, ctx, *, module: str = ''):
         if module:
@@ -213,24 +228,45 @@ class Entanglements(commands.Cog):
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
                 try:
                     await self.bot.unload_extension(f'cogs.{cog}')
-                    await ctx.reply(f'Successfully unentangled from {cog}', silent=True)
+                    await ctx.reply(f'Successfully unentangled from {cog}',
+                                    silent=True)
                 except commands.ExtensionNotFound as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.reply(f'{cog} could not be found!', silent=True)
                 except commands.ExtensionNotLoaded as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.reply(f'{cog} not running, or could not be found!', silent=True)
+                    await ctx.reply((f'{cog} not running, or could not be '
+                                     'found!'), silent=True)
 
 # command splitter for easier reading and navigating
 
-    @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa/possum.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com or possum.lobadk.com, for easier file adding. Requires at least 3 arguments, and supports 4 arguments. The first argument is the file URL, the second is the filename to be used, with a special 'rand' parameter that produces a random 8 character long base62 filename, the third is the location, specified with 'aaaa' or 'possum', the fourth (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
+    @commands.command(aliases=['quantise'],
+                      brief=("(Bot owner only) Downloads a file to aaaa/"
+                             "possum.lobadk.com."),
+                      description=("Downloads the specified file to the root "
+                                   "directory of aaaa.lobadk.com or possum."
+                                   "lobadk.com, for easier file adding. "
+                                   "Requires at least 3 arguments, and "
+                                   "supports 4 arguments. The first argument "
+                                   "is the file URL, the second is the "
+                                   "filename to be used, with a special 'rand'"
+                                   " parameter that produces a random 8 "
+                                   "character long base62 filename, the third "
+                                   "is the location, specified with 'aaaa' or "
+                                   "'possum', the fourth (optional) is 'YT' to"
+                                   " indicate yt-lp should be used to download"
+                                   " the file (YouTub or Twitter for example)."
+                                   " If a file extension is detected, it will "
+                                   "automatically be used, otherwise it needs "
+                                   "to be specified in the filename. Supports "
+                                   "links with disabled embeds, by '<>'."))
     @commands.is_owner()
     async def quantize(self, ctx, URL="", filename="", location="", mode=""):
         oldfilename = filename
 
         # Check if user has given all required inputs
         if URL and filename and location and mode:
-            
+
             # Check and set the correct download location
             if location.casefold() == 'aaaa':
                 data_dir = self.aaaa_dir
@@ -242,12 +278,15 @@ class Entanglements(commands.Cog):
 
             # If an incorrect location is given
             else:
-                await ctx.reply('Only `aaaa` and `possum` are valid parameters!', silent=True)
+                await ctx.reply(('Only `aaaa` and `possum` are valid '
+                                 'parameters!'), silent=True)
                 return
         
         # If a required input is missing
         else:
-            await ctx.reply('Command requires 4 arguments:\n```?quantize <URL> <filename|rand> <aaaa|possum> <mode>```', silent=True)
+            await ctx.reply('Command requires 4 arguments:\n```?quantize '
+                            '<URL> <filename|rand> <aaaa|possum> <mode>```',
+                            silent=True)
             return
 
         msg = await ctx.reply('Creating quantum tunnel... ', silent=True)
@@ -266,7 +305,7 @@ class Entanglements(commands.Cog):
 
         # If mode is 'normal' i.e. normal downloads
         if mode.casefold() == 'normal':
-            
+
             while True:
 
                 # If the URL contains a file extension at the end
@@ -282,12 +321,12 @@ class Entanglements(commands.Cog):
 
                 # If the filename already exists
                 if Path(data_dir, filename).exists():
-                    
+
                     # If the old filename is not 'rand' and thus not supposed to be randomly generated
                     if not oldfilename.casefold() == 'rand':
                         await ctx.reply('Filename already exists, consider using a different name', silent=True)
                         return
-                    
+
                     # Regenerate random filename
                     else:
                         filename = await self.generatefilename()
@@ -468,7 +507,7 @@ class Entanglements(commands.Cog):
             
             # allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
             allowed = compile('^[\w]*(\.){1,}[\w]{1,}$')
-            if not '/' in current_filename and allowed.match(current_filename) and allowed.match(new_filename):
+            if '/' not in current_filename and allowed.match(current_filename) and allowed.match(new_filename):
                 msg = await ctx.reply('Attempting to requantize data...', silent=True)
                 
                 try:
