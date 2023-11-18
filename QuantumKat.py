@@ -34,14 +34,18 @@ for cog in listdir('./cogs'):
     if cog.endswith('.py'):
         initial_extensions.append(f'cogs.{cog[:-3]}')
 
+
 def ffmpegInstalled():
     return which('ffmpeg') is not None
+
 
 def ffprobeInstalled():
     return which('ffprobe') is not None
 
+
 def ytdlpInstalled():
     return which('yt-dlp') is not None
+
 
 async def setup(bot):
     if not ffmpegInstalled():
@@ -64,11 +68,12 @@ async def setup(bot):
             exit()
         else:
             print('No yt-dlp executable found')
-    
+
     # Iterate through each cog and start it
     for extension in initial_extensions:
         await bot.load_extension(extension)
     await bot.start(environ.get('TOKEN'), reconnect=True)
+
 
 @bot.event
 async def on_ready():
@@ -84,7 +89,7 @@ Latency to Discord: {int(bot.latency * 1000)}ms.
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000), to="ordinal_num")} {choice(quantum)}!
     ''')
-    #channel = bot.get_channel(873703927621758986)
-    #await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
+    # channel = bot.get_channel(873703927621758986)
+    # await channel.send(f'QuantumKat has entered a state of superposition in the {num2words(random.randint(1,1000), to="ordinal_num")} {random.choice(quantum)}!')
 
 run(setup(bot))

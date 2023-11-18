@@ -6,7 +6,6 @@ from discord.ext import commands
 from discord import Client
 
 
-
 class Tunnel(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -20,7 +19,7 @@ class Tunnel(commands.Cog):
         if cog:
             if cog._get_overridden_method(cog.cog_command_error) is not None:
                 return
-        
+
         ignored_errors = (commands.CommandNotFound, commands.CheckFailure, commands.UnexpectedQuoteError, commands.InvalidEndOfQuotedStringError)
 
         error = getattr(error, 'original', error)
@@ -29,10 +28,10 @@ class Tunnel(commands.Cog):
             await ctx.send(f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that.")
         if isinstance(error, ignored_errors):
             return
-        
+
         else:
             trace = type(error), error, error.__traceback__
-            
+
             print((f'''
 Exception caused in command: {ctx.command}
 User: {ctx.author}, {ctx.author.id}
@@ -41,10 +40,12 @@ Time: {datetime.now()}
             '''), file=stderr)
 
             print_exception(type(error), error, error.__traceback__)
-            
+
             owner = Client.get_user(self.bot, self.bot.owner_ids[0])
             await owner.send(f'Exception caused in command: {ctx.command}\nUser: {ctx.author}, {ctx.author.id}\nMessage ID: {ctx.message.id}\nTime: {datetime.now()}\n\n{trace}')
 
     print('Started Tunnel!')
+
+
 async def setup(bot):
     await bot.add_cog(Tunnel(bot))

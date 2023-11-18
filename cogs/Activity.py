@@ -9,53 +9,53 @@ class Activity(commands.Cog):
         self.bot = bot
 
         self.hissList = ['Hissing',
-                    'Hissed']
-        
+                         'Hissed']
+
         self.purgeList = ['Purrging',
-                     'Purrged']
+                          'Purrged']
 
         self.purrList = ['Purring',
-                    'Purred']
+                         'Purred']
 
         self.vibrateList = ['Vibrating',
-                       'Vibrated',
-                       'Fluctuating',
-                       'Fluctuated']
+                            'Vibrated',
+                            'Fluctuating',
+                            'Fluctuated']
 
         self.nounList = ["a chair",
-                    "a table",
-                    "a vase",
-                    "a long-lost creditcard",
-                    "some strangers phone",
-                    "a stranger",
-                    "an error",
-                    "a bucket",
-                    "a bucket of milk",
-                    "redacted",
-                    "a cat",
-                    "a quantum cat",
-                    "an alien from the 7th dimension",
-                    "a blackhole",
-                    "a random star",
-                    "a random planet",
-                    "Earth",
-                    'the void']
+                         "a table",
+                         "a vase",
+                         "a long-lost creditcard",
+                         "some strangers phone",
+                         "a stranger",
+                         "an error",
+                         "a bucket",
+                         "a bucket of milk",
+                         "redacted",
+                         "a cat",
+                         "a quantum cat",
+                         "an alien from the 7th dimension",
+                         "a blackhole",
+                         "a random star",
+                         "a random planet",
+                         "Earth",
+                         "the void"]
 
         self.locationList = ['dimension',
-                        'universe',
-                        'timeline',
-                        'reality']
+                             'universe',
+                             'timeline',
+                             'reality']
 
         self.messages = ['{hiss} in the {ordinal} {location}',
-                    '{purr} in the {ordinal} {location}',
-                    '{hiss} at {noun} in the {ordinal} {location}',
-                    '{purr} at {noun} in the {ordinal} {location}',
-                    '{vibrate} at {purrHz}hz in the {ordinal} {location}',
-                    '{purr} at {purrHz}hz in the {ordinal} {location}',
-                    '{purge} {noun} in the {ordinal} {location}',
-                    'Segfault in... ErrorIt?656E64       rebooting faulty... rF7_Q>~bTV',
-                    '69 74 77 61 73 6e 27 74 73 75 70 70 6f 73 65 64 74 6f 65 6e 64']
-        
+                         '{purr} in the {ordinal} {location}',
+                         '{hiss} at {noun} in the {ordinal} {location}',
+                         '{purr} at {noun} in the {ordinal} {location}',
+                         '{vibrate} at {purrHz}hz in the {ordinal} {location}',
+                         '{purr} at {purrHz}hz in the {ordinal} {location}',
+                         '{purge} {noun} in the {ordinal} {location}',
+                         'Segfault in... ErrorIt?656E64       rebooting faulty... rF7_Q>~bTV',
+                         '69 74 77 61 73 6e 27 74 73 75 70 70 6f 73 65 64 74 6f 65 6e 64']
+
         self.change_activity.start()
 
 ###################################################################################################### command splitter for easier reading and navigating
@@ -65,21 +65,21 @@ class Activity(commands.Cog):
 
 ######################################################################################################
 
-    @tasks.loop(minutes=randint(30,180), count=None, reconnect=True)
+    @tasks.loop(minutes=randint(30, 180), count=None, reconnect=True)
     async def change_activity(self):
-        self.change_activity.change_interval(minutes=(randint(10,180)))
+        self.change_activity.change_interval(minutes=(randint(10, 180)))
 
-        purrHz = randint(1,100_000)
-        ordinal = num2words(randint(0,10_000), to='ordinal_num')
+        purrHz = randint(1, 100_000)
+        ordinal = num2words(randint(0, 10_000), to='ordinal_num')
 
         await self.bot.change_presence(activity=Game(name=choice(self.messages).format(hiss=choice(self.hissList),
-                                                                                                    purge=choice(self.purgeList),
-                                                                                                    purr=choice(self.purrList),
-                                                                                                    vibrate=choice(self.vibrateList),
-                                                                                                    noun=choice(self.nounList),
-                                                                                                    location=choice(self.locationList),
-                                                                                                    purrHz=purrHz,
-                                                                                                    ordinal=ordinal)))
+                                                                                       purge=choice(self.purgeList),
+                                                                                       purr=choice(self.purrList),
+                                                                                       vibrate=choice(self.vibrateList),
+                                                                                       noun=choice(self.nounList),
+                                                                                       location=choice(self.locationList),
+                                                                                       purrHz=purrHz,
+                                                                                       ordinal=ordinal)))
 
 ######################################################################################################
 
@@ -119,6 +119,7 @@ class Activity(commands.Cog):
             await ctx.reply('Activity is already running!', silent=True)
 
 ######################################################################################################
+
 
 async def setup(bot):
     await bot.add_cog(Activity(bot))

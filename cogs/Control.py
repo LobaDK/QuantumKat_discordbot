@@ -41,10 +41,10 @@ class Control(commands.Cog):
     async def Leave(self, ctx):
         if ctx.guild is not None:
             application = await self.bot.application_info()
-            if (ctx.author.id == ctx.guild.owner.id 
-            or ctx.author.id == application.owner.id 
-            or ctx.author.guild_permissions.administrator 
-            or ctx.author.guild_permissions.moderate_members):
+            if (ctx.author.id == ctx.guild.owner.id
+                    or ctx.author.id == application.owner.id
+                    or ctx.author.guild_permissions.administrator
+                    or ctx.author.guild_permissions.moderate_members):
                 await ctx.send(f'*Poofs to another {choice(["universe", "reality", "dimension", "timeline"])}*')
                 await ctx.guild.leave()
             else:
@@ -59,28 +59,28 @@ class Control(commands.Cog):
             if Server_ID.isnumeric():
                 permissions = []
                 guild = self.bot.get_guild(int(Server_ID))
-                
+
                 if guild is not None:
-                    
+
                     for permission in guild.me.guild_permissions:
-                        if permission[1] == True:
+                        if permission[1] is True:
                             permissions.append(permission[0])
-                    await ctx.send('I have the following permissions in {guild_name}:\n{permissions}'.format(guild_name = guild.name, permissions = '\n'.join(permissions)))
-                
+                    await ctx.send('I have the following permissions in {guild_name}:\n{permissions}'.format(guild_name=guild.name, permissions='\n'.join(permissions)))
+
                 else:
                     await ctx.send('Server does not exist or the bot is not in it, did you enter the correct ID?')
-            
+
             else:
                 await ctx.send('Server ID can only be a number!')
 
         elif ctx.guild is not None and not Server_ID:
             permissions = []
-            
+
             for permission in ctx.guild.me.guild_permissions:
-                if permission[1] == True:
+                if permission[1] is True:
                     permissions.append(permission[0])
-            await ctx.send('I have the following permissions in {guild_name}:\n{permissions}'.format(guild_name = ctx.guild.name, permissions = '\n'.join(permissions)))
-            
+            await ctx.send('I have the following permissions in {guild_name}:\n{permissions}'.format(guild_name=ctx.guild.name, permissions='\n'.join(permissions)))
+
         else:
             await ctx.send("Syntax is:\n```?ListPermissions optional<Server ID>```\nServer ID may only be provided in DM's")
 
@@ -89,5 +89,7 @@ class Control(commands.Cog):
         await ctx.send('*Meows*')
 
     print('Started Control!')
+
+
 async def setup(bot):
     await bot.add_cog(Control(bot))

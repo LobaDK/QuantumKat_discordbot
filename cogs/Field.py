@@ -23,7 +23,7 @@ class Fields(commands.Cog):
 
         self.extensions = ('jpg', 'jpeg', 'png', 'webp', 'mp4', 'gif', 'mov', 'mp3', 'webm')
 
-        #Open the file and load each joke per line into a list
+        # Open the file and load each joke per line into a list
         jokefile = open('./files/quantumjokes.txt', 'r')
         self.jokes = [joke for joke in jokefile.readlines() if joke.strip()]
         jokefile.close()
@@ -38,7 +38,7 @@ class Fields(commands.Cog):
         for file in glob(f'{folder}*'):
             if file.endswith(self.extensions):
                 files.append(parse.urljoin(url, str(Path(file).name)))
-        
+
         return files
 
     async def searchfiles(self, search_keyword):
@@ -49,26 +49,26 @@ class Fields(commands.Cog):
         for file in stdout.decode().split('\n'):
             if file.endswith(self.extensions):
                 files.append(str(Path(file).name))
-        
+
         return files
 
 ######################################################################################################
 
-    @commands.command(aliases=['arr','arrr','arrrr','arrrrr'], brief='Returns a random file from aaaa.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from aaaa.lobadk.com.")
+    @commands.command(aliases=['arr', 'arrr', 'arrrr', 'arrrrr'], brief='Returns a random file from aaaa.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from aaaa.lobadk.com.")
     async def ar(self, ctx):
         await self.arpr(ctx, self.aURL, self.a_folder)
-        
+
 ######################################################################################################
 
-    @commands.command(aliases=['or', 'orr','orrr','orrrr','orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
+    @commands.command(aliases=['or', 'orr', 'orrr', 'orrrr', 'orrrrr'], brief='Returns a random file from possum.lobadk.com.', description="Takes no arguments, but up to 5 r' can be appended, each fetching another random file from possum.lobadk.com.")
     async def pr(self, ctx):
         await self.arpr(ctx, self.pURL, self.p_folder)
 
 ######################################################################################################
 
-    @commands.command(aliases=['pæt','pets','pæts'], brief='Pets another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 1 and 20 long pet.')
+    @commands.command(aliases=['pæt', 'pets', 'pæts'], brief='Pets another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 1 and 20 long pet.')
     async def pet(self, ctx, *, optional_user_or_object=""):
-        quantum_amount = randint(1,20)
+        quantum_amount = randint(1, 20)
         if quantum_amount == 1:
             verb = 'time'
         else:
@@ -82,16 +82,16 @@ class Fields(commands.Cog):
 
         mention = f'<@{self.bot.user.id}>'
         if mention in optional_user_or_object:
-            quantumspan = randint(0,100)
-            quantummode = choices(['purr','frequency','quantumloop'], k=1, weights=[10,10,2])[0]
+            quantumspan = randint(0, 100)
+            quantummode = choices(['purr', 'frequency', 'quantumloop'], k=1, weights=[10, 10, 2])[0]
             if quantummode == 'purr':
                 await ctx.send(f'Quantum purrs across {quantumspan} {choices(["dimension","universe","reality","timeline","dimension, universe, realitie and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
             elif quantummode == 'frequency':
                 await ctx.send(f'Quantum vibrates at {randint(1,100_000)}hz')
             elif quantummode == 'quantumloop':
                 petloop = ""
-                for _ in range(0,randint(8,40)):
-                    petloop = petloop + choice(['pet','pat','petting', 'patting'])
+                for _ in range(0, randint(8, 40)):
+                    petloop = petloop + choice(['pet', 'pat', 'petting', 'patting'])
                 await ctx.send(f'Quantum Loop pet initiated trying to pet self! {petloop}')
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {pets}')
@@ -100,12 +100,12 @@ class Fields(commands.Cog):
 
     @commands.command(aliases=['hugs'], brief='Hugs another user, the bot or themselves a random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 1 and 20 long hug.')
     async def hug(self, ctx, *, optional_user_or_object=""):
-        quantum_amount = randint(1,20)
+        quantum_amount = randint(1, 20)
         if quantum_amount == 1:
             verb = 'time'
         else:
             verb = 'times'
-        quantumspan = randint(0,100)
+        quantumspan = randint(0, 100)
 
         hugs = 'hu' + 'g' * quantum_amount + 's'
 
@@ -115,7 +115,7 @@ class Fields(commands.Cog):
 
         mention = f'<@{self.bot.user.id}>'
         if mention in optional_user_or_object:
-            quantummode = choice(['purr','frequency'])
+            quantummode = choice(['purr', 'frequency'])
             if quantummode == 'purr':
                 await ctx.send(f'Quantum purrs and entangles {ctx.author.mention} to the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension","universe","reality","timeline"])}')
             elif quantummode == 'frequency':
@@ -125,34 +125,34 @@ class Fields(commands.Cog):
 
 ######################################################################################################
 
-    @commands.command(aliases=['quantumpæt','qpet','qpæt','quantumpæts','quantumpets','qpets','qpæts'], brief='Pets another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 100 and 1000 long pet.')
+    @commands.command(aliases=['quantumpæt', 'qpet', 'qpæt', 'quantumpæts', 'quantumpets', 'qpets', 'qpæts'], brief='Pets another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 100 and 1000 long pet.')
     async def quantumpet(self, ctx, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
-        quantum_amount = randint(100,1000)
+        quantum_amount = randint(100, 1000)
         qpets = 'pe' + 't' * int(str(quantum_amount)[:2]) + 's'
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
         elif mention in optional_user_or_object:
             quantumpetloop = ""
-            for _ in range(0,randint(8,40)):
-                quantumpetloop = quantumpetloop + choice(['Quantum petting the','QuantumKat','QuantumKatting the','Quantum pet'])
+            for _ in range(0, randint(8, 40)):
+                quantumpetloop = quantumpetloop + choice(['Quantum petting the', 'QuantumKat', 'QuantumKatting the', 'Quantum pet'])
             await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {optional_user_or_object}')
 
 ######################################################################################################
 
-    @commands.command(aliases=['quantumhøg','qhug','qhøg','quantumhøgs','quantumhugs','qhugs','qhøgs'], brief='Hugs another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 100 and 1000 long hug.')
+    @commands.command(aliases=['quantumhøg', 'qhug', 'qhøg', 'quantumhøgs', 'quantumhugs', 'qhugs', 'qhøgs'], brief='Hugs another user, the bot or themselves a large random amount.', description='Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 100 and 1000 long hug.')
     async def quantumhug(self, ctx, *, optional_user_or_object=""):
         mention = f'<@{self.bot.user.id}>'
-        quantum_amount = randint(100,1000)
+        quantum_amount = randint(100, 1000)
         qhugs = 'hu' + 'g' * int(str(quantum_amount)[:2]) + 's'
         if not optional_user_or_object:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {ctx.author.mention}')
         elif mention in optional_user_or_object:
             quantumhugloop = ""
-            for _ in range(0,randint(8,40)):
-                quantumhugloop = quantumhugloop + choice(['Quantum hugging the','QuantumKat','QuantumKatting the','Quantum hug'])
+            for _ in range(0, randint(8, 40)):
+                quantumhugloop = quantumhugloop + choice(['Quantum hugging the', 'QuantumKat', 'QuantumKatting the', 'Quantum hug'])
             await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {optional_user_or_object}')
@@ -161,31 +161,31 @@ class Fields(commands.Cog):
 
     @commands.command(aliases=['rockpaperscissor'], brief='Rock, Paper, Scissors game.', description='A Rock, Paper, Scissors game. Supports one argument, being the chosen gesture. Emote is also supported. Is not rigged.')
     async def rps(self, ctx, *, item=""):
-        substring = ['rock','rocks','paper','papers','scissor','scissors','✂️','🪨','🧻']
+        substring = ['rock', 'rocks', 'paper', 'papers', 'scissor', 'scissors', '✂️', '🪨', '🧻']
         item = item.lower()
         if any(_ in item for _ in substring):
-            whowin = choices(['I win!','You win!'], k=1, weights=[100,5])[0]
+            whowin = choices(['I win!', 'You win!'], k=1, weights=[100, 5])[0]
             if item == 'scissor':
                 item = item + 's'
             elif item == 'rocks' or item == 'papers':
                 item = item[:-1]
             if whowin == 'I win!':
                 winItem = {"rock": "paper",
-                            "paper": "scissors",
-                            "scissors": "rock"}
+                           "paper": "scissors",
+                           "scissors": "rock"}
 
                 await ctx.reply(f"{winItem[item]}. {whowin} You do know I'm a quantum kat, right?", silent=True)
             else:
                 winItem = {"paper": "rock",
-                            "scissors": "paper",
-                            "rock": "scissors"}
+                           "scissors": "paper",
+                           "rock": "scissors"}
                 await ctx.reply(f'{winItem[item]}. {whowin}', silent=True)
         else:
             await ctx.reply('Rock, paper or scissors required', silent=True)
 
 ######################################################################################################
 
-    @commands.command(aliases=['as','asearch'], brief='aaaa search function.', description='Searches aaaa with the given argument and returns the results. Only takes one, and limited to a minimum of two characters, being alphanumeric as well as a dot.')
+    @commands.command(aliases=['as', 'asearch'], brief='aaaa search function.', description='Searches aaaa with the given argument and returns the results. Only takes one, and limited to a minimum of two characters, being alphanumeric as well as a dot.')
     async def aaaasearch(self, ctx, search_keyword=""):
         if len(search_keyword) >= 2:
             allowed = compile('^(\.?)[a-zA-Z0-9]+(\.?)$')
@@ -217,7 +217,7 @@ class Fields(commands.Cog):
 
                 if len(links) == 1:
                     await ctx.reply(urljoin(self.aURL, links[0]))
-                
+
                 else:
                     if len(links) == 0:
                         await ctx.reply('File not found', silent=True)
@@ -239,12 +239,12 @@ class Fields(commands.Cog):
         if search_keyword:
             allowed = compile('[^\w.\-]')
             if not allowed.match(search_keyword):
-                
+
                 links = await self.searchfiles(search_keyword)
-                
+
                 if len(links) == 0:
                     await ctx.reply('Search returned empty!', silent=True)
-                else:    
+                else:
                     await ctx.reply(urljoin(self.aURL, choice(links)), silent=True)
             else:
                 await ctx.reply('Invalid character found in search parameter!', silent=True)
@@ -255,35 +255,34 @@ class Fields(commands.Cog):
 
     @commands.command(aliases=['pong'], brief="Test if the bot works, and it's latency.", description="Tests if the bot is seeing the command as well as capable of responding. Supports one, but not required, argument, as 'latency'. If latency argument is used, tests and displays the one-way latency from your home, to Discord, and then to the bot (with a multiplication of 2 to simulate round-trip), as well as the round-trip latency between the bot and Discord.")
     async def ping(self, ctx, ping_mode=""):
-        LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.',"You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "Let's just not tell your alternate-self from another dimension..."]
+        LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.', "You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "Let's just not tell your alternate-self from another dimension..."]
 
         if ctx.message.content.startswith('?ping'):
             pingresponse = 'pong'
-        
+
         elif ctx.message.content.startswith('?pong'):
             pingresponse = 'ping'
-        
+
         if ping_mode:
             if ping_mode.lower() == 'latency':
-                
-                #Get current local time on the machine clock and multiply by 1000 to get milliseconds
+
+                # Get current local time on the machine clock and multiply by 1000 to get milliseconds
                 local_time_in_ms = (round(time() * 1000))
 
-                #Get the time the message was sent in milliseconds by multiplying by 1000
+                # Get the time the message was sent in milliseconds by multiplying by 1000
                 message_timestamp = (round(ctx.message.created_at.timestamp() * 1000))
 
-                #Get latency in milliseconds by subtracting the current time, with the time the message was sent
+                # Get latency in milliseconds by subtracting the current time, with the time the message was sent
                 latency = local_time_in_ms - message_timestamp
 
-                #If the latency is negative i.e. system clock is behind the real world by more than the latency
-                #Get a rough estimate of the latency instead, by taking the offset, turning it into milliseconds, and adding it to the latency
+                # If the latency is negative i.e. system clock is behind the real world by more than the latency
+                # Get a rough estimate of the latency instead, by taking the offset, turning it into milliseconds, and adding it to the latency
                 if latency < 0:
                     c = NTPClient()
                     response = c.request('pool.ntp.org', version=3)
                     offset = round(response.offset * 1000)
                     latency += offset
                     await ctx.reply(f'A negative latency value was detected. Used pool.ntp.org to attempt to correct, with a {round(offset)}ms offset.', silent=True)
-
 
                 await ctx.reply(f'{pingresponse}! Took {latency * 2}ms. {choice(LatencyResponses)}\nConnection to discord: {round(self.bot.latency * 1000)}ms', silent=True)
             else:
@@ -311,8 +310,10 @@ class Fields(commands.Cog):
 
         amount = randint(100, 100_000)
 
-        await ctx.reply(choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=choice(['realities','universes','dimensions','timelines']), affirmative_answer=choice(affirmative_answers_list), reason=choice(reason_list), non_committal_answer=choice(non_committal_answers_list), negative_answer=choice(negative_answers_list)), silent=True)
+        await ctx.reply(choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=choice(['realities', 'universes', 'dimensions', 'timelines']), affirmative_answer=choice(affirmative_answers_list), reason=choice(reason_list), non_committal_answer=choice(non_committal_answers_list), negative_answer=choice(negative_answers_list)), silent=True)
 
     print('Started Fields!')
+
+
 async def setup(bot):
     await bot.add_cog(Fields(bot))
