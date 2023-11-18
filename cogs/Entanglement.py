@@ -636,7 +636,7 @@ class Entanglements(commands.Cog):
             if 'QuantumKat.py' in output:
                 msg = await msg.edit(content=f'{msg.content}\nMain script updated, reboot?')
 
-                def check(m: Message):  #  m = discord.Message.
+                def check(m: Message):  # m = discord.Message.
                     return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.casefold() == 'yes'
 
                 try:
@@ -656,20 +656,19 @@ class Entanglements(commands.Cog):
                     try:
                         await self.bot.reload_extension(extension)
                         msg = await msg.edit(content=f'{msg.content}\nPurging updated {extension[5:]}!')
-                    
+
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await msg.edit(content=f'{msg.content}\n{extension[5:]} is not running, or could not be found')
-                    
+
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await msg.edit(content=f'{msg.content}\n{extension[5:]} could not be found!')
-                    
+
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await msg.edit(content=f'{msg.content}\nsuccessfully loaded {extension[5:]}, but no setup was found!')
-                
-        
+
         elif stdout2:
             await ctx.reply(stdout2, silent=True)
 
@@ -698,7 +697,7 @@ class Entanglements(commands.Cog):
 
                 try:
                     remove(f'{data_dir}{filename}')
-                
+
                 except FileNotFoundError:
                     await ctx.reply('Dataset not found. Did you spell it correctly?', silent=True)
                     return
