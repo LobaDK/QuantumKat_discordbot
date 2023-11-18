@@ -30,13 +30,17 @@ class Entanglements(commands.Cog):
     possum_dir = '/var/www/possum/'
     possum_domain = 'https://possum.lobadk.com/'
 
-    characters = ascii_letters + digits
+    characters = f'{ascii_letters}{digits}'
 
-    async def getvideometadata(self, ctx, data_dir, filename):
-        arg2 = f'ffprobe -v quiet -show_streams -select_streams v:0 -of json {quote(data_dir + filename)}.mp4'
+    async def getvideometadata(self, data_dir, filename):
+        arg2 = ('ffprobe -v quiet -show_streams -select_streams v:0 -of json '
+                f'{quote(f"{data_dir}{filename}.mp4")}')
 
-        # Attempt to run command with above args
-        stream = await create_subprocess_shell(arg2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #  Attempt to run command with above args
+        stream = await create_subprocess_shell(
+            arg2,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
         stdout, _ = await stream.communicate()
         await stream.wait()
 
@@ -51,29 +55,46 @@ class Entanglements(commands.Cog):
 
         return frame_width, frame_height
 
-    async def decreasebitrate(self, ctx, video_duration, bitrate_decrease, attempts, data_dir, filename, frame_width, frame_height):
+    async def decreasebitrate(self,
+                              ctx,
+                              video_duration,
+                              bitrate_decrease,
+                              attempts,
+                              data_dir,
+                              filename,
+                              frame_width,
+                              frame_height):
         # calculate the average bitrate required to reach around 50MB's
         # by multiplying 50 by 8192 (convert megabits to kilobits)
         # dividing that by the video length, and subtracting the audio bitrate
         # Audio bitrate is hardcoded for now.
         bitrate = (50 * 8192) / video_duration - 192 - bitrate_decrease
 
-        # Transcode original video into an h264 stream, with an average bitrate calculated from the above code, and scale the video to the new resolution
-        # In the future, a check should be made whether the video has audio or not, either by checking if there's an audio stream
-        # or the audio stream's bitrate (I don't know how Youtube handles muted videos)
-        arg4 = f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac -b:v {str(int(bitrate))}k -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(data_dir + filename + ".tmp")}'
+        # Transcode original video into an h264 stream, with an average
+        # bitrate calculated from the above code, and scale the video to
+        # the new resolution.
+        # In the future, a check should be made whether the video has audio
+        # or not, either by checking if there's an audio stream
+        # or the audio stream's bitrate
+        # (I don't know how Youtube handles muted videos)
+        arg4 = (f'ffmpeg -y -i {data_dir}{filename}.mp4 -c:v libx264 -c:a aac '
+                f'-b:v {str(int(bitrate))}k -b:a 192k -movflags +faststart '
+                f'-vf scale={frame_width}:{frame_height} '
+                f'-f mp4 {quote(f"{data_dir}{filename}.tmp")}')
 
         try:
             process3 = await create_subprocess_shell(arg4)
             await process3.wait()
         except Exception as e:
             print('{}: {}'.format(type(e).__name__, e))
-            await ctx.reply('Error transcoding resized with average bitrate video!', silent=True)
+            await ctx.reply(('Error transcoding resized with '
+                             'average bitrate video!'), silent=True)
             return
 
         # Increase attemps by 1
         attempts += 1
-        # Increase by 100 kilobits, to decrease the average bitrate by 100 kilotbits
+        # Increase by 100 kilobits
+        # to decrease the average bitrate by 100 kilotbits
         bitrate_decrease += 100
 
         return attempts, bitrate
@@ -81,106 +102,164 @@ class Entanglements(commands.Cog):
     async def generatefilename(self):
         return "".join(choice(self.characters) for _ in range(8))
 
-###################################################################################################### command splitter for easier reading and navigating
+# command splitter for easier reading and navigating
 
-    @commands.command(brief="(Bot owner only) Stops the bot.", description="Stops and disconnects the bot. Supports no arguments.")
+    @commands.command(brief="(Bot owner only) Stops the bot.",
+                      description=("Stops and disconnects the bot. "
+                                   "Supports no arguments."))
     @commands.is_owner()
     async def observe(self, ctx):
-        await ctx.reply("QuantumKat's superposition has collapsed!", silent=True)
+        await ctx.reply("QuantumKat's superposition has collapsed!",
+                        silent=True)
         await self.bot.close()
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
-    @commands.command(aliases=['stabilize', 'restart', 'reload'], brief="(Bot owner only) Reloads cogs/extensions.", description="Reloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments. Special character '*' can be used to reload all.")
+    @commands.command(aliases=['stabilize',
+                               'restart',
+                               'reload'],
+                      brief="(Bot owner only) Reloads cogs/extensions.",
+                      description="Reloads the specified cogs/extensions. "
+                                  "Requires at least one argument, and "
+                                  "supports an arbitrary amount of arguments. "
+                                  "Special character '*' can be used "
+                                  "to reload all.")
     @commands.is_owner()
     async def stabilise(self, ctx, *, module: str = ''):
         if module:
             location = choice(['reality', 'universe', 'dimension', 'timeline'])
             if module == '*':
-                msg = await ctx.reply('Quantum instability detected across... <error>. Purrging!', silent=True)
+                msg = await ctx.reply(('Quantum instability detected across...'
+                                       ' <error>. Purrging!'), silent=True)
                 for extension in self.initial_extensions:
                     try:
                         await self.bot.reload_extension(f'cogs.{extension}')
-                        msg = await msg.edit(content=msg.content + f'\nPurging {extension}!')
+                        msg = await msg.edit(
+                            content=f'{msg.content}\nPurging {extension}!')
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'{extension} is not running, or could not be found')
+                        await ctx.send((f'{extension} is not running, '
+                                        'or could not be found'))
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
                         await ctx.send(f'{extension} could not be found!')
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.send(f'successfully loaded {extension}, but no setup was found!')
+                        await ctx.send((f'successfully loaded {extension}, '
+                                        'but no setup was found!'))
             else:
                 cogs = module.split()
                 for cog in cogs:
-                    if cog[0].islower:
+                    if cog[0].islower():
                         cog = cog.replace(cog[0], cog[0].upper(), 1)
-                        try:
-                            await self.bot.reload_extension(f'cogs.{cog}')
-                            if len(cogs) == 1:
-                                await ctx.reply(f'Superposition irregularity detected in Quantum {cog}! Successfully entangled to the {num2words(randint(1,1000), to="ordinal_num")} {location}!', silent=True)
-                            else:
-                                await ctx.reply(f'Purrging {cog}!', silent=True)
-                        except commands.ExtensionNotFound as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply(f'{cog} could not be found!', silent=True)
-                        except commands.ExtensionNotLoaded as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply(f'{cog} is not running, or could not be found!', silent=True)
-                        except commands.NoEntryPointError as e:
-                            print('{}: {}'.format(type(e).__name__, e))
-                            await ctx.reply(f'successfully loaded {cog}, but no setup was found!', silent=True)
+                    try:
+                        await self.bot.reload_extension(f'cogs.{cog}')
+                        if len(cogs) == 1:
+                            await ctx.reply((f'Superposition irregularity '
+                                             f'detected in Quantum {cog}! '
+                                             f'Successfully entangled to the '
+                                             f'{(num2words(randint(1,1000),to="ordinal_num"))} {location}!'), silent=True)
+                        else:
+                            await ctx.reply(f'Purrging {cog}!', silent=True)
+                    except commands.ExtensionNotFound as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.reply(f'{cog} could not be found!',
+                                        silent=True)
+                    except commands.ExtensionNotLoaded as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.reply((f'{cog} is not running, '
+                                        'or could not be found!'), silent=True)
+                    except commands.NoEntryPointError as e:
+                        print('{}: {}'.format(type(e).__name__, e))
+                        await ctx.reply((f'successfully loaded {cog}, '
+                                        'but no setup was found!'),
+                                        silent=True)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
-    @commands.command(aliases=['load', 'start'], brief="(Bot owner only) Starts/Loads a cog/extension.", description="Starts/Loads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
+    @commands.command(aliases=['load',
+                               'start'],
+                      brief="(Bot owner only) Starts/Loads a cog/extension.",
+                      description=("Starts/Loads the specified cogs/extensions"
+                                   ".Requires at least one argument, and "
+                                   "supports an arbitrary amount of "
+                                   "arguments."))
     @commands.is_owner()
     async def entangle(self, ctx, *, module: str = ''):
         if module:
             cogs = module.split()
             for cog in cogs:
-                if cog[0].islower:
+                if cog[0].islower():
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
-                    try:
-                        await self.bot.load_extension(f'cogs.{cog}')
-                        await ctx.reply(f'Successfully entangled to {cog}', silent=True)
-                    except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} could not be found!', silent=True)
-                    except commands.ExtensionAlreadyLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} is already loaded!', silent=True)
-                    except commands.NoEntryPointError as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'successfully loaded {cog}, but no setup was found!', silent=True)
-                    except commands.ExtensionFailed as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'Loading {cog} failed due to an error!', silent=True)
+                try:
+                    await self.bot.load_extension(f'cogs.{cog}')
+                    await ctx.reply(f'Successfully entangled to {cog}',
+                                    silent=True)
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'{cog} could not be found!', silent=True)
+                except commands.ExtensionAlreadyLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'{cog} is already loaded!', silent=True)
+                except commands.NoEntryPointError as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply((f'successfully loaded {cog}, '
+                                     'but no setup was found!'), silent=True)
+                except commands.ExtensionFailed as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'Loading {cog} failed due to an error!',
+                                    silent=True)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
-    @commands.command(aliases=['unload', 'stop'], brief="(Bot owner only) Stops/Unloads a cog/extension.", description="Stops/Unloads the specified cogs/extensions. Requires at least one argument, and supports an arbitrary amount of arguments.")
+    @commands.command(aliases=['unload',
+                               'stop'],
+                      brief="(Bot owner only) Stops/Unloads a cog/extension.",
+                      description=("Stops/Unloads the specified cogs/"
+                                   "extensions. Requires at least one "
+                                   "argument, and supports an arbitrary "
+                                   "amount of arguments."))
     @commands.is_owner()
     async def unentangle(self, ctx, *, module: str = ''):
         if module:
             cogs = module.split()
             for cog in cogs:
-                if cog[0].islower:
+                if cog[0].islower():
                     cog = cog.replace(cog[0], cog[0].upper(), 1)
-                    try:
-                        await self.bot.unload_extension(f'cogs.{cog}')
-                        await ctx.reply(f'Successfully unentangled from {cog}', silent=True)
-                    except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} could not be found!', silent=True)
-                    except commands.ExtensionNotLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
-                        await ctx.reply(f'{cog} not running, or could not be found!', silent=True)
+                try:
+                    await self.bot.unload_extension(f'cogs.{cog}')
+                    await ctx.reply(f'Successfully unentangled from {cog}',
+                                    silent=True)
+                except commands.ExtensionNotFound as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply(f'{cog} could not be found!', silent=True)
+                except commands.ExtensionNotLoaded as e:
+                    print('{}: {}'.format(type(e).__name__, e))
+                    await ctx.reply((f'{cog} not running, or could not be '
+                                     'found!'), silent=True)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
-    @commands.command(aliases=['quantise'], brief="(Bot owner only) Downloads a file to aaaa/possum.lobadk.com.", description="Downloads the specified file to the root directory of aaaa.lobadk.com or possum.lobadk.com, for easier file adding. Requires at least 3 arguments, and supports 4 arguments. The first argument is the file URL, the second is the filename to be used, with a special 'rand' parameter that produces a random 8 character long base62 filename, the third is the location, specified with 'aaaa' or 'possum', the fourth (optional) is 'YT' to indicate yt-lp should be used to download the file (YouTub or Twitter for example). If a file extension is detected, it will automatically be used, otherwise it needs to be specified in the filename. Supports links with disabled embeds, by '<>'.")
+    @commands.command(aliases=['quantise'],
+                      brief=("(Bot owner only) Downloads a file to aaaa/"
+                             "possum.lobadk.com."),
+                      description=("Downloads the specified file to the root "
+                                   "directory of aaaa.lobadk.com or possum."
+                                   "lobadk.com, for easier file adding. "
+                                   "Requires at least 3 arguments, and "
+                                   "supports 4 arguments. The first argument "
+                                   "is the file URL, the second is the "
+                                   "filename to be used, with a special 'rand'"
+                                   " parameter that produces a random 8 "
+                                   "character long base62 filename, the third "
+                                   "is the location, specified with 'aaaa' or "
+                                   "'possum', the fourth (optional) is 'YT' to"
+                                   " indicate yt-lp should be used to download"
+                                   " the file (YouTub or Twitter for example)."
+                                   " If a file extension is detected, it will "
+                                   "automatically be used, otherwise it needs "
+                                   "to be specified in the filename. Supports "
+                                   "links with disabled embeds, by '<>'."))
     @commands.is_owner()
     async def quantize(self, ctx, URL="", filename="", location="", mode=""):
         oldfilename = filename
@@ -199,12 +278,15 @@ class Entanglements(commands.Cog):
 
             # If an incorrect location is given
             else:
-                await ctx.reply('Only `aaaa` and `possum` are valid parameters!', silent=True)
+                await ctx.reply(('Only `aaaa` and `possum` are valid '
+                                 'parameters!'), silent=True)
                 return
 
         # If a required input is missing
         else:
-            await ctx.reply('Command requires 4 arguments:\n```?quantize <URL> <filename|rand> <aaaa|possum> <mode>```', silent=True)
+            await ctx.reply('Command requires 4 arguments:\n```?quantize '
+                            '<URL> <filename|rand> <aaaa|possum> <mode>```',
+                            silent=True)
             return
 
         msg = await ctx.reply('Creating quantum tunnel... ', silent=True)
@@ -213,12 +295,13 @@ class Entanglements(commands.Cog):
         if oldfilename.casefold() == 'rand':
             filename = await self.generatefilename()
 
-        # If greater-than and less-than have been used to disable embedding, strip them
+        # Strip greater-than and less-than symbols
+        # if they've been used to disable embeds
         if URL.startswith('<') or URL.endswith('>'):
             URL = URL.replace('<', '')
             URL = URL.replace('>', '')
 
-        msg = await msg.edit(content=msg.content + ' Tunnel created!')
+        msg = await msg.edit(content=f'{msg.content} Tunnel created!')
 
         # If mode is 'normal' i.e. normal downloads
         if mode.casefold() == 'normal':
@@ -229,7 +312,7 @@ class Entanglements(commands.Cog):
                 # and the input filename does not
                 # split and add the extension to the filename
                 if Path(URL).suffix and not Path(filename).suffix:
-                    filename = filename + Path(URL).suffix[:4].lower()
+                    filename = f'{filename}{Path(URL).suffix[:4].lower()}'
 
                 # If the filename doesn't contain a file extension either
                 elif not Path(filename).suffix:
@@ -240,7 +323,7 @@ class Entanglements(commands.Cog):
                 if Path(data_dir, filename).exists():
 
                     # If the old filename is not 'rand' and thus not supposed to be randomly generated
-                    if not oldfilename.lower() == 'rand':
+                    if not oldfilename.casefold() == 'rand':
                         await ctx.reply('Filename already exists, consider using a different name', silent=True)
                         return
 
@@ -251,7 +334,7 @@ class Entanglements(commands.Cog):
 
                 # Request and write file data
                 with open(f'{Path(data_dir, filename)}', 'wb') as quantizer:
-                    msg = await msg.edit(content=msg.content + f' Retrieving {filename}')
+                    msg = await msg.edit(content=f'{msg.content} Retrieving {filename}')
 
                     response = get(URL, stream=True)
 
@@ -266,7 +349,7 @@ class Entanglements(commands.Cog):
 
                         quantizer.write(block)
 
-                    await msg.edit(content=msg.content + f'\nSuccess! Data quantized to <{data_domain}{filename}>')
+                    await msg.edit(content=f'{msg.content} \nSuccess! Data quantized to {data_domain}{filename}', suppress=True)
                     return
 
         # If mode is 'yt' i.e. requires yt-dlp
@@ -281,9 +364,9 @@ class Entanglements(commands.Cog):
 
             # Download the best (up to 720p) MP4 video and m4a audio, and then combines them
             # Or a single video with audio included (up to 720p), if that's the best option
-            arg = f'yt-dlp -f "bv[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720]" {quote(URL)} --no-playlist -o {quote(data_dir + filename + ".%(ext)s")}'
+            arg = f'yt-dlp -f "bv[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720]" {quote(URL)} --no-playlist -o {quote(f"{data_dir}{filename}.%(ext)s")}'
 
-            msg = await msg.edit(content=msg.content + f' Retrieving {filename}')
+            msg = await msg.edit(content=f'{msg.content} Retrieving {filename}')
 
             # Make the bot show as 'typing' in the channel while it is downloading the video
             async with ctx.typing():
@@ -319,15 +402,16 @@ class Entanglements(commands.Cog):
                 elif stdout:
 
                     # Check if the downloaded file is above 50MB's
-                    if int(stat(quote(data_dir + filename) + '.mp4').st_size / (1024 * 1024)) > 50:
-                        msg = await msg.edit(content=msg.content + '\nDataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
+                    if int(stat(quote(f'{data_dir}{filename}.mp4')).st_size / (1024 * 1024)) > 50:
+                        msg = await msg.edit(content=f'{msg.content} \nDataset exceeded recommended limit! Crunching some bits... this might take a ***bit***')
 
                         # We wanna try and lower the resolution first by 1.5
-                        # as that should hurt quality and viewability in Discord embeds the least
+                        # as that should hurt quality and viewability in
+                        # Discord embeds the least
 
                         # Gets the video metadata from custom function
                         try:
-                            video_metadata = await self.getvideometadata(ctx, data_dir, filename)
+                            video_metadata = await self.getvideometadata(data_dir, filename)
                         except Exception as e:
                             print('{}: {}'.format(type(e).__name__, e))
                             await ctx.reply('Error getting video metadata!', silent=True)
@@ -335,7 +419,7 @@ class Entanglements(commands.Cog):
 
                         # Get new frame sizes from custom function
                         try:
-                            frame_width, frame_height = await self.decreaseesolution(ctx, video_metadata)
+                            frame_width, frame_height = await self.decreaseesolution(video_metadata)
                         except Exception as e:
                             print('{}: {}'.format(type(e).__name__, e))
                             await ctx.reply('Error parsing video resolution, manual conversion required!', silent=True)
@@ -345,7 +429,7 @@ class Entanglements(commands.Cog):
                         # and downscale the video to the new resolution.
                         # Currently audio is encoded regardless if it's there or not
                         # so in the future we should check if audio is actually present.
-                        arg3 = f'ffmpeg -y -i {quote(data_dir + filename + ".mp4")} -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(data_dir + filename + ".tmp")}'
+                        arg3 = f'ffmpeg -y -i {quote(f"{data_dir}{filename}.mp4")} -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(f"{data_dir}{filename}.tmp")}'
 
                         # Attempt to run command with above args
                         try:
@@ -389,11 +473,11 @@ class Entanglements(commands.Cog):
                             # If the bitrate option was reached, this would be at least 1
                             # Otherwise if it's 0, it means it never attempted to transcode with a variable bitrate
                             if attempts == 0:
-                                message = f'\nSuccess! Data quantized and bit-crunched to <{data_domain}{filename}.mp4>\nResized to {frame_width}:{frame_height}'
+                                message = f'\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nResized to {frame_width}:{frame_height}'
                             else:
-                                message = f'\nSuccess! Data quantized and bit-crunched to <{data_domain}{filename}.mp4>\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attemp(s)'
+                                message = f'\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attemp(s)'
 
-                            await msg.edit(content=msg.content + message)
+                            await msg.edit(content=f'{msg.content}{message}', suppress=True)
 
                         # Else statement for the process returncode, from the initial ffmpeg command
                         else:
@@ -401,7 +485,7 @@ class Entanglements(commands.Cog):
 
                     # If the file is under 50MB's
                     else:
-                        await msg.edit(content=msg.content + f'\nSuccess! Data quantized to <{data_domain}{filename}.mp4>')
+                        await msg.edit(content=f'{msg.content}\nSuccess! Data quantized to {data_domain}{filename}.mp4', suppress=True)
 
                 else:
                     ctx.reply('No output detected in yt-dlp!', silent=True)
@@ -412,7 +496,7 @@ class Entanglements(commands.Cog):
             await ctx.reply("Only 'normal'|'yt' are valid download modes!", silent=True)
             return
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
     @commands.command(aliases=['requantise'], brief="(Bot owner only) Rename a file on aaaa.lobadk.com.", description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when chosing a new name.")
     @commands.is_owner()
@@ -430,22 +514,26 @@ class Entanglements(commands.Cog):
                     rename(f'{data_dir}{current_filename}', f'{data_dir}{new_filename}')
 
                 except FileNotFoundError:
-                    await msg.edit(content=msg.content + '\nError! Data does not exist')
+                    await msg.edit(content=f'{msg.content}\nError! Data does not exist')
+                    return
 
                 except FileExistsError:
-                    await msg.edit(content=msg.content + '\nError! Cannot requantize, data already exists')
+                    await msg.edit(content=f'{msg.content}\nError! Cannot requantize, data already exists')
+                    return
 
                 except Exception as e:
                     print('{}: {}'.format(type(e).__name__, e))
                     await ctx.reply('Critical error! Check logs for info', silent=True)
-                await msg.edit(content=msg.content + '\nSuccess!')
+                    return
+
+                await msg.edit(content=f'{msg.content}\nSuccess!')
 
             else:
                 await ctx.reply('Only alphanumeric and a dot allowed. Extension required. Syntax is:\n```name.extension```', silent=True)
         else:
             await ctx.reply('Command requires 2 arguments:\n```?requantize <current.name> <new.name>```', silent=True)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
     @commands.command(brief="(Bot owner only) Runs git commands in the bots directory.", description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.")
     @commands.is_owner()
@@ -482,7 +570,7 @@ class Entanglements(commands.Cog):
                 else:
                     await ctx.message.add_reaction('👍')
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
     @commands.command(brief="(Bot owner only) Fetches new updates and reloads all changed/updated cogs/extensions.", description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.")
     @commands.is_owner()
@@ -535,26 +623,26 @@ class Entanglements(commands.Cog):
                 process3 = await create_subprocess_shell(f'git diff --name-only {current_version} HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             except Exception as e:
                 print('{}: {}'.format(type(e).__name__, e))
-                await msg.edit(content=msg.content + '\nError running file-change check. Manual reloading required')
+                await msg.edit(content=f'{msg.content}\nError running file-change check. Manual reloading required')
                 return
 
             # Save the output (filenames) in stderr3
             stderr3, stdout3 = await process3.communicate()
 
-            # Decode and remove "b'" characters
+            #  Decode and remove "b'" characters
             output = stderr3.decode().replace("b'", "")
 
             # Iterate through each listed file
             if 'QuantumKat.py' in output:
-                msg = await msg.edit(content=msg.content + '\nMain script updated, reboot?')
+                msg = await msg.edit(content=f'{msg.content}\nMain script updated, reboot?')
 
-                def check(m: Message):  # m = discord.Message.
-                    return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.lower() == 'yes'
+                def check(m: Message):  #  m = discord.Message.
+                    return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id and m.content.casefold() == 'yes'
 
                 try:
                     await self.bot.wait_for('message', check=check, timeout=10)
                 except TimeoutError:
-                    msg = await msg.edit(content=msg.content + '\nNot rebooting...')
+                    msg = await msg.edit(content=f'{msg.content}\nNot rebooting...')
                 else:
                     await ctx.invoke(self.bot.get_command('reboot'))
 
@@ -567,24 +655,25 @@ class Entanglements(commands.Cog):
                 if extension[5:] in output:
                     try:
                         await self.bot.reload_extension(extension)
-                        msg = await msg.edit(content=msg.content + f'\nPurging updated {extension[5:]}!')
-
+                        msg = await msg.edit(content=f'{msg.content}\nPurging updated {extension[5:]}!')
+                    
                     except commands.ExtensionNotLoaded as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\n{extension[5:]} is not running, or could not be found')
-
+                        await msg.edit(content=f'{msg.content}\n{extension[5:]} is not running, or could not be found')
+                    
                     except commands.ExtensionNotFound as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\n{extension[5:]} could not be found!')
-
+                        await msg.edit(content=f'{msg.content}\n{extension[5:]} could not be found!')
+                    
                     except commands.NoEntryPointError as e:
                         print('{}: {}'.format(type(e).__name__, e))
-                        await msg.edit(content=msg.content + f'\nsuccessfully loaded {extension[5:]}, but no setup was found!')
-
+                        await msg.edit(content=f'{msg.content}\nsuccessfully loaded {extension[5:]}, but no setup was found!')
+                
+        
         elif stdout2:
             await ctx.reply(stdout2, silent=True)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
     @commands.command(aliases=['dequantize'], brief='(Bot owner only) Delete the specified file.', description='Attempts to delete the specified file. Supports and requires 2 arguments, being the filename, and location (aaaa|possum).')
     @commands.is_owner()
@@ -608,8 +697,8 @@ class Entanglements(commands.Cog):
             if allowed.match(filename):
 
                 try:
-                    remove(data_dir + filename)
-
+                    remove(f'{data_dir}{filename}')
+                
                 except FileNotFoundError:
                     await ctx.reply('Dataset not found. Did you spell it correctly?', silent=True)
                     return
@@ -627,7 +716,7 @@ class Entanglements(commands.Cog):
         else:
             await ctx.reply('Filename and location required!\n`?dequantise|dequantize <filename> aaaa|possum`', silent=True)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
     @commands.command()
     @commands.is_owner()
@@ -638,7 +727,7 @@ RAM: {int(virtual_memory().used / 1024 / 1024)}MB / {int(virtual_memory().total 
 Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usage('/').total / 1024 / 1024 / 1000)}GB | {disk_usage('/').percent}%
 ''', silent=True)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
     @commands.command()
     @commands.is_owner()
@@ -653,7 +742,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
         execl(executable, executable, * argv)
 
-######################################################################################################
+# command splitter for easier reading and navigating
 
     print('Started Entanglements!')
 
