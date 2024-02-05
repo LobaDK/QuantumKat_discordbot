@@ -10,9 +10,17 @@ from dotenv import load_dotenv
 from num2words import num2words
 from shutil import which
 
+
+def is_installed(executable):
+    return which(executable) is not None
+
+
 # If False, will exit if a required program is mising
 # Can be set to True for debugging without needing them installed
 ignoreMissingExe = False
+
+# List of required executables
+executables = ['ffmpeg', 'ffprobe', 'youtube-dl']
 
 # Load .env file which contains bot token and my user ID
 # and store in OS user environment variables
@@ -51,39 +59,12 @@ for cog in listdir('./cogs'):
         initial_extensions.append(f'cogs.{cog[:-3]}')
 
 
-def ffmpegInstalled():
-    return which('ffmpeg') is not None
-
-
-def ffprobeInstalled():
-    return which('ffprobe') is not None
-
-
-def ytdlpInstalled():
-    return which('yt-dlp') is not None
-
-
 async def setup(bot):
-    if not ffmpegInstalled():
-        if not ignoreMissingExe:
-            print('Exiting due to ffmpeg not being found')
-            exit()
-        else:
-            print('No ffmpeg executable found')
-
-    if not ffprobeInstalled():
-        if not ignoreMissingExe:
-            print('Exiting due to ffprobe not being found')
-            exit()
-        else:
-            print('No ffprobe executable found')
-
-    if not ytdlpInstalled():
-        if not ignoreMissingExe:
-            print('Exiting due to yt-dlp not being found')
-            exit()
-        else:
-            print('No yt-dlp executable found')
+    if not ignoreMissingExe:
+        for executable in executables:
+            if not is_installed(executable):
+                print(f"Error: {executable} is not installed.")
+                exit(1)
 
     # Iterate through each cog and start it
     for extension in initial_extensions:
