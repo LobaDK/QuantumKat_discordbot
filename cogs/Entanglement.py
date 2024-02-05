@@ -207,7 +207,7 @@ class Entanglements(commands.Cog):
                                      'but no setup was found!'), silent=True)
                 except commands.ExtensionFailed as e:
                     print('{}: {}'.format(type(e).__name__, e))
-                    await ctx.reply(f'Loading {cog} failed due to an error!',
+                    await ctx.reply(f'Loading {cog} failed due to an unknown error!',
                                     silent=True)
 
 # command splitter for easier reading and navigating
@@ -259,7 +259,7 @@ class Entanglements(commands.Cog):
                                    " If a file extension is detected, it will "
                                    "automatically be used, otherwise it needs "
                                    "to be specified in the filename. Supports "
-                                   "links with disabled embeds, by '<>'."))
+                                   "links that have had their embeds disabled with '<>'."))
     @commands.is_owner()
     async def quantize(self, ctx, URL="", filename="", location="", mode=""):
         oldfilename = filename
@@ -362,7 +362,7 @@ class Entanglements(commands.Cog):
                 await ctx.reply('Playlists are not supported', silent=True)
                 return
 
-            # Download the best (up to 720p) MP4 video and m4a audio, and then combines them
+            # Downloads the best (up to 720p) MP4 video and m4a audio, and then combines them
             # Or a single video with audio included (up to 720p), if that's the best option
             arg = f'yt-dlp -f "bv[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720]" {quote(URL)} --no-playlist -o {quote(f"{data_dir}{filename}.%(ext)s")}'
 
@@ -384,7 +384,7 @@ class Entanglements(commands.Cog):
                 # yt-dlp sometimes outputs non-fatal errors or warnings
                 # making it unreliable for canceling the process.
                 # Instead we're supplying the error for verbosity.
-                # Tp-do: Test and figure out the warning and error messages
+                # To-do: Test and figure out the warning and error messages
                 # it can return, for better process handling
                 if stderr:
                     await ctx.reply(stderr.decode(), silent=True)
