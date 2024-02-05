@@ -11,12 +11,25 @@ from num2words import num2words
 from shutil import which
 
 # If False, will exit if a required program is mising
-# Can be to True for debugging without needing them installed
+# Can be set to True for debugging without needing them installed
 ignoreMissingExe = False
 
 # Load .env file which contains bot token and my user ID
 # and store in OS user environment variables
 load_dotenv()
+
+# Get the bot token and my user ID from the environment variables
+OWNER_ID = environ.get('OWNER_ID')
+TOKEN = environ.get('TOKEN')
+
+# If the bot token or my user ID is not set, exit the program
+if OWNER_ID is None:
+    print("Error: The OWNER_ID environment variable is not set.")
+    exit(1)
+
+if TOKEN is None:
+    print("Error: The TOKEN environment variable is not set.")
+    exit(1)
 
 # Gives the bot default access as well as access
 # to contents of messages and managing members
@@ -24,13 +37,12 @@ intents = Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Gives bot command prefix, enable built-in help command
-# set it's intents, and add my ID to owner_ids
+# Sets the bot's command prefix, help command, and
+# set it's intents, and adds my ID to owner_ids
 bot = commands.Bot(command_prefix='?',
                    help_command=commands.DefaultHelpCommand(
                        sort_commands=False, show_parameter_descriptions=False,
-                       width=100), intents=intents, owner_ids=[int(
-                           environ.get('OWNER_ID'))])
+                       width=100), intents=intents, owner_ids=[int(OWNER_ID)])
 
 # Get and add cogs to a list
 initial_extensions = []
@@ -76,7 +88,7 @@ async def setup(bot):
     # Iterate through each cog and start it
     for extension in initial_extensions:
         await bot.load_extension(extension)
-    await bot.start(environ.get('TOKEN'), reconnect=True)
+    await bot.start(TOKEN, reconnect=True)
 
 
 @bot.event
