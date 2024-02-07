@@ -19,7 +19,7 @@ def is_installed(executable: str) -> bool:
 
 # Output everything from the discord library to a file, except for HTTP requests
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logging.getLogger('discord.http').setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
