@@ -1,9 +1,11 @@
 from asyncio import run
 from datetime import datetime
-from os import environ, listdir
+from os import environ, listdir, path
 from random import choice, randint
 from sys import exit
 
+import logging
+import logging.handlers
 from discord import Intents, __version__
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -11,11 +13,28 @@ from num2words import num2words
 from shutil import which
 
 
-def is_installed(executable):
+def is_installed(executable: str) -> bool:
     return which(executable) is not None
 
 
-# If False, will exit if a required program is mising
+# Output everything from the discord library to a file, except for HTTP requests
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+logging.getLogger('discord.http').setLevel(logging.INFO)
+
+handler = logging.handlers.RotatingFileHandler(
+    filename='discord.log',
+    encoding='utf-8',
+    maxBytes=32 * 1024 * 1024,  # 32 MiB
+    backupCount=5,  # Rotate through 5 files
+)
+
+date_format = '%Y-%m-%d %H:%M:%S'
+formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
 ignoreMissingExe = False
 
@@ -31,12 +50,12 @@ OWNER_ID = environ.get('OWNER_ID')
 TOKEN = environ.get('TOKEN')
 
 # If the bot token or my user ID is not set, exit the program
-if OWNER_ID is None:
-    print("Error: The OWNER_ID environment variable is not set.")
+if OWNER_ID is None or OWNER_ID == "":
+    print("Error: The OWNER_ID environment variable is not set or is empty.")
     exit(1)
 
-if TOKEN is None:
-    print("Error: The TOKEN environment variable is not set.")
+if TOKEN is None or TOKEN == "":
+    print("Error: The TOKEN environment variable is not set or is empty.")
     exit(1)
 
 # Gives the bot default access as well as access
@@ -45,8 +64,7 @@ intents = Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Sets the bot's command prefix, help command, and
-# set it's intents, and adds my ID to owner_ids
+# Sets the bot's command prefix, help command, intents, and adds my ID to owner_ids
 bot = commands.Bot(command_prefix='?',
                    help_command=commands.DefaultHelpCommand(
                        sort_commands=False, show_parameter_descriptions=False,
@@ -56,7 +74,7 @@ bot = commands.Bot(command_prefix='?',
 initial_extensions = []
 for cog in listdir('./cogs'):
     if cog.endswith('.py'):
-        initial_extensions.append(f'cogs.{cog[:-3]}')
+        initial_extensions.append(f'cogs.{path.splitext(cog)[0]}')
 
 
 async def setup(bot):
@@ -69,7 +87,7 @@ async def setup(bot):
     # Iterate through each cog and start it
     for extension in initial_extensions:
         await bot.load_extension(extension)
-    await bot.start(TOKEN, reconnect=True)
+    await bot.start(TOKEN, reconnect=True, log_handler=None)
 
 
 @bot.event
@@ -83,7 +101,7 @@ Application name: {bot.appinfo.name}
 Application owner: {bot.appinfo.owner}
 Application owner IDs: {bot.owner_ids}
 Latency to Discord: {int(bot.latency * 1000)}ms.
-Discord version: {__version__}
+Discord.py version: {__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000),
     to="ordinal_num")} {choice(quantum)}!''')
