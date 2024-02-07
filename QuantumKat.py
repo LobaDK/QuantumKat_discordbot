@@ -87,7 +87,7 @@ async def setup(bot):
     # Iterate through each cog and start it
     for extension in initial_extensions:
         await bot.load_extension(extension)
-    await bot.start(TOKEN, reconnect=True, log_handler=None)
+    await bot.start(TOKEN, reconnect=True)
 
 
 @bot.event
