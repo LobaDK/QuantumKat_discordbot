@@ -1,12 +1,22 @@
 from random import choice
+import logging
 
 from discord.ext import commands
+
+logger = logging.getLogger('discord')
 
 
 class Control(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
+
+    async def get_permissions(self, guild):
+        permissions = []
+        for permission in guild.me.guild_permissions:
+            if permission[1] is True:
+                permissions.append(permission[0])
+        return permissions
 
     @commands.command(aliases=['serverownerlist',
                                'SOL'],
@@ -47,7 +57,7 @@ class Control(commands.Cog):
                         await ctx.send(f'Left {guild}')
                     except Exception as e:
                         await ctx.send(e)
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error('{}: {}'.format(type(e).__name__, e))
                 else:
                     await ctx.send(('Server does not exist or the bot is not '
                                     'in it, did you enter the correct ID?'))
@@ -65,10 +75,12 @@ class Control(commands.Cog):
     async def Leave(self, ctx):
         if ctx.guild is not None:
             application = await self.bot.application_info()
-            if (ctx.author.id == ctx.guild.owner.id
+            if (
+                ctx.author.id == ctx.guild.owner.id
                 or ctx.author.id == application.owner.id
                 or ctx.author.guild_permissions.administrator
-               or ctx.author.guild_permissions.moderate_members):
+                or ctx.author.guild_permissions.moderate_members
+            ):
                 await ctx.send(f'*Poofs to another {choice(self.locations)}*')
                 await ctx.guild.leave()
             else:
@@ -84,51 +96,43 @@ class Control(commands.Cog):
                       description=('Lists the permissions given to the bot. '
                                    'If no server ID is provided, it will show '
                                    'the permissions from the server the '
-                                   'command was use in. Supports a single '
+                                   'command was used in. Supports a single '
                                    'optional argument as the server ID.'))
     async def ListPermissions(self, ctx, Server_ID=""):
+        guild = None
+        # If Server_ID is provided and the command was used in DM's
         if Server_ID and ctx.guild is None:
             if Server_ID.isnumeric():
-                permissions = []
+                # Get a guild object of the server from it's ID
                 guild = self.bot.get_guild(int(Server_ID))
 
-                if guild is not None:
-
-                    for permission in guild.me.guild_permissions:
-                        if permission[1] is True:
-                            permissions.append(permission[0])
-                    await ctx.send(('I have the following permissions in '
-                                    '{guild_name}:\n{permissions}'.format(
-                                        guild_name=guild.name,
-                                        permissions='\n'.join(permissions))))
-
-                else:
+                # We can only get the guild object if the bot is in the server
+                # so if it is None, it either does not exist or the bot is not in it
+                if guild is None:
                     await ctx.send(('Server does not exist or the bot is not '
                                     'in it, did you enter the correct ID?'))
-
+                    return
             else:
                 await ctx.send('Server ID can only be a number!')
+                return
 
+        # If Server_ID is not provided and the command was used in a server
         elif ctx.guild is not None and not Server_ID:
-            permissions = []
-
-            for permission in ctx.guild.me.guild_permissions:
-                if permission[1] is True:
-                    permissions.append(permission[0])
-            await ctx.send(('I have the following permissions in '
-                            '{guild_name}:\n{permissions}'.format(
-                                guild_name=ctx.guild.name,
-                                permissions='\n'.join(permissions))))
-
+            guild = ctx.guild
         else:
             await ctx.send(("Syntax is:\n```?ListPermissions optional"
                             "<Server ID>```\nServer ID may only be provided "
                             "in DM's"))
+            return
+
+        permissions = await self.get_permissions(guild)
+        await ctx.send(f'I have the following permissions in {guild.name}:\n' + '\n'.join(permissions))
 
     @commands.command()
     async def test(self, ctx):
         await ctx.send('*Meows*')
 
+    logger.info('Started Control!')
     print('Started Control!')
 
 

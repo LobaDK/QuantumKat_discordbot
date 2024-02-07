@@ -51,11 +51,11 @@ TOKEN = environ.get('TOKEN')
 
 # If the bot token or my user ID is not set, exit the program
 if OWNER_ID is None or OWNER_ID == "":
-    print("Error: The OWNER_ID environment variable is not set or is empty.")
+    logger.error("Error: The OWNER_ID environment variable is not set or is empty.")
     exit(1)
 
 if TOKEN is None or TOKEN == "":
-    print("Error: The TOKEN environment variable is not set or is empty.")
+    logger.error("Error: The TOKEN environment variable is not set or is empty.")
     exit(1)
 
 # Gives the bot default access as well as access
@@ -81,7 +81,7 @@ async def setup(bot):
     if not ignoreMissingExe:
         for executable in executables:
             if not is_installed(executable):
-                print(f"Error: {executable} is not installed.")
+                logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
     # Iterate through each cog and start it

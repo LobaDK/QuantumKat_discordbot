@@ -2,10 +2,13 @@ from random import randint, choice
 from discord import Game
 from discord.ext import commands, tasks
 from num2words import num2words
+import logging
 
 
 class Activity(commands.Cog):
     def __init__(self, bot):
+        self.logger = logging.getLogger('discord')
+
         self.bot = bot
 
         self.hissList = ['Hissing',
@@ -25,7 +28,7 @@ class Activity(commands.Cog):
         self.nounList = ['a chair',
                          'a table',
                          'a vase',
-                         'a long-lost creditcard',
+                         'a long-lost credit card',
                          'some strangers phone',
                          'a stranger',
                          'an error',
@@ -88,7 +91,7 @@ class Activity(commands.Cog):
 
     @change_activity.before_loop
     async def before_change_activity(self):
-        print('Starting Activity loop...')
+        self.logger.info('Starting Activity loop...')
         await self.bot.wait_until_ready()
 
 # command splitter for easier reading and navigating
