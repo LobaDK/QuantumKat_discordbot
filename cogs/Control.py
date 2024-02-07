@@ -57,7 +57,7 @@ class Control(commands.Cog):
                         await ctx.send(f'Left {guild}')
                     except Exception as e:
                         await ctx.send(e)
-                        logger.error('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                 else:
                     await ctx.send(('Server does not exist or the bot is not '
                                     'in it, did you enter the correct ID?'))

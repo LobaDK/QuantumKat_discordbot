@@ -9,11 +9,14 @@ from shlex import quote
 from re import compile
 from pathlib import Path
 from requests import get
+import logging
 
 from discord import Message
 from discord.ext import commands
 from num2words import num2words
 from psutil import cpu_percent, disk_usage, virtual_memory
+
+logger = logging.getLogger('discord')
 
 
 class Entanglements(commands.Cog):
@@ -86,7 +89,7 @@ class Entanglements(commands.Cog):
             process3 = await create_subprocess_shell(arg4)
             await process3.wait()
         except Exception as e:
-            print('{}: {}'.format(type(e).__name__, e))
+            logger.error(f'{type(e).__name__}: {e}')
             await ctx.reply(('Error transcoding resized with '
                              'average bitrate video!'), silent=True)
             return
@@ -137,14 +140,14 @@ class Entanglements(commands.Cog):
                         msg = await msg.edit(
                             content=f'{msg.content}\nPurging {extension}!')
                     except commands.ExtensionNotLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await ctx.send((f'{extension} is not running, '
                                         'or could not be found'))
                     except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await ctx.send(f'{extension} could not be found!')
                     except commands.NoEntryPointError as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await ctx.send((f'successfully loaded {extension}, '
                                         'but no setup was found!'))
             else:
@@ -162,15 +165,15 @@ class Entanglements(commands.Cog):
                         else:
                             await ctx.reply(f'Purrging {cog}!', silent=True)
                     except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await ctx.reply(f'{cog} could not be found!',
                                         silent=True)
                     except commands.ExtensionNotLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await ctx.reply((f'{cog} is not running, '
                                         'or could not be found!'), silent=True)
                     except commands.NoEntryPointError as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await ctx.reply((f'successfully loaded {cog}, '
                                         'but no setup was found!'),
                                         silent=True)
@@ -196,17 +199,17 @@ class Entanglements(commands.Cog):
                     await ctx.reply(f'Successfully entangled to {cog}',
                                     silent=True)
                 except commands.ExtensionNotFound as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply(f'{cog} could not be found!', silent=True)
                 except commands.ExtensionAlreadyLoaded as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply(f'{cog} is already loaded!', silent=True)
                 except commands.NoEntryPointError as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply((f'successfully loaded {cog}, '
                                      'but no setup was found!'), silent=True)
                 except commands.ExtensionFailed as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply(f'Loading {cog} failed due to an unknown error!',
                                     silent=True)
 
@@ -231,10 +234,10 @@ class Entanglements(commands.Cog):
                     await ctx.reply(f'Successfully unentangled from {cog}',
                                     silent=True)
                 except commands.ExtensionNotFound as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply(f'{cog} could not be found!', silent=True)
                 except commands.ExtensionNotLoaded as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply((f'{cog} not running, or could not be '
                                      'found!'), silent=True)
 
@@ -339,8 +342,8 @@ class Entanglements(commands.Cog):
                     response = get(URL, stream=True)
 
                     if not response.ok:
-                        print(f'URL: {URL}\nStatus code: {response.status_code}')
-                        await ctx.reply('Error connecting to server!')
+                        logger.error(f'Error connecting to server! {response.status_code}')
+                        await ctx.reply(f'Error connecting to server! {response.status_code}')
                         return
 
                     for block in response.iter_content(1024):
@@ -377,7 +380,7 @@ class Entanglements(commands.Cog):
                     stdout, stderr = await process.communicate()
 
                 except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply('Error, quantization tunnel collapsed unexpectedly!', silent=False)
                     return
 
@@ -413,7 +416,7 @@ class Entanglements(commands.Cog):
                         try:
                             video_metadata = await self.getvideometadata(data_dir, filename)
                         except Exception as e:
-                            print('{}: {}'.format(type(e).__name__, e))
+                            logger.error(f'{type(e).__name__}: {e}')
                             await ctx.reply('Error getting video metadata!', silent=True)
                             return
 
@@ -421,7 +424,7 @@ class Entanglements(commands.Cog):
                         try:
                             frame_width, frame_height = await self.decreaseesolution(video_metadata)
                         except Exception as e:
-                            print('{}: {}'.format(type(e).__name__, e))
+                            logger.error(f'{type(e).__name__}: {e}')
                             await ctx.reply('Error parsing video resolution, manual conversion required!', silent=True)
                             return
 
@@ -436,7 +439,7 @@ class Entanglements(commands.Cog):
                             process2 = await create_subprocess_shell(arg3)
                             await process2.wait()
                         except Exception as e:
-                            print('{}: {}'.format(type(e).__name__, e))
+                            logger.error(f'{type(e).__name__}: {e}')
                             await ctx.reply('Error transcoding resized video!', silent=True)
                             return
 
@@ -452,7 +455,7 @@ class Entanglements(commands.Cog):
                             try:
                                 video_duration = int(float(video_metadata['duration']))
                             except Exception as e:
-                                print('{}: {}'.format(type(e).__name__, e))
+                                logger.error(f'{type(e).__name__}: {e}')
                                 await ctx.reply('Error parsing video duration, manual conversion required!', silent=True)
                                 return
 
@@ -466,7 +469,7 @@ class Entanglements(commands.Cog):
                                 remove(f'{data_dir}{filename}.mp4')
                                 rename(f'{data_dir}{filename}.tmp', f'{data_dir}{filename}.mp4')
                             except Exception as e:
-                                print('{}: {}'.format(type(e).__name__, e))
+                                logger.error(f'{type(e).__name__}: {e}')
                                 await ctx.reply('Error moving/removing file!', silent=True)
                                 return
 
@@ -522,7 +525,7 @@ class Entanglements(commands.Cog):
                     return
 
                 except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply('Critical error! Check logs for info', silent=True)
                     return
 
@@ -537,7 +540,7 @@ class Entanglements(commands.Cog):
 
     @commands.command(brief="(Bot owner only) Runs git commands in the bots directory.", description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.")
     @commands.is_owner()
-    async def git(self, ctx, *, git_arguments):
+    async def git(self, ctx, *, git_arguments=''):
         if git_arguments:
 
             # Only allow alphanumeric, underscores, hyphens and whitespaces
@@ -549,7 +552,7 @@ class Entanglements(commands.Cog):
                 try:
                     process = await create_subprocess_shell(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
                 except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply('Error running command', silent=True)
                     return
 
@@ -569,6 +572,8 @@ class Entanglements(commands.Cog):
 
                 else:
                     await ctx.message.add_reaction('👍')
+            else:
+                await ctx.reply('Only alphanumeric, underscores, hyphens and whitespaces allowed!', silent=True)
 
 # command splitter for easier reading and navigating
 
@@ -579,7 +584,7 @@ class Entanglements(commands.Cog):
         try:
             process1 = await create_subprocess_shell('git rev-parse --short HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except Exception as e:
-            print('{}: {}'.format(type(e).__name__, e))
+            logger.error(f'{type(e).__name__}: {e}')
             await ctx.reply('Error getting current Git information', silent=True)
             return
 
@@ -622,7 +627,7 @@ class Entanglements(commands.Cog):
             try:
                 process3 = await create_subprocess_shell(f'git diff --name-only {current_version} HEAD', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             except Exception as e:
-                print('{}: {}'.format(type(e).__name__, e))
+                logger.error(f'{type(e).__name__}: {e}')
                 await msg.edit(content=f'{msg.content}\nError running file-change check. Manual reloading required')
                 return
 
@@ -658,15 +663,15 @@ class Entanglements(commands.Cog):
                         msg = await msg.edit(content=f'{msg.content}\nPurging updated {extension[5:]}!')
 
                     except commands.ExtensionNotLoaded as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await msg.edit(content=f'{msg.content}\n{extension[5:]} is not running, or could not be found')
 
                     except commands.ExtensionNotFound as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await msg.edit(content=f'{msg.content}\n{extension[5:]} could not be found!')
 
                     except commands.NoEntryPointError as e:
-                        print('{}: {}'.format(type(e).__name__, e))
+                        logger.error(f'{type(e).__name__}: {e}')
                         await msg.edit(content=f'{msg.content}\nsuccessfully loaded {extension[5:]}, but no setup was found!')
 
         elif stdout2:
@@ -703,7 +708,7 @@ class Entanglements(commands.Cog):
                     return
 
                 except Exception as e:
-                    print('{}: {}'.format(type(e).__name__, e))
+                    logger.error(f'{type(e).__name__}: {e}')
                     await ctx.reply('Error dequantising dataset!', silent=True)
                     return
 
@@ -743,6 +748,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
 # command splitter for easier reading and navigating
 
+    logger.info('Started Entanglements!')
     print('Started Entanglements!')
 
 

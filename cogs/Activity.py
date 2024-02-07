@@ -4,10 +4,11 @@ from discord.ext import commands, tasks
 from num2words import num2words
 import logging
 
+logger = logging.getLogger('discord')
+
 
 class Activity(commands.Cog):
     def __init__(self, bot):
-        self.logger = logging.getLogger('discord')
 
         self.bot = bot
 
@@ -91,8 +92,9 @@ class Activity(commands.Cog):
 
     @change_activity.before_loop
     async def before_change_activity(self):
-        self.logger.info('Starting Activity loop...')
+        logger.info('Starting Activity loop...')
         await self.bot.wait_until_ready()
+        logger.info('Activity loop started!')
 
 # command splitter for easier reading and navigating
 

@@ -5,11 +5,14 @@ from urllib.parse import urljoin
 from urllib import parse
 from pathlib import Path
 from asyncio import create_subprocess_shell, subprocess
+import logging
 
 from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
 from re import compile
+
+logger = logging.getLogger('discord')
 
 
 class Fields(commands.Cog):
@@ -295,7 +298,6 @@ class Fields(commands.Cog):
         all_files = await self.getfiles(self.aURL, self.a_folder)
         await ctx.reply(f'There are currently {len(all_files)} quantised datasets.', silent=True)
 
-
 ######################################################################################################
 
     @commands.command(aliases=['quantumball', 'qball'], brief='standard 8ball replies, but with some quantum mixed.', description='Uses the standard 8ball replies, but with some quantum related replies or addition to the messages. Accepts no arguments.')
@@ -310,6 +312,7 @@ class Fields(commands.Cog):
 
         await ctx.reply(choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=choice(['realities', 'universes', 'dimensions', 'timelines']), affirmative_answer=choice(affirmative_answers_list), reason=choice(reason_list), non_committal_answer=choice(non_committal_answers_list), negative_answer=choice(negative_answers_list)), silent=True)
 
+    logger.info('Started Fields!')
     print('Started Fields!')
 
 
