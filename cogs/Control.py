@@ -11,8 +11,12 @@ class Control(commands.Cog):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
-    async def getPermissions(self, ctx, guild):
-        return ctx.get_permissions(guild.me)
+    async def get_permissions(self, guild):
+        permissions = []
+        for permission in guild.me.guild_permissions:
+            if permission[1] is True:
+                permissions.append(permission[0])
+        return permissions
 
     @commands.command(aliases=['serverownerlist',
                                'SOL'],
@@ -121,8 +125,8 @@ class Control(commands.Cog):
                             "in DM's"))
             return
 
-        permissions = await self.getPermissions(ctx, guild)
-        await ctx.send(f'I have the following permissions in {guild.name}:\n' + '\n'.join([perm for perm in permissions]))
+        permissions = await self.get_permissions(guild)
+        await ctx.send(f'I have the following permissions in {guild.name}:\n' + '\n'.join(permissions))
 
     @commands.command()
     async def test(self, ctx):
