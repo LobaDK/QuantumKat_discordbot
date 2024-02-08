@@ -292,7 +292,7 @@ class Fields(commands.Cog):
                     latency += offset
                     await ctx.reply(f'A negative latency value was detected. Used pool.ntp.org to attempt to correct, with a {round(offset)}ms offset.', silent=True)
 
-                await ctx.reply(f'{pingresponse}! Took {latency * 2}ms. {choice(LatencyResponses)}\nConnection to discord: {round(self.bot.latency * 1000)}ms', silent=True)
+                await ctx.reply(f'{pingresponse} Took {latency * 2}ms. {choice(LatencyResponses)}\nConnection to discord: {round(self.bot.latency * 1000)}ms', silent=True)
             else:
                 await ctx.reply("Only 'latency' parameter allowed", silent=True)
         else:
