@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from urllib import parse
 from pathlib import Path
 from asyncio import create_subprocess_shell, subprocess
+from random import random
 import logging
 
 from discord.ext import commands
@@ -36,7 +37,7 @@ class Fields(commands.Cog):
         links = sample(files, k=ctx.message.content.split(" ")[0].count("r"))
         await ctx.reply('\n'.join(links), silent=True)
 
-    async def getfiles(self, url: str, folder: str) -> list:
+    async def getfiles(self, url: str, folder: str) -> list[str]:
         files = []
         for file in glob(f'{folder}*'):
             if file.endswith(self.extensions):
@@ -44,7 +45,7 @@ class Fields(commands.Cog):
 
         return files
 
-    async def searchfiles(self, search_keyword: str) -> list:
+    async def searchfiles(self, search_keyword: str) -> list[str]:
         files = []
         p = await create_subprocess_shell(f'find {self.a_folder} -maxdepth 1 -type f -iname "*{search_keyword}*"', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         await p.wait()
@@ -87,7 +88,7 @@ class Fields(commands.Cog):
         if mention in optional_user_or_object:
             async def quantumpurr(self, ctx):
                 quantumspan = randint(0, 100)
-                await ctx.send(f'Quantum purrs across {quantumspan} {choices(["dimension","universe","reality","timeline","dimension, universe, realitie and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
+                await ctx.send(f'Quantum purrs across {quantumspan} {choices(["dimension","universe","reality","timeline","dimension, universe, reality and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}')
 
             async def quantumfrequency(self, ctx):
                 await ctx.send(f'Quantum vibrates at {randint(1,100_000)}hz')
@@ -124,7 +125,7 @@ class Fields(commands.Cog):
             if quantummode == 'purr':
                 await ctx.send(f'Quantum purrs and entangles {ctx.author.mention} to the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension","universe","reality","timeline"])}')
             elif quantummode == 'frequency':
-                await ctx.send(f'Quantum vibrates at {randint(1,100_000)}hz, teleporting {choice(["a chair","a table","a vase","a long-lost creditcard","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension","universe","reality","timeline"])}')
+                await ctx.send(f'Quantum vibrates at {randint(1,100_000)}hz, teleporting {choice(["a chair","a table","a vase","a long-lost credit card","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension","universe","reality","timeline"])}')
         else:
             await ctx.send(f'Superpositions {quantum_amount} {verb} around {optional_user_or_object} and {hugs}', silent=True)
 
@@ -139,7 +140,7 @@ class Fields(commands.Cog):
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {ctx.author.mention}')
         elif mention in optional_user_or_object:
             quantumpetloop = ''.join(choices(['Quantum petting the', 'QuantumKat', 'QuantumKatting the', 'Quantum pet'], k=randint(8, 40)))
-            await ctx.send(f'{quantumpetloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
+            await ctx.send(f'{quantumpetloop}... Instability detected, successfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qpets} {optional_user_or_object}', silent=True)
 
@@ -154,7 +155,7 @@ class Fields(commands.Cog):
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {ctx.author.mention}')
         elif mention in optional_user_or_object:
             quantumhugloop = ''.join(choices(['Quantum hugging the', 'QuantumKat', 'QuantumKatting the', 'Quantum hug'], k=randint(8, 40)))
-            await ctx.send(f'{quantumhugloop}... Instability detected, sucessfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
+            await ctx.send(f'{quantumhugloop}... Instability detected, successfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!')
         else:
             await ctx.send(f'Superpositions {quantum_amount} times across all timelines, dimensions, universes and realities, and {qhugs} {optional_user_or_object}', silent=True)
 
@@ -259,10 +260,16 @@ class Fields(commands.Cog):
         LatencyResponses = ['Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.', "You know, I could've quantised *at least* 100x the amount of data in that time.", 'That was a nice nap.', "Do you realize how many times I could've been pet in that amount of time!", 'And so close to beating your alternate-self from another dimension too!', "Let's just not tell your alternate-self from another dimension..."]
 
         if ctx.message.content.startswith('?ping'):
-            pingresponse = 'pong'
+            if random() < 0.1:
+                pingresponse = '!gnip'
+            else:
+                pingresponse = 'pong!'
 
         elif ctx.message.content.startswith('?pong'):
-            pingresponse = 'ping'
+            if random() < 0.1:
+                pingresponse = '!gnop'
+            else:
+                pingresponse = 'ping!'
 
         if ping_mode:
             if ping_mode.casefold() == 'latency':

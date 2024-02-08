@@ -35,7 +35,7 @@ class Entanglements(commands.Cog):
 
     characters = f'{ascii_letters}{digits}'
 
-    async def getvideometadata(self, data_dir, filename):
+    async def getvideometadata(self, data_dir: str, filename: str) -> dict:
         arg2 = ('ffprobe -v quiet -show_streams -select_streams v:0 -of json '
                 f'{quote(f"{data_dir}{filename}.mp4")}')
 
@@ -50,7 +50,7 @@ class Entanglements(commands.Cog):
         # Load the "streams" key, which holds all the metadata information
         return loads(stdout)['streams'][0]
 
-    async def decreaseesolution(self, ctx, video_metadata):
+    async def decreaseesolution(self, video_metadata: dict) -> tuple[int, int]:
         # Attempt to parse, divide, and save the video's width
         # and height in int, to remove any decimal points
         frame_width = int(video_metadata['coded_width'] / 1.5)
@@ -59,14 +59,14 @@ class Entanglements(commands.Cog):
         return frame_width, frame_height
 
     async def decreasebitrate(self,
-                              ctx,
-                              video_duration,
-                              bitrate_decrease,
-                              attempts,
-                              data_dir,
-                              filename,
-                              frame_width,
-                              frame_height):
+                              ctx: commands.Context,
+                              video_duration: int,
+                              bitrate_decrease: int,
+                              attempts: int,
+                              data_dir: str,
+                              filename: str,
+                              frame_width: int,
+                              frame_height: int) -> tuple[int, int]:
         # calculate the average bitrate required to reach around 50MB's
         # by multiplying 50 by 8192 (convert megabits to kilobits)
         # dividing that by the video length, and subtracting the audio bitrate
@@ -94,15 +94,15 @@ class Entanglements(commands.Cog):
                              'average bitrate video!'), silent=True)
             return
 
-        # Increase attemps by 1
+        # Increase attempts by 1
         attempts += 1
         # Increase by 100 kilobits
-        # to decrease the average bitrate by 100 kilotbits
+        # to decrease the average bitrate by 100 kilobits
         bitrate_decrease += 100
 
         return attempts, bitrate
 
-    async def generatefilename(self):
+    async def generatefilename(self) -> str:
         return "".join(choice(self.characters) for _ in range(8))
 
 # command splitter for easier reading and navigating
@@ -478,7 +478,7 @@ class Entanglements(commands.Cog):
                             if attempts == 0:
                                 message = f'\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nResized to {frame_width}:{frame_height}'
                             else:
-                                message = f'\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attemp(s)'
+                                message = f'\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attempt(s)'
 
                             await msg.edit(content=f'{msg.content}{message}', suppress=True)
 
@@ -501,7 +501,7 @@ class Entanglements(commands.Cog):
 
 # command splitter for easier reading and navigating
 
-    @commands.command(aliases=['requantise'], brief="(Bot owner only) Rename a file on aaaa.lobadk.com.", description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when chosing a new name.")
+    @commands.command(aliases=['requantise'], brief="(Bot owner only) Rename a file on aaaa.lobadk.com.", description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when choosing a new name.")
     @commands.is_owner()
     async def requantize(self, ctx, current_filename='', new_filename=''):
         if current_filename and new_filename:
@@ -597,7 +597,7 @@ class Entanglements(commands.Cog):
         # DO NOT CHANGE ORDER
         # Git's output seems to be reversed, and most information gets piped to STDERR instead for some reason
         # STDOUT may also sometimes contain either the data, or some other random data, or part of the whole output, from STDERR
-        # "Aready up to date" is piped to STDUT, but output from file changes when doing "git pull" for example
+        # "Already up to date" is piped to STDOUT, but output from file changes when doing "git pull" for example
         # Are outputted to STDERR instead, hence why it is also reversed here
         stderr2, stdout2 = await process2.communicate()
 
@@ -618,7 +618,7 @@ class Entanglements(commands.Cog):
 
         elif stderr2:
 
-            # Send the output of Git, which displays whichs files has been updated, and how much
+            # Send the output of Git, which displays which files has been updated, and how much
             # Then sleep 2 seconds to allow the text to be sent, and read
             msg = await ctx.reply(stderr2, silent=True)
             await asyncsleep(2)
