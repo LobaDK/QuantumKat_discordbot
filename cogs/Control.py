@@ -11,7 +11,7 @@ class Control(commands.Cog):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
-    async def get_permissions(self, guild: commands.Guild) -> list[str]:
+    async def get_permissions(self, guild) -> list[str]:
         permissions = []
         for permission in guild.me.guild_permissions:
             if permission[1] is True:
