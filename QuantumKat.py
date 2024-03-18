@@ -38,11 +38,19 @@ handler = logging.handlers.RotatingFileHandler(
     backupCount=5,  # Rotate through 5 files
 )
 
+qhandler = logging.handlers.RotatingFileHandler(
+    filename='logs/discord.log',
+    encoding='utf-8',
+    maxBytes=32 * 1024 * 1024,  # 32 MiB
+    backupCount=5,  # Rotate through 5 files
+)
+
 date_format = '%Y-%m-%d %H:%M:%S'
 formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
 handler.setFormatter(formatter)
+qhandler.setFormatter(formatter)
 logger.addHandler(handler)
-qlogger.addHandler(handler)
+qlogger.addHandler(qhandler)
 
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
