@@ -98,7 +98,7 @@ class Chat(commands.Cog):
                                 "content": chat_response
                             })
 
-                            self.logger.info(f'Chat response: {chat_response}, using {response.choices[0].message.token_count} tokens.')
+                            self.logger.info(f'Chat response: {chat_response}, using {response.usage.total_tokens} tokens in total.')
                             await ctx.send(chat_response)
                         except OpenAIError as e:
                             self.logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
