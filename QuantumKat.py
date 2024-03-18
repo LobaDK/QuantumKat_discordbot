@@ -11,11 +11,17 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from num2words import num2words
 from shutil import which
+from os import mkdir
 
 
 def is_installed(executable: str) -> bool:
     return which(executable) is not None
 
+
+try:
+    mkdir('logs')
+except FileExistsError:
+    pass
 
 # Output everything from the discord library to a file, except for HTTP requests
 logger = logging.getLogger('discord')
@@ -23,7 +29,7 @@ logger.setLevel(logging.INFO)
 logging.getLogger('discord.http').setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
-    filename='discord.log',
+    filename='logs/discord.log',
     encoding='utf-8',
     maxBytes=32 * 1024 * 1024,  # 32 MiB
     backupCount=5,  # Rotate through 5 files
@@ -74,6 +80,7 @@ bot = commands.Bot(command_prefix='?',
 initial_extensions = []
 for cog in listdir('./cogs'):
     if cog.endswith('.py'):
+        logger.info(f'Loading cog: {cog}')
         initial_extensions.append(f'cogs.{path.splitext(cog)[0]}')
 
 
@@ -94,7 +101,7 @@ async def setup(bot):
 async def on_ready():
     bot.appinfo = await bot.application_info()
     quantum = ['reality', 'universe', 'dimension', 'timeline']
-    print(f'''
+    message = (f'''
 ----------info----------
 Application ID: {bot.appinfo.id}
 Application name: {bot.appinfo.name}
@@ -105,5 +112,7 @@ Discord.py version: {__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000),
     to="ordinal_num")} {choice(quantum)}!''')
+    logger.info(message)
+    print(message)
 
 run(setup(bot))

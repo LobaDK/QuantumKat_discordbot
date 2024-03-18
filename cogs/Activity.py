@@ -12,6 +12,14 @@ class Activity(commands.Cog):
 
         self.bot = bot
 
+        self.logger = logging.getLogger('discord.Activity')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(filename='logs/activity.log', encoding='utf-8', mode='w')
+        date_format = '%Y-%m-%d %H:%M:%S'
+        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
         self.hissList = ['Hissing',
                          'Hissed']
 
@@ -62,39 +70,45 @@ class Activity(commands.Cog):
                          ('69 74 77 61 73 6e 27 74 73 75 70 70 6f 73 65 64 74 '
                           '6f 65 6e 64')]
 
+        self.logger.info('Starting Activity!')
         self.change_activity.start()
 
 # command splitter for easier reading and navigating
 
     def cog_unload(self):
+        self.logger.info('Stopping Activity!')
         self.change_activity.cancel()
 
 # command splitter for easier reading and navigating
 
     @tasks.loop(minutes=randint(30, 180), count=None, reconnect=True)
     async def change_activity(self):
-        self.change_activity.change_interval(minutes=(randint(10, 180)))
+        interval = randint(10, 180)
+        self.logger.info(f'Changing activity interval to: {interval} minutes')
+        self.change_activity.change_interval(minutes=(interval))
 
         purrHz = randint(1, 100_000)
         ordinal = num2words(randint(0, 10_000), to='ordinal_num')
 
-        await self.bot.change_presence(activity=Game(name=choice(
-            self.messages).format(hiss=choice(self.hissList),
-                                  purge=choice(self.purgeList),
-                                  purr=choice(self.purrList),
-                                  vibrate=choice(self.vibrateList),
-                                  noun=choice(self.nounList),
-                                  location=choice(self.locationList),
-                                  purrHz=purrHz,
-                                  ordinal=ordinal)))
+        presence = Game(name=choice(self.messages).format(hiss=choice(self.hissList),
+                                                          purge=choice(self.purgeList),
+                                                          purr=choice(self.purrList),
+                                                          vibrate=choice(self.vibrateList),
+                                                          noun=choice(self.nounList),
+                                                          location=choice(self.locationList),
+                                                          purrHz=purrHz,
+                                                          ordinal=ordinal))
+
+        self.logger.info(f'Changing activity to: {presence.name}')
+        await self.bot.change_presence(activity=presence)
 
 # command splitter for easier reading and navigating
 
     @change_activity.before_loop
     async def before_change_activity(self):
-        logger.info('Starting Activity loop...')
+        self.logger.info('Starting Activity loop...')
         await self.bot.wait_until_ready()
-        logger.info('Activity loop started!')
+        self.logger.info('Activity loop started!')
 
 # command splitter for easier reading and navigating
 

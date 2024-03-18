@@ -22,6 +22,13 @@ logger = logging.getLogger('discord')
 class Entanglements(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.logger = logging.getLogger('discord.Entanglement')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(filename='logs/entanglement.log', encoding='utf-8', mode='w')
+        date_format = '%Y-%m-%d %H:%M:%S'
+        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
 
     initial_extensions = []
     for cog in listdir('./cogs'):

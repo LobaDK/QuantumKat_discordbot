@@ -12,6 +12,13 @@ logger = logging.getLogger('discord')
 class Tunnel(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.logger = logging.getLogger('discord.Tunnel')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(filename='logs/tunnel.log', encoding='utf-8', mode='w')
+        date_format = '%Y-%m-%d %H:%M:%S'
+        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
@@ -41,6 +48,10 @@ class Tunnel(commands.Cog):
 
             owner = Client.get_user(self.bot, self.bot.owner_ids[0])
             await owner.send(f'Exception caused in command: {ctx.command}\nUser: {ctx.author}, {ctx.author.id}\nMessage ID: {ctx.message.id}\nTime: {datetime.now()}\n\n{trace}')
+
+    @commands.Cog.listener()
+    async def on_command_completion(self, ctx):
+        logger.info(f'Command {ctx.command} completed by {ctx.author}, {ctx.author.id} Message ID: {ctx.message.id} Time: {datetime.now()}')
 
     logger.info('Started Tunnel!')
     print('Started Tunnel!')

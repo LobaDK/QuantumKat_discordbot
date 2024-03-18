@@ -12,6 +12,15 @@ logger = logging.getLogger('discord')
 class Chat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        self.logger = logging.getLogger('discord.Chat')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(filename='logs/chat.log', encoding='utf-8', mode='w')
+        date_format = '%Y-%m-%d %H:%M:%S'
+        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
         # Set the model encoding for tiktoken
         self.encoding = tiktoken.encoding_for_model('gpt-3.5-turbo')
         # Set the system message for ChatGPT. This controls the personality of the bot and how it responds.

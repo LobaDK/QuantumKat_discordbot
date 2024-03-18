@@ -11,6 +11,14 @@ class Control(commands.Cog):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
+        self.logger = logging.getLogger('discord.Control')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(filename='logs/control.log', encoding='utf-8', mode='w')
+        date_format = '%Y-%m-%d %H:%M:%S'
+        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
     async def get_permissions(self, guild) -> list[str]:
         permissions = []
         for permission in guild.me.guild_permissions:
