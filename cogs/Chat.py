@@ -91,6 +91,7 @@ class Chat(commands.Cog):
                                 "content": chat_response
                             })
 
+                            logger.info(f'Chat response: {chat_response}')
                             await ctx.send(chat_response)
                         except OpenAIError as e:
                             logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
