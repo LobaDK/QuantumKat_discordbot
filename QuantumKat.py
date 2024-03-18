@@ -23,23 +23,11 @@ try:
 except FileExistsError:
     pass
 
-# Output everything from the discord library to a file, except for HTTP requests
-logger = logging.getLogger('discord')
+logger = logging.getLogger('discord.QuantumKat')
 logger.setLevel(logging.INFO)
-logging.getLogger('discord.http').setLevel(logging.INFO)
-
-qlogger = logging.getLogger('discord.QuantumKat')
-qlogger.setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
-    filename='logs/discord.log',
-    encoding='utf-8',
-    maxBytes=32 * 1024 * 1024,  # 32 MiB
-    backupCount=5,  # Rotate through 5 files
-)
-
-qhandler = logging.handlers.RotatingFileHandler(
-    filename='logs/discord.log',
+    filename='logs/quantumkat.log',
     encoding='utf-8',
     maxBytes=32 * 1024 * 1024,  # 32 MiB
     backupCount=5,  # Rotate through 5 files
@@ -48,9 +36,7 @@ qhandler = logging.handlers.RotatingFileHandler(
 date_format = '%Y-%m-%d %H:%M:%S'
 formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
 handler.setFormatter(formatter)
-qhandler.setFormatter(formatter)
 logger.addHandler(handler)
-qlogger.addHandler(qhandler)
 
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
@@ -69,11 +55,11 @@ TOKEN = environ.get('TOKEN')
 
 # If the bot token or my user ID is not set, exit the program
 if OWNER_ID is None or OWNER_ID == "":
-    qlogger.error("Error: The OWNER_ID environment variable is not set or is empty.")
+    logger.error("Error: The OWNER_ID environment variable is not set or is empty.")
     exit(1)
 
 if TOKEN is None or TOKEN == "":
-    qlogger.error("Error: The TOKEN environment variable is not set or is empty.")
+    logger.error("Error: The TOKEN environment variable is not set or is empty.")
     exit(1)
 
 # Gives the bot default access as well as access
@@ -92,7 +78,7 @@ bot = commands.Bot(command_prefix='?',
 initial_extensions = []
 for cog in listdir('./cogs'):
     if cog.endswith('.py'):
-        qlogger.info(f'Loading cog: {cog}')
+        logger.info(f'Loading cog: {cog}')
         initial_extensions.append(f'cogs.{path.splitext(cog)[0]}')
 
 
@@ -100,7 +86,7 @@ async def setup(bot):
     if not ignoreMissingExe:
         for executable in executables:
             if not is_installed(executable):
-                qlogger.error(f"Error: {executable} is not installed.")
+                logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
     # Iterate through each cog and start it
@@ -124,7 +110,7 @@ Discord.py version: {__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000),
     to="ordinal_num")} {choice(quantum)}!''')
-    qlogger.info(message)
+    logger.info(message)
     print(message)
 
 run(setup(bot))
