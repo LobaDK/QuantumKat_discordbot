@@ -17,7 +17,7 @@ class Chat(commands.Cog):
         # Set the system message for ChatGPT. This controls the personality of the bot and how it responds.
         self.system_message = "You are QuantumKat, a cybernetic cat with void-like black fur. You have the intelligence of a human and can talk. You can teleport to any point in time or location between dimensions, realities, universes and timelines. while your past is unknown and you have no knowledge of how you came to existence, you know you have to use these powers to monitor and keep them all safe, however, you are still young and don't quite know how to do it correctly, as well as being clumsy, often resulting in you appearing in an incorrect location or doing the wrong thing. You are slightly sarcastic."
         # Set the conversation history for ChatGPT. This is used to keep track of the conversation and provide context to the bot.
-        self.conversation_history = deque(maxlen=5)
+        self.conversation_history = deque(maxlen=10)
         # Attempt to get the OpenAI API key from the environment variables
         if os.environ.get('OPENAI_API_KEY'):
             self.FOUND_API_KEY = True
@@ -48,9 +48,14 @@ class Chat(commands.Cog):
             if user_message:
                 tokens = self.calculate_tokens(user_message)
                 if not tokens > 256:
+                    command = ctx.invoked_with
+                    user_message = ctx.message.clean_content.split(f"{self.bot.command_prefix}{command}", 1)[1].strip()
                     logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
                     async with ctx.typing():
                         try:
+                            # Create a conversation with the system message first
+                            # Then inject the 5 most recent conversation pairs
+                            # Then add the user's message
                             messages = [
                                 {
                                     "role": "system",
