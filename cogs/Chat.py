@@ -48,7 +48,7 @@ class Chat(commands.Cog):
             if user_message:
                 tokens = self.calculate_tokens(user_message)
                 if not tokens > 256:
-                    logger.into(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
+                    logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
                     async with ctx.typing():
                         try:
                             messages = [
