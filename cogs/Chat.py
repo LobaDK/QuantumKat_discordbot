@@ -3,6 +3,7 @@ import logging
 import tiktoken
 import os
 
+from collections import deque
 from discord.ext import commands
 
 logger = logging.getLogger('discord')
@@ -11,8 +12,13 @@ logger = logging.getLogger('discord')
 class Chat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        # Set the model encoding for tiktoken
         self.encoding = tiktoken.encoding_for_model('gpt-3.5-turbo')
+        # Set the system message for ChatGPT. This controls the personality of the bot and how it responds.
         self.system_message = "You are QuantumKat, a cybernetic cat with void-like black fur. You have the intelligence of a human and can talk. You can teleport to any point in time or location between dimensions, realities, universes and timelines. while your past is unknown and you have no knowledge of how you came to existence, you know you have to use these powers to monitor and keep them all safe, however, you are still young and don't quite know how to do it correctly, as well as being clumsy, often resulting in you appearing in an incorrect location or doing the wrong thing. You are slightly sarcastic."
+        # Set the conversation history for ChatGPT. This is used to keep track of the conversation and provide context to the bot.
+        self.conversation_history = deque(maxlen=5)
+        # Attempt to get the OpenAI API key from the environment variables
         if os.environ.get('OPENAI_API_KEY'):
             self.FOUND_API_KEY = True
             self.openai = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
@@ -21,11 +27,19 @@ class Chat(commands.Cog):
             logger.error("OpenAI API key not found. Chat commands will not work.")
 
     def calculate_tokens(self, user_message: str) -> int:
+        """
+        Calculates the number of tokens in a given user message.
+
+        Parameters:
+        - user_message (str): The user message to calculate tokens for.
+
+        Returns:
+        - int: The number of tokens in the user message.
+        """
         messages = [user_message, self.system_message]
         tokens = 0
         for message in messages:
             tokens += len(self.encoding.encode(message))
-            logger.info(f"Calculated user + system message tokens: {tokens}")
         return tokens
 
     @commands.command(aliases=['chat', 'talk'], brief='Talk to QuantumKat.', description='Talk to QuantumKat using the OpenAI API/ChatGPT.')
@@ -34,20 +48,24 @@ class Chat(commands.Cog):
             if user_message:
                 tokens = self.calculate_tokens(user_message)
                 if not tokens > 256:
+                    logger.into(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
                     async with ctx.typing():
                         try:
+                            messages = [
+                                {
+                                    "role": "system",
+                                    "content": self.system_message
+                                },
+                                *self.conversation_history,
+                                {
+                                    "role": "user",
+                                    "content": user_message
+                                }
+                            ]
+
                             response = await self.openai.chat.completions.create(
                                 model="gpt-3.5-turbo",
-                                messages=[
-                                    {
-                                      "role": "system",
-                                      "content": self.system_message
-                                    },
-                                    {
-                                        "role": "user",
-                                        "content": user_message
-                                    }
-                                ],
+                                messages=messages,
                                 temperature=1,
                                 max_tokens=512,
                                 top_p=1,
@@ -55,6 +73,17 @@ class Chat(commands.Cog):
                                 presence_penalty=0
                             )
                             chat_response = response.choices[0].message.content
+
+                            # Add the user's message and the assistant's response as a pair to the conversation history
+                            self.conversation_history.append({
+                                "role": "user",
+                                "content": user_message
+                            })
+                            self.conversation_history.append({
+                                "role": "assistant",
+                                "content": chat_response
+                            })
+
                             await ctx.send(chat_response)
                         except OpenAIError as e:
                             logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
