@@ -4,8 +4,6 @@ from discord.ext import commands, tasks
 from num2words import num2words
 import logging
 
-logger = logging.getLogger('discord')
-
 
 class Activity(commands.Cog):
     def __init__(self, bot):

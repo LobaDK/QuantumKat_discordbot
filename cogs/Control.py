@@ -3,8 +3,6 @@ import logging
 
 from discord.ext import commands
 
-logger = logging.getLogger('discord')
-
 
 class Control(commands.Cog):
     def __init__(self, bot):
@@ -65,7 +63,7 @@ class Control(commands.Cog):
                         await ctx.send(f'Left {guild}')
                     except Exception as e:
                         await ctx.send(e)
-                        logger.error(f'{type(e).__name__}: {e}')
+                        self.logger.error(f'{type(e).__name__}: {e}')
                 else:
                     await ctx.send(('Server does not exist or the bot is not '
                                     'in it, did you enter the correct ID?'))
@@ -140,7 +138,6 @@ class Control(commands.Cog):
     async def test(self, ctx):
         await ctx.send('*Meows*')
 
-    logger.info('Started Control!')
     print('Started Control!')
 
 

@@ -6,8 +6,6 @@ from discord import Client
 
 import logging
 
-logger = logging.getLogger('discord')
-
 
 class Tunnel(commands.Cog):
     def __init__(self, bot):
@@ -42,7 +40,7 @@ class Tunnel(commands.Cog):
         else:
             trace = type(error), error, error.__traceback__
 
-            logger.error(f'Exception caused in command: {ctx.command}User: {ctx.author}, {ctx.author.id} Message ID: {ctx.message.id} Time: {datetime.now()}')
+            self.logger.error(f'Exception caused in command: {ctx.command}User: {ctx.author}, {ctx.author.id} Message ID: {ctx.message.id} Time: {datetime.now()}')
 
             print_exception(type(error), error, error.__traceback__)
 
@@ -51,9 +49,8 @@ class Tunnel(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
-        logger.info(f'Command {ctx.command} completed by {ctx.author}, {ctx.author.id} Message ID: {ctx.message.id} Time: {datetime.now()}')
+        self.logger.info(f'Command {ctx.command} completed by {ctx.author}, {ctx.author.id} Message ID: {ctx.message.id} Time: {datetime.now()}')
 
-    logger.info('Started Tunnel!')
     print('Started Tunnel!')
 
 

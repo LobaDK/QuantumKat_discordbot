@@ -28,6 +28,9 @@ logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 logging.getLogger('discord.http').setLevel(logging.INFO)
 
+qlogger = logging.getLogger('discord.QuantumKat')
+qlogger.setLevel(logging.INFO)
+
 handler = logging.handlers.RotatingFileHandler(
     filename='logs/discord.log',
     encoding='utf-8',
@@ -39,6 +42,7 @@ date_format = '%Y-%m-%d %H:%M:%S'
 formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+qlogger.addHandler(handler)
 
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
@@ -57,11 +61,11 @@ TOKEN = environ.get('TOKEN')
 
 # If the bot token or my user ID is not set, exit the program
 if OWNER_ID is None or OWNER_ID == "":
-    logger.error("Error: The OWNER_ID environment variable is not set or is empty.")
+    qlogger.error("Error: The OWNER_ID environment variable is not set or is empty.")
     exit(1)
 
 if TOKEN is None or TOKEN == "":
-    logger.error("Error: The TOKEN environment variable is not set or is empty.")
+    qlogger.error("Error: The TOKEN environment variable is not set or is empty.")
     exit(1)
 
 # Gives the bot default access as well as access
@@ -80,7 +84,7 @@ bot = commands.Bot(command_prefix='?',
 initial_extensions = []
 for cog in listdir('./cogs'):
     if cog.endswith('.py'):
-        logger.info(f'Loading cog: {cog}')
+        qlogger.info(f'Loading cog: {cog}')
         initial_extensions.append(f'cogs.{path.splitext(cog)[0]}')
 
 
@@ -88,7 +92,7 @@ async def setup(bot):
     if not ignoreMissingExe:
         for executable in executables:
             if not is_installed(executable):
-                logger.error(f"Error: {executable} is not installed.")
+                qlogger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
     # Iterate through each cog and start it
@@ -112,7 +116,7 @@ Discord.py version: {__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000),
     to="ordinal_num")} {choice(quantum)}!''')
-    logger.info(message)
+    qlogger.info(message)
     print(message)
 
 run(setup(bot))

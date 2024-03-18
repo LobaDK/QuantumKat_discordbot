@@ -13,8 +13,6 @@ from ntplib import NTPClient
 from num2words import num2words
 from re import compile
 
-logger = logging.getLogger('discord')
-
 
 class Fields(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -327,7 +325,6 @@ class Fields(commands.Cog):
 
         await ctx.reply(choices(quantumball_messages_list, k=1, weights=[10, 5, 5])[0].format(amount=amount, location=choice(['realities', 'universes', 'dimensions', 'timelines']), affirmative_answer=choice(affirmative_answers_list), reason=choice(reason_list), non_committal_answer=choice(non_committal_answers_list), negative_answer=choice(negative_answers_list)), silent=True)
 
-    logger.info('Started Fields!')
     print('Started Fields!')
 
 

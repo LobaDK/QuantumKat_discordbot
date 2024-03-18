@@ -6,8 +6,6 @@ import os
 from collections import deque
 from discord.ext import commands
 
-logger = logging.getLogger('discord')
-
 
 class Chat(commands.Cog):
     def __init__(self, bot):
@@ -33,7 +31,7 @@ class Chat(commands.Cog):
             self.openai = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         else:
             self.FOUND_API_KEY = False
-            logger.error("OpenAI API key not found. Chat commands will not work.")
+            self.logger.error("OpenAI API key not found. Chat commands will not work.")
 
     def calculate_tokens(self, user_message: str) -> int:
         """
@@ -61,7 +59,7 @@ class Chat(commands.Cog):
                     user_message = ctx.message.clean_content.split(f"{self.bot.command_prefix}{command}", 1)[1].strip()
                     for member in ctx.message.mentions:
                         user_message = user_message.replace(member.mention, member.display_name)
-                    logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
+                    self.logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
                     async with ctx.typing():
                         try:
                             # Create a conversation with the system message first
@@ -100,10 +98,10 @@ class Chat(commands.Cog):
                                 "content": chat_response
                             })
 
-                            logger.info(f'Chat response: {chat_response}')
+                            self.logger.info(f'Chat response: {chat_response}')
                             await ctx.send(chat_response)
                         except OpenAIError as e:
-                            logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
+                            self.logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
                             await ctx.send(f"OpenAI returned an error with the status code {e.http_status}. Please try again later.")
                 else:
                     await ctx.send(f"Message is too long! Your message is {tokens} tokens long, but the maximum is 256 tokens.")
@@ -112,7 +110,6 @@ class Chat(commands.Cog):
         else:
             await ctx.send("OpenAI API key not found. Chat commands will not work.")
 
-    logger.info("Started Chat!")
     print("Started Chat!")
 
 
