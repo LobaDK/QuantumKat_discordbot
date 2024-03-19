@@ -155,7 +155,14 @@ class Chat(commands.Cog):
             await ctx.reply("OpenAI API key not found. Chat commands will not work.", silent=True)
 
     async def initiatechatclear(self, ctx: commands.Context, shared_chat: bool):
-        
+        if shared_chat:
+            sql = "DELETE FROM chat WHERE shared_chat = ?"
+            params = (shared_chat,)
+        else:
+            user_id = ctx.author.id
+            sql = "DELETE FROM chat WHERE user_id = ?"
+            params = (user_id,)
+        self.db_conn.execute(sql, params)
 
     @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
@@ -165,9 +172,22 @@ class Chat(commands.Cog):
     async def Chat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, False)
 
-    @commands.command(aliases=['chatclear', 'clearchat', 'cc'], brief='Clear the chat history.', description='Clear the chat history for the user.')
+    @commands.command(aliases=['chatclear', 'clearchat', 'cc'], brief='Clears the chat history.', description='Clears the chat history for the user that started the command.')
     async def ChatClear(self, ctx: commands.Context):
-        pass
+        await self.initiatechatclear(ctx, False)
+
+    @commands.command(aliases=['sharedchatclear', 'sharedclearchat', 'scc'], brief='Clears the shared chat history.', description='Clears the shared chat history. Only server and bot owner, and mods can do this.')
+    async def SharedChatClear(self, ctx: commands.Context):
+        application = await self.bot.application_info()
+        if (
+            ctx.author.id == ctx.guild.owner.id
+            or ctx.author.id == application.owner.id
+            or ctx.author.guild_permissions.administrator
+            or ctx.author.guild_permissions.moderate_members
+        ):
+            await self.initiatechatclear(ctx, True)
+        else:
+            await ctx.reply('Sorry, only server and bot owner, and mods can clear the sharedchat history', silent=True)
 
     @commands.command(aliases=['chatview', 'viewchat', 'cv'], brief='View the chat history.', description='View the chat history for the user.')
     async def ChatView(self, ctx: commands.Context):
