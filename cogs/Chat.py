@@ -38,7 +38,7 @@ class Chat(commands.Cog):
             self.FOUND_API_KEY = False
             self.logger.error("OpenAI API key not found. Chat commands will not work.")
 
-    def calculate_tokens(self, user_message: str) -> int:
+    async def calculate_tokens(self, user_message: str) -> int:
         """
         Calculates the number of tokens in a given user message.
 
@@ -54,7 +54,7 @@ class Chat(commands.Cog):
             tokens += len(self.encoding.encode(message))
         return tokens
 
-    def database_add(self, ctx: commands.Context, user_message: str, assistant_message: str, shared_chat: bool):
+    async def database_add(self, ctx: commands.Context, user_message: str, assistant_message: str, shared_chat: bool):
         """
         Adds a chat message to the database.
 
@@ -74,7 +74,7 @@ class Chat(commands.Cog):
         self.db_conn.execute(sql, params)
         self.db_conn.commit()
 
-    def database_read(self, ctx: commands.Context, shared_chat: bool) -> list:
+    async def database_read(self, ctx: commands.Context, shared_chat: bool) -> list:
         """
         Retrieves the user and assistant messages from the chat database for a specific user.
 
@@ -103,14 +103,14 @@ class Chat(commands.Cog):
     async def initiateChat(self, ctx: commands.Context, user_message: str, shared_chat: bool):
         if self.FOUND_API_KEY is True:
             if user_message:
-                tokens = self.calculate_tokens(user_message)
+                tokens = await self.calculate_tokens(user_message)
                 if not tokens > 256:
                     command = ctx.invoked_with
                     user_message = ctx.message.clean_content.split(f"{self.bot.command_prefix}{command}", 1)[1].strip()
                     for member in ctx.message.mentions:
                         user_message = user_message.replace('@' + member.mention, member.display_name)
                     self.logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
-                    conversation_history = self.database_read(ctx, shared_chat)
+                    conversation_history = await self.database_read(ctx, shared_chat)
                     async with ctx.typing():
                         try:
                             # Create a conversation with the system message first
@@ -139,7 +139,7 @@ class Chat(commands.Cog):
                             )
                             chat_response = response.choices[0].message.content
 
-                            self.database_add(ctx, user_message, chat_response, shared_chat)
+                            await self.database_add(ctx, user_message, chat_response, shared_chat)
 
                             self.historylogger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, with the history: {" ".join(history for history in conversation_history)}.')
                             self.logger.info(f'Chat response: {chat_response}, using {response.usage.total_tokens} tokens in total.')
@@ -154,6 +154,9 @@ class Chat(commands.Cog):
         else:
             await ctx.reply("OpenAI API key not found. Chat commands will not work.", silent=True)
 
+    async def initiatechatclear(self, ctx: commands.Context, shared_chat: bool):
+        
+
     @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, True)
@@ -161,6 +164,18 @@ class Chat(commands.Cog):
     @commands.command(aliases=['chat', 'talk', 'c'], brief='Talk to QuantumKat.', description='Talk to QuantumKat using the OpenAI API/ChatGPT.')
     async def Chat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, False)
+
+    @commands.command(aliases=['chatclear', 'clearchat', 'cc'], brief='Clear the chat history.', description='Clear the chat history for the user.')
+    async def ChatClear(self, ctx: commands.Context):
+        pass
+
+    @commands.command(aliases=['chatview', 'viewchat', 'cv'], brief='View the chat history.', description='View the chat history for the user.')
+    async def ChatView(self, ctx: commands.Context):
+        conversation_history = await self.database_read(ctx, False)
+        messages = []
+        for message in conversation_history:
+            messages.append(f"{message['role'].title()}: {message['content']}")
+        await ctx.reply("\n".join(messages), silent=True)
 
     print("Started Chat!")
 
