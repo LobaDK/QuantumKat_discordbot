@@ -9,7 +9,7 @@ If you wish to use this bot and it's features yourself, in your own server(s), p
 If you chose to run it yourself, please note the following:
 
 #### Token/API key
-The Application/Bot token is read from a file named `.env` using `python-dotenv`. Feel free to rewrite this, but if you wanna use it as is, without changing anything, this is how it gets the token for the bot. Please note the file is ignored in Git, so you'll have to manually create the file and add the token. The API key used for OpenAI API interactions are also stored here. If no key is found, the related commands simply disable themselves
+The Application/Bot token is read from a file named `.env` using `python-dotenv`. Feel free to rewrite this, but if you wanna use it as is, without changing anything, this is how it gets the token for the bot. Please note the file is ignored in Git, so you'll have to manually create the file and add the token. The API key used for the OpenAI API are also stored here. If no key is found, the related commands simply disable themselves.
 
 #### Version
 The bot recently got rewritten for Discord.py 2.0, which means only 2.0 and up will work correctly. If you for whatever reason want or need the 1.7 version, you'll need to use the version control/git history.
@@ -65,7 +65,7 @@ The `?observe` command shuts down the bot entirely.
 `?dequantise` Deletes the specified file.
 
 ### Git commands
-The `?git` command passes any parameters included, to the actual git program running on the server, returning whatever output it gives. Useful for swapping branches/versions, or check it's status, without needing to SSH into the actual server. Input is limited to alphanumeric, underscores and hyphens to still allow parameters that requires either of those, but not enough to allow command chaining and arbitary commands.
+The `?git` command passes any parameters included, to the actual git program running on the server, returning whatever output it gives. Useful for swapping branches/versions, or check it's status, without needing to SSH into the actual server. Input is limited to alphanumeric, underscores and hyphens to still allow parameters that requires either of those, but not enough to allow command chaining and arbitrary commands.
 
 ### Updating
 The `?update` command runs a 'git pull' to fetch the newest branch version, and checks for changed files between the current running version, and the new one, and reloads any affected cogs/extensions automatically. If the main script has changes detected, the bot will prompt and ask if the bot should restart it's own process to apply new changes.
@@ -75,7 +75,7 @@ The `?update` command runs a 'git pull' to fetch the newest branch version, and 
 `?ActivityRestart` Restart the loop. Applies a new activity.  
 `?ActivityStop` Stop the loop.
 
-## Bot and/or server onwer only
+## Bot and/or server owner only
 ### List joined servers and their owners
 `?ServerOwnerList` lists the servers the bot is in, as well as the owner of each server. Returns both their names, as well as ID's for use in other commands. For privacy, this is limited to the bot's DM's.
 
@@ -87,6 +87,10 @@ In case the bot is in a server that the bot owner is not in, and wish the bot to
 
 ## Chat
 ### Chat with QuantumKat via OpenAI API
-`?Chat` Sends an attached message to ChatGPT via the OpenAI API, set up with an included custom system message that defines its behaviors. Messages and its replies are stored in a database, each related to the UUID of the user who initiated the command, allowing for unique history between multiple users. A maximum of 10 messages are retrieved and used as history, to help provide context but still keep token lengths somewhat low.
-### sharedchat
-`?Sharedchat` Copy of chat, but it uses an additional flag to save and retrieve messages and their replies in a shared state, allowing multiple users to use the same history
+`?Chat` Sends an attached message to ChatGPT via the OpenAI API, set up with an included custom system message that defines its behaviors. Messages and its replies are stored in a database, each related to the UUID of the user and server that initiated the command, allowing for unique history between multiple users, in multiple servers. A maximum of 10 messages are retrieved and used as history, to help provide context but still keep token lengths somewhat low.
+### View the chat history
+`?Chatview` Returns up to 10 of the most recent conversations stored in the database for the user, in the current server, whom initiated the command. How it's displayed is also how ChatGPT sees it when a new chat prompt is initiated.
+### Clear the chat history
+`?Chatclear`Clears the entire chat history for the user, in the current server, that initiated the command. Useful in case the prompts are starting to return garbage/deteriorated text, or they just wanna start new a chat.
+### shared[command]
+`?Shared[command]` All commands have an additional shared version where a prompt is not tied to a specific user i.e. everyone in a server is sharing the same history. The only difference in the commands here is that clearing is limited to the bot owner, server owner and server moderators

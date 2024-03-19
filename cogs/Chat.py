@@ -70,8 +70,9 @@ class Chat(commands.Cog):
         """
         user_id = ctx.author.id
         user_name = ctx.author.name
-        sql = "INSERT INTO chat (user_id, user_name, user_message, assistant_message, shared_chat) VALUES (?, ?, ?, ?, ?)"
-        params = (user_id, user_name, user_message, assistant_message, shared_chat)
+        server_id, server_name = await self.get_server_id_and_name(ctx)
+        sql = "INSERT INTO chat (user_id, user_name, server_id, server_name, user_message, assistant_message, shared_chat) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        params = (user_id, user_name, server_id, server_name, user_message, assistant_message, shared_chat)
         try:
             self.db_conn.execute(sql, params)
             self.db_conn.commit()
@@ -91,12 +92,13 @@ class Chat(commands.Cog):
 
         """
         user_id = ctx.author.id
+        server_id, _ = await self.get_server_id_and_name(ctx)
         if shared_chat:
-            sql = "SELECT user_message, assistant_message FROM chat WHERE shared_chat = ? ORDER BY id DESC LIMIT 10"
-            params = (shared_chat,)
+            sql = "SELECT user_message, assistant_message FROM chat WHERE server_id = ? AND shared_chat = 1 ORDER BY id DESC LIMIT 10"
+            params = (server_id,)
         else:
-            sql = "SELECT user_message, assistant_message FROM chat WHERE user_id = ? AND shared_chat = 0 ORDER BY id DESC LIMIT 10"
-            params = (user_id,)
+            sql = "SELECT user_message, assistant_message FROM chat WHERE user_id = ? AND server_id = ? AND shared_chat = 0 ORDER BY id DESC LIMIT 10"
+            params = (user_id, server_id)
         try:
             rows = self.db_conn.execute(sql, params).fetchall()
         except sqlite3.Error as e:
@@ -108,6 +110,49 @@ class Chat(commands.Cog):
             messages.append({"role": "user", "content": user_message})
         messages.reverse()
         return messages
+
+    async def database_remove(self, ctx: commands.Context, shared_chat: bool):
+        """
+        Removes the chat history for a specific user.
+
+        Args:
+            ctx (commands.Context): The context object representing the invocation context of the command.
+            shared_chat (bool, optional): Flag indicating whether to remove messages from the shared chat or not.
+
+        Returns:
+            None
+        """
+        user_id = ctx.author.id
+        server_id, _ = await self.get_server_id_and_name(ctx)
+        if shared_chat:
+            sql = "DELETE FROM chat WHERE server_id = ? AND shared_chat = 1"
+            params = (server_id,)
+        else:
+            sql = "DELETE FROM chat WHERE user_id = ? AND server_id = ? AND shared_chat = 0"
+            params = (user_id, server_id)
+        try:
+            self.db_conn.execute(sql, params)
+            self.db_conn.commit()
+        except sqlite3.Error as e:
+            self.logger.error(f"An error occurred while removing chat messages from the database: {e}")
+
+    async def get_server_id_and_name(self, ctx: commands.Context) -> tuple:
+        """
+        Retrieves the server ID and name from the context object.
+
+        Args:
+            ctx (commands.Context): The context object representing the invocation context of the command.
+
+        Returns:
+            tuple: A tuple containing the server ID and name.
+        """
+        if ctx.guild is not None:
+            server_id = ctx.guild.id
+            server_name = ctx.guild.name
+        else:
+            server_id = ctx.channel.id
+            server_name = 'DM or Group Chat'
+        return server_id, server_name
 
     async def initiateChat(self, ctx: commands.Context, user_message: str, shared_chat: bool):
         if self.FOUND_API_KEY is True:
@@ -153,8 +198,13 @@ class Chat(commands.Cog):
                             for message in conversation_history:
                                 messages.append(f"{message['role'].title()}: {message['content']}")
                             messages = "\n".join(messages)
-                            self.historylogger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with [message]: {user_message} [history]: {messages}.')
-                            self.logger.info(f'User message: {user_message}. Chat response: {chat_response}. Used {response.usage.total_tokens} tokens in total.')
+
+                            username = ctx.author.name
+                            user_id = ctx.author.id
+                            server_id, server_name = await self.get_server_id_and_name(ctx)
+
+                            self.historylogger.info(f'[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message} [History]: {messages}.')
+                            self.logger.info(f'[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message}. [Response]: {chat_response}. [Tokens]: {response.usage.total_tokens} tokens used in total.')
                             await ctx.reply(chat_response, silent=True)
                         except OpenAIError as e:
                             self.logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
@@ -167,20 +217,8 @@ class Chat(commands.Cog):
             await ctx.reply("OpenAI API key not found. Chat commands will not work.", silent=True)
 
     async def initiatechatclear(self, ctx: commands.Context, shared_chat: bool):
-        if shared_chat:
-            sql = "DELETE FROM chat WHERE shared_chat = ?"
-            params = (shared_chat,)
-        else:
-            user_id = ctx.author.id
-            sql = "DELETE FROM chat WHERE user_id = ? AND shared_chat = 0"
-            params = (user_id,)
-        try:
-            self.db_conn.execute(sql, params)
-            self.db_conn.commit()
-        except sqlite3.Error as e:
-            self.logger.error(f"An error occurred while clearing the chat history: {e}")
-        else:
-            await ctx.reply("Chat history cleared.", silent=True)
+        await self.database_remove(ctx, shared_chat)
+        await ctx.reply("Chat history cleared for this server.", silent=True)
 
     async def initiatechatview(self, ctx: commands.Context, shared_chat: bool):
         if shared_chat:
@@ -189,25 +227,26 @@ class Chat(commands.Cog):
             conversation_history = await self.database_read(ctx, False)
         if conversation_history:
             messages = []
+            messages.append("Chat history for this server:")
             for message in conversation_history:
                 messages.append(f"{message['role'].title()}: {message['content']}")
             await ctx.reply("\n".join(messages), silent=True)
         else:
-            await ctx.reply("No chat history found.", silent=True)
+            await ctx.reply("No chat history found in this server.", silent=True)
 
-    @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
+    @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a chat shared with all users, using the OpenAI API/ChatGPT. Is not shared between servers.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, True)
 
-    @commands.command(aliases=['chat', 'talk', 'c'], brief='Talk to QuantumKat.', description='Talk to QuantumKat using the OpenAI API/ChatGPT.')
+    @commands.command(aliases=['chat', 'talk', 'c'], brief='Talk to QuantumKat.', description='Talk to QuantumKat using the OpenAI API/ChatGPT. Each user has their own chat history. Is not shared between servers.')
     async def Chat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, False)
 
-    @commands.command(aliases=['chatclear', 'clearchat', 'cc'], brief='Clears the chat history.', description='Clears the chat history for the user that started the command.')
+    @commands.command(aliases=['chatclear', 'clearchat', 'cc'], brief='Clears the chat history.', description='Clears the chat history in the current server, for the user that started the command.')
     async def ChatClear(self, ctx: commands.Context):
         await self.initiatechatclear(ctx, False)
 
-    @commands.command(aliases=['sharedchatclear', 'sharedclearchat', 'scc'], brief='Clears the shared chat history.', description='Clears the shared chat history. Only server and bot owner, and mods can do this.')
+    @commands.command(aliases=['sharedchatclear', 'sharedclearchat', 'scc'], brief='Clears the shared chat history.', description='Clears the shared chat history in the current server. Only server and bot owner, and mods can do this.')
     async def SharedChatClear(self, ctx: commands.Context):
         application = await self.bot.application_info()
         if (
@@ -220,11 +259,11 @@ class Chat(commands.Cog):
         else:
             await ctx.reply('Sorry, only server and bot owner, and mods can clear the sharedchat history', silent=True)
 
-    @commands.command(aliases=['chatview', 'viewchat', 'chathistory', 'cv'], brief='View the chat history.', description='View the chat history for the user.')
+    @commands.command(aliases=['chatview', 'viewchat', 'chathistory', 'cv'], brief='View the chat history.', description='View the chat history in the current server, for the user that started the command.')
     async def ChatView(self, ctx: commands.Context):
         await self.initiatechatview(ctx, False)
 
-    @commands.command(aliases=['sharedchatview', 'sharedviewchat', 'sharedchathistory', 'scv'], brief='View the shared chat history.', description='View the shared chat history.')
+    @commands.command(aliases=['sharedchatview', 'sharedviewchat', 'sharedchathistory', 'scv'], brief='View the shared chat history.', description='View the shared chat history in the current server.')
     async def SharedChatView(self, ctx: commands.Context):
         await self.initiatechatview(ctx, True)
 

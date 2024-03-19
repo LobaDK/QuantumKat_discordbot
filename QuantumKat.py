@@ -99,6 +99,8 @@ async def on_ready():
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
+    server_id INTEGER NOT NULL,
+    server_name TEXT NOT NULL,
     user_message TEXT NOT NULL,
     assistant_message TEXT NOT NULL,
     shared_chat INTEGER NOT NULL DEFAULT 0,
