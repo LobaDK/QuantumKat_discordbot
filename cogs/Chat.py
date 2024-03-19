@@ -25,7 +25,7 @@ class Chat(commands.Cog):
         self.historylogger.setLevel(logging.INFO)
         history_handler = logging.FileHandler(filename='logs/chat_history.log', encoding='utf-8', mode='w')
         history_handler.setFormatter(formatter)
-        self.logger.addHandler(history_handler)
+        self.historylogger.addHandler(history_handler)
 
         # Set the model encoding for tiktoken
         self.encoding = tiktoken.encoding_for_model('gpt-3.5-turbo')
@@ -118,7 +118,6 @@ class Chat(commands.Cog):
                     user_message = ctx.message.clean_content.split(f"{self.bot.command_prefix}{command}", 1)[1].strip()
                     for member in ctx.message.mentions:
                         user_message = user_message.replace('@' + member.mention, member.display_name)
-                    self.logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
                     conversation_history = await self.database_read(ctx, shared_chat)
                     async with ctx.typing():
                         try:
@@ -151,7 +150,7 @@ class Chat(commands.Cog):
                             await self.database_add(ctx, user_message, chat_response, shared_chat)
 
                             self.historylogger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, with the history: {" ".join(history for history in conversation_history)}.')
-                            self.logger.info(f'Chat response: {chat_response}, using {response.usage.total_tokens} tokens in total.')
+                            self.logger.info(f'User message: {user_message}. Chat response: {chat_response}. Used {response.usage.total_tokens} tokens in total.')
                             await ctx.reply(chat_response, silent=True)
                         except OpenAIError as e:
                             self.logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
