@@ -4,6 +4,9 @@ from os import environ, listdir, path
 from random import choice, randint
 from sys import exit
 
+import sqlite3
+import threading
+import queue
 import logging
 import logging.handlers
 from discord import Intents, __version__
@@ -12,6 +15,39 @@ from dotenv import load_dotenv
 from num2words import num2words
 from shutil import which
 from os import mkdir
+
+
+def database_thread(db_conn: sqlite3.Connection, q: queue.Queue):
+    """
+    Executes SQL statements from a queue in a separate thread and stores the results in a database.
+
+    Args:
+        db_conn (sqlite3.Connection): The SQLite database connection object.
+        q (queue.Queue): The queue containing SQL statements to be executed.
+
+    Returns:
+        None
+    """
+    sql = '''CREATE TABLE IF NOT EXISTS chat (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        user_name TEXT NOT NULL,
+        user_message TEXT NOT NULL,
+        assistant_message TEXT NOT NULL,'''
+    db_conn.execute(sql)
+
+    while True:
+        try:
+            item, params = q.get()
+            if item is None:
+                db_conn.commit()
+                db_conn.close()
+                break
+            with db_conn:
+                db_conn.execute(item, params)
+        except Exception as e:
+            logger.error(f"Error in database thread: {e}")
+            break
 
 
 def is_installed(executable: str) -> bool:
@@ -73,6 +109,14 @@ bot = commands.Bot(command_prefix='?',
                    help_command=commands.DefaultHelpCommand(
                        sort_commands=False, show_parameter_descriptions=False,
                        width=100), intents=intents, owner_ids=[int(OWNER_ID)])
+
+bot.db_conn = sqlite3.connect('quantumkat.db')
+bot.db_queue = queue.Queue()
+
+db_thread = threading.Thread(target=database_thread, args=(bot.db_conn, bot.db_queue))
+db_thread.start()
+
+logger.info('Started database thread')
 
 # Get and add cogs to a list
 initial_extensions = []
