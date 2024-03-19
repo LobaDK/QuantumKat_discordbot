@@ -20,6 +20,12 @@ class Chat(commands.Cog):
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
+        self.historylogger = logging.getLogger('discord.ChatHistory')
+        self.historylogger.setLevel(logging.INFO)
+        history_handler = logging.FileHandler(filename='logs/chat_history.log', encoding='utf-8', mode='w')
+        history_handler.setFormatter(formatter)
+        self.logger.addHandler(history_handler)
+
         # Set the model encoding for tiktoken
         self.encoding = tiktoken.encoding_for_model('gpt-3.5-turbo')
         # Set the system message for ChatGPT. This controls the personality of the bot and how it responds.
@@ -135,6 +141,7 @@ class Chat(commands.Cog):
 
                             self.database_add(ctx, user_message, chat_response, shared_chat)
 
+                            self.historylogger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, with the history: {" ".join(history for history in conversation_history)}.')
                             self.logger.info(f'Chat response: {chat_response}, using {response.usage.total_tokens} tokens in total.')
                             await ctx.reply(chat_response, silent=True)
                         except OpenAIError as e:
