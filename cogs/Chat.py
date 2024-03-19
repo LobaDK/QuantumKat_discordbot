@@ -66,6 +66,7 @@ class Chat(commands.Cog):
         sql = "INSERT INTO chat (user_id, user_name, user_message, assistant_message, shared_chat) VALUES (?, ?, ?, ?, ?)"
         params = (user_id, user_name, user_message, assistant_message, shared_chat)
         self.db_conn.execute(sql, params)
+        self.db_conn.commit()
 
     def database_read(self, ctx: commands.Context, shared_chat: bool) -> list:
         """
