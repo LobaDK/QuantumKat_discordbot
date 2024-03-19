@@ -2,6 +2,7 @@ from openai import AsyncOpenAI as OpenAI, OpenAIError
 import logging
 import tiktoken
 import os
+import sqlite3
 
 from discord.ext import commands
 
@@ -71,8 +72,11 @@ class Chat(commands.Cog):
         user_name = ctx.author.name
         sql = "INSERT INTO chat (user_id, user_name, user_message, assistant_message, shared_chat) VALUES (?, ?, ?, ?, ?)"
         params = (user_id, user_name, user_message, assistant_message, shared_chat)
-        self.db_conn.execute(sql, params)
-        self.db_conn.commit()
+        try:
+            self.db_conn.execute(sql, params)
+            self.db_conn.commit()
+        except sqlite3.Error as e:
+            self.logger.error(f"An error occurred while adding a chat message to the database: {e}")
 
     async def database_read(self, ctx: commands.Context, shared_chat: bool) -> list:
         """
@@ -93,7 +97,11 @@ class Chat(commands.Cog):
         else:
             sql = "SELECT user_message, assistant_message FROM chat WHERE user_id = ? AND shared_chat = 0 ORDER BY id DESC LIMIT 10"
             params = (user_id,)
-        rows = self.db_conn.execute(sql, params).fetchall()
+        try:
+            rows = self.db_conn.execute(sql, params).fetchall()
+        except sqlite3.Error as e:
+            self.logger.error(f"An error occurred while reading chat messages from the database: {e}")
+            return []
         messages = []
         for user_message, assistant_message in rows:
             messages.append({"role": "assistant", "content": assistant_message})
@@ -163,7 +171,13 @@ class Chat(commands.Cog):
             user_id = ctx.author.id
             sql = "DELETE FROM chat WHERE user_id = ? AND shared_chat = 0"
             params = (user_id,)
-        self.db_conn.execute(sql, params)
+        try:
+            self.db_conn.execute(sql, params)
+            self.db_conn.commit()
+        except sqlite3.Error as e:
+            self.logger.error(f"An error occurred while clearing the chat history: {e}")
+        else:
+            await ctx.reply("Chat history cleared.", silent=True)
 
     async def initiatechatview(self, ctx: commands.Context, shared_chat: bool):
         if shared_chat:
