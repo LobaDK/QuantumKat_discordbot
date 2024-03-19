@@ -98,6 +98,7 @@ class Chat(commands.Cog):
         for user_message, assistant_message in rows:
             messages.append({"role": "user", "content": user_message})
             messages.append({"role": "assistant", "content": assistant_message})
+        messages.reverse()
         return messages
 
     async def initiateChat(self, ctx: commands.Context, user_message: str, shared_chat: bool):
