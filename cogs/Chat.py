@@ -96,8 +96,8 @@ class Chat(commands.Cog):
         rows = self.db_conn.execute(sql, params).fetchall()
         messages = []
         for user_message, assistant_message in rows:
-            messages.append({"role": "user", "content": user_message})
             messages.append({"role": "assistant", "content": assistant_message})
+            messages.append({"role": "user", "content": user_message})
         messages.reverse()
         return messages
 
