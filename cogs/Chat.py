@@ -10,8 +10,8 @@ class Chat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        self.db_conn = bot.db_conn
-        self.db_queue = bot.db_queue
+        self.db_conn = self.bot.db_conn
+        self.db_queue = self.bot.db_queue
 
         self.logger = logging.getLogger('discord.Chat')
         self.logger.setLevel(logging.INFO)
