@@ -95,7 +95,7 @@ class Chat(commands.Cog):
                 tokens = self.calculate_tokens(user_message)
                 if not tokens > 256:
                     command = ctx.invoked_with
-                    user_message = ctx.message.split(f"{self.bot.command_prefix}{command}", 1)[1].strip()
+                    user_message = ctx.message.clean_content.split(f"{self.bot.command_prefix}{command}", 1)[1].strip()
                     for member in ctx.message.mentions:
                         user_message = user_message.replace(member.mention, member.display_name)
                     self.logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
