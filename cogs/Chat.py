@@ -102,7 +102,7 @@ class Chat(commands.Cog):
                     command = ctx.invoked_with
                     user_message = ctx.message.clean_content.split(f"{self.bot.command_prefix}{command}", 1)[1].strip()
                     for member in ctx.message.mentions:
-                        user_message = user_message.replace(member.mention, member.display_name)
+                        user_message = user_message.replace('@' + member.mention, member.display_name)
                     self.logger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, using {tokens} tokens.')
                     conversation_history = self.database_read(ctx, shared_chat)
                     async with ctx.typing():
@@ -147,11 +147,11 @@ class Chat(commands.Cog):
         else:
             await ctx.reply("OpenAI API key not found. Chat commands will not work.", silent=True)
 
-    @commands.command(aliases=['sharedchat', 'sharedtalk'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
+    @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, True)
 
-    @commands.command(aliases=['chat', 'talk'], brief='Talk to QuantumKat.', description='Talk to QuantumKat using the OpenAI API/ChatGPT.')
+    @commands.command(aliases=['chat', 'talk', 'c'], brief='Talk to QuantumKat.', description='Talk to QuantumKat using the OpenAI API/ChatGPT.')
     async def Chat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, False)
 
