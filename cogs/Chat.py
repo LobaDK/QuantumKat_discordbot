@@ -148,11 +148,11 @@ class Chat(commands.Cog):
 
     @commands.command(aliases=['sharedchat', 'sharedtalk'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
-        self.initiateChat(ctx, user_message, True)
+        await self.initiateChat(ctx, user_message, True)
 
     @commands.command(aliases=['chat', 'talk'], brief='Talk to QuantumKat.', description='Talk to QuantumKat using the OpenAI API/ChatGPT.')
     async def Chat(self, ctx: commands.Context, *, user_message=""):
-        self.initiateChat(ctx, user_message, False)
+        await self.initiateChat(ctx, user_message, False)
 
     print("Started Chat!")
 
