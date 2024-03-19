@@ -103,7 +103,7 @@ async def on_ready():
     server_name TEXT NOT NULL,
     user_message TEXT NOT NULL,
     assistant_message TEXT NOT NULL,
-    shared_chat INTEGER NOT NULL DEFAULT 0,
+    shared_chat INTEGER NOT NULL DEFAULT 0
     )'''
 
     try:

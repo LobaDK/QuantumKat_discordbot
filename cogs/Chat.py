@@ -78,6 +78,7 @@ class Chat(commands.Cog):
             self.db_conn.commit()
         except sqlite3.Error as e:
             self.logger.error(f"An error occurred while adding a chat message to the database: {e}")
+            await ctx.reply("An error occurred while adding the chat message to the database.", silent=True)
 
     async def database_read(self, ctx: commands.Context, shared_chat: bool) -> list:
         """
@@ -103,6 +104,7 @@ class Chat(commands.Cog):
             rows = self.db_conn.execute(sql, params).fetchall()
         except sqlite3.Error as e:
             self.logger.error(f"An error occurred while reading chat messages from the database: {e}")
+            await ctx.reply("An error occurred while reading chat messages from the database.", silent=True)
             return []
         messages = []
         for user_message, assistant_message in rows:
@@ -135,6 +137,7 @@ class Chat(commands.Cog):
             self.db_conn.commit()
         except sqlite3.Error as e:
             self.logger.error(f"An error occurred while removing chat messages from the database: {e}")
+            await ctx.reply("An error occurred while removing chat messages from the database.", silent=True)
 
     async def get_server_id_and_name(self, ctx: commands.Context) -> tuple:
         """
