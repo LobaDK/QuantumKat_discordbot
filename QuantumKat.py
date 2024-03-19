@@ -105,7 +105,8 @@ async def on_ready():
     user_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
     user_message TEXT NOT NULL,
-    assistant_message TEXT NOT NULL'''
+    assistant_message TEXT NOT NULL
+    )'''
 
     bot.db_conn.execute(sql)
     bot.db_conn.commit()
