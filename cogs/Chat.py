@@ -85,7 +85,7 @@ class Chat(commands.Cog):
             params = (shared_chat,)
         else:
             sql = "SELECT user_message, assistant_message FROM chat WHERE user_id = ? ORDER BY id DESC LIMIT 10"
-            params = (user_id)
+            params = (user_id,)
         rows = self.db_conn.execute(sql, params).fetchall()
         messages = []
         for user_message, assistant_message in rows:
