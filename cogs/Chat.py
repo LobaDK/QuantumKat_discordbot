@@ -15,7 +15,7 @@ class Chat(commands.Cog):
 
         self.logger = logging.getLogger('discord.Chat')
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(filename='logs/chat.log', encoding='utf-8', mode='w')
+        handler = logging.FileHandler(filename='logs/chat.log', encoding='utf-8', mode='a')
         date_format = '%Y-%m-%d %H:%M:%S'
         formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
         handler.setFormatter(formatter)
@@ -23,7 +23,7 @@ class Chat(commands.Cog):
 
         self.historylogger = logging.getLogger('discord.ChatHistory')
         self.historylogger.setLevel(logging.INFO)
-        history_handler = logging.FileHandler(filename='logs/chat_history.log', encoding='utf-8', mode='w')
+        history_handler = logging.FileHandler(filename='logs/chat_history.log', encoding='utf-8', mode='a')
         history_handler.setFormatter(formatter)
         self.historylogger.addHandler(history_handler)
 
@@ -149,7 +149,11 @@ class Chat(commands.Cog):
 
                             await self.database_add(ctx, user_message, chat_response, shared_chat)
 
-                            self.historylogger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with message: {user_message}, with the history: {" ".join(history for history in conversation_history)}.')
+                            messages = []
+                            for message in conversation_history:
+                                messages.append(f"{message['role'].title()}: {message['content']}")
+                            messages = "\n".join(messages)
+                            self.historylogger.info(f'User {ctx.author.name} ({ctx.author.id}) initiated chat command with [message]: {user_message} [history]: {messages}.')
                             self.logger.info(f'User message: {user_message}. Chat response: {chat_response}. Used {response.usage.total_tokens} tokens in total.')
                             await ctx.reply(chat_response, silent=True)
                         except OpenAIError as e:
@@ -216,11 +220,11 @@ class Chat(commands.Cog):
         else:
             await ctx.reply('Sorry, only server and bot owner, and mods can clear the sharedchat history', silent=True)
 
-    @commands.command(aliases=['chatview', 'viewchat', 'cv'], brief='View the chat history.', description='View the chat history for the user.')
+    @commands.command(aliases=['chatview', 'viewchat', 'chathistory', 'cv'], brief='View the chat history.', description='View the chat history for the user.')
     async def ChatView(self, ctx: commands.Context):
         await self.initiatechatview(ctx, False)
 
-    @commands.command(aliases=['sharedchatview', 'sharedviewchat', 'scv'], brief='View the shared chat history.', description='View the shared chat history.')
+    @commands.command(aliases=['sharedchatview', 'sharedviewchat', 'sharedchathistory', 'scv'], brief='View the shared chat history.', description='View the shared chat history.')
     async def SharedChatView(self, ctx: commands.Context):
         await self.initiatechatview(ctx, True)
 

@@ -22,7 +22,7 @@ class Entanglements(commands.Cog):
         self.bot = bot
         self.logger = logging.getLogger('discord.Entanglement')
         self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(filename='logs/entanglement.log', encoding='utf-8', mode='w')
+        handler = logging.FileHandler(filename='logs/entanglement.log', encoding='utf-8', mode='a')
         date_format = '%Y-%m-%d %H:%M:%S'
         formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
         handler.setFormatter(formatter)

@@ -27,12 +27,7 @@ except FileExistsError:
 logger = logging.getLogger('discord.QuantumKat')
 logger.setLevel(logging.INFO)
 
-handler = logging.handlers.RotatingFileHandler(
-    filename='logs/quantumkat.log',
-    encoding='utf-8',
-    maxBytes=32 * 1024 * 1024,  # 32 MiB
-    backupCount=5,  # Rotate through 5 files
-)
+handler = logging.FileHandler(filename='logs/quantumkat.log', encoding='utf-8', mode='a')
 
 date_format = '%Y-%m-%d %H:%M:%S'
 formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
