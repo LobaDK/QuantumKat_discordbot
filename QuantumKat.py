@@ -17,13 +17,14 @@ from shutil import which
 from os import mkdir
 
 
-def database_thread(db_conn: sqlite3.Connection, q: queue.Queue):
+def database_thread(db_conn: sqlite3.Connection, q: queue.Queue, logger: logging.Logger):
     """
     Executes SQL statements from a queue in a separate thread and stores the results in a database.
 
     Args:
         db_conn (sqlite3.Connection): The SQLite database connection object.
         q (queue.Queue): The queue containing SQL statements to be executed.
+        logger (logging.Logger): The logger object to log errors to.
 
     Returns:
         None
@@ -34,16 +35,19 @@ def database_thread(db_conn: sqlite3.Connection, q: queue.Queue):
         user_name TEXT NOT NULL,
         user_message TEXT NOT NULL,
         assistant_message TEXT NOT NULL,'''
+    logger.info('Creating chat table if it does not exist')
     db_conn.execute(sql)
 
     while True:
         try:
             item, params = q.get()
             if item is None:
+                logger.info('Received None, stopping database thread')
                 db_conn.commit()
                 db_conn.close()
                 break
             with db_conn:
+                logger.info(f"Executing SQL: {item} with params: {params}")
                 db_conn.execute(item, params)
         except Exception as e:
             logger.error(f"Error in database thread: {e}")
@@ -113,7 +117,7 @@ bot = commands.Bot(command_prefix='?',
 bot.db_conn = sqlite3.connect('quantumkat.db')
 bot.db_queue = queue.Queue()
 
-db_thread = threading.Thread(target=database_thread, args=(bot.db_conn, bot.db_queue))
+db_thread = threading.Thread(target=database_thread, args=(bot.db_conn, bot.db_queue, logger))
 db_thread.start()
 
 logger.info('Started database thread')
