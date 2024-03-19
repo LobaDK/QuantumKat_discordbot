@@ -165,6 +165,16 @@ class Chat(commands.Cog):
             params = (user_id,)
         self.db_conn.execute(sql, params)
 
+    async def initiatechatview(self, ctx: commands.Context, shared_chat: bool):
+        if shared_chat:
+            conversation_history = await self.database_read(ctx, True)
+        else:
+            conversation_history = await self.database_read(ctx, False)
+        messages = []
+        for message in conversation_history:
+            messages.append(f"{message['role'].title()}: {message['content']}")
+        await ctx.reply("\n".join(messages), silent=True)
+
     @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, True)
@@ -192,11 +202,11 @@ class Chat(commands.Cog):
 
     @commands.command(aliases=['chatview', 'viewchat', 'cv'], brief='View the chat history.', description='View the chat history for the user.')
     async def ChatView(self, ctx: commands.Context):
-        conversation_history = await self.database_read(ctx, False)
-        messages = []
-        for message in conversation_history:
-            messages.append(f"{message['role'].title()}: {message['content']}")
-        await ctx.reply("\n".join(messages), silent=True)
+        await self.initiatechatview(ctx, False)
+
+    @commands.command(aliases=['sharedchatview', 'sharedviewchat', 'scv'], brief='View the shared chat history.', description='View the shared chat history.')
+    async def SharedChatView(self, ctx: commands.Context):
+        await self.initiatechatview(ctx, True)
 
     print("Started Chat!")
 
