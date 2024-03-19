@@ -77,8 +77,6 @@ bot = commands.Bot(command_prefix='?',
 
 bot.db_conn = sqlite3.connect('quantumkat.db')
 
-logger.info('Started database thread')
-
 # Get and add cogs to a list
 initial_extensions = []
 for cog in listdir('./cogs'):
@@ -107,9 +105,10 @@ async def on_ready():
     user_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
     user_message TEXT NOT NULL,
-    assistant_message TEXT NOT NULL,'''
+    assistant_message TEXT NOT NULL'''
 
     bot.db_conn.execute(sql)
+    bot.db_conn.commit()
 
     bot.appinfo = await bot.application_info()
     quantum = ['reality', 'universe', 'dimension', 'timeline']
