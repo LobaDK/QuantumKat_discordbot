@@ -108,8 +108,11 @@ async def on_ready():
     assistant_message TEXT NOT NULL
     )'''
 
-    bot.db_conn.execute(sql)
-    bot.db_conn.commit()
+    try:
+        bot.db_conn.execute(sql)
+        bot.db_conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Error creating chat table: {e}")
 
     bot.appinfo = await bot.application_info()
     quantum = ['reality', 'universe', 'dimension', 'timeline']
