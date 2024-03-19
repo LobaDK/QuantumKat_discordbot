@@ -8,8 +8,8 @@ If you wish to use this bot and it's features yourself, in your own server(s), p
 # Running it yourself
 If you chose to run it yourself, please note the following:
 
-#### Token
-The Application/Bot token is read from a file named `.env` using `python-dotenv`. Feel free to rewrite this, but if you wanna use it as is, without changing anything, this is how it gets the token for the bot. Please note the file is ignored in Git, so you'll have to manually create the file and add the token.
+#### Token/API key
+The Application/Bot token is read from a file named `.env` using `python-dotenv`. Feel free to rewrite this, but if you wanna use it as is, without changing anything, this is how it gets the token for the bot. Please note the file is ignored in Git, so you'll have to manually create the file and add the token. The API key used for OpenAI API interactions are also stored here. If no key is found, the related commands simply disable themselves
 
 #### Version
 The bot recently got rewritten for Discord.py 2.0, which means only 2.0 and up will work correctly. If you for whatever reason want or need the 1.7 version, you'll need to use the version control/git history.
@@ -84,3 +84,9 @@ In case the bot is in a server that the bot owner is not in, and wish the bot to
 
 ### Leave current server
 `?Leave` Leaves the server the command was run in. For moderation purposes, anyone with administrator or members moderator privileges can also run this.
+
+## Chat
+### Chat with QuantumKat via OpenAI API
+`?Chat` Sends an attached message to ChatGPT via the OpenAI API, set up with an included custom system message that defines its behaviors. Messages and its replies are stored in a database, each related to the UUID of the user who initiated the command, allowing for unique history between multiple users. A maximum of 10 messages are retrieved and used as history, to help provide context but still keep token lengths somewhat low.
+### sharedchat
+`?Sharedchat` Copy of chat, but it uses an additional flag to save and retrieve messages and their replies in a shared state, allowing multiple users to use the same history
