@@ -136,16 +136,16 @@ class Chat(commands.Cog):
                             self.database_add(ctx, user_message, chat_response, shared_chat)
 
                             self.logger.info(f'Chat response: {chat_response}, using {response.usage.total_tokens} tokens in total.')
-                            await ctx.send(chat_response)
+                            await ctx.reply(chat_response, silent=True)
                         except OpenAIError as e:
                             self.logger.error(f'HTTP status code: {e.http_status}, Error message: {e}')
-                            await ctx.send(f"OpenAI returned an error with the status code {e.http_status}. Please try again later.")
+                            await ctx.reply(f"OpenAI returned an error with the status code {e.http_status}. Please try again later.", silent=True)
                 else:
-                    await ctx.send(f"Message is too long! Your message is {tokens} tokens long, but the maximum is 256 tokens.")
+                    await ctx.reply(f"Message is too long! Your message is {tokens} tokens long, but the maximum is 256 tokens.", silent=True)
             else:
-                await ctx.send("Message cannot be empty! I may be smart, but I'm not a mind reader!")
+                await ctx.reply("Message cannot be empty! I may be smart, but I'm not a mind reader!", silent=True)
         else:
-            await ctx.send("OpenAI API key not found. Chat commands will not work.")
+            await ctx.reply("OpenAI API key not found. Chat commands will not work.", silent=True)
 
     @commands.command(aliases=['sharedchat', 'sharedtalk'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
