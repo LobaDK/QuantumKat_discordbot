@@ -64,7 +64,7 @@ class Chat(commands.Cog):
         user_name = ctx.author.name
         sql = "INSERT INTO chat (user_id, user_name, user_message, assistant_message) VALUES (?, ?, ?, ?)"
         params = (user_id, user_name, user_message, assistant_message)
-        self.db_queue.put((sql, params))
+        self.db_conn.execute(sql, params)
 
     def database_read(self, ctx: commands.Context):
         """
