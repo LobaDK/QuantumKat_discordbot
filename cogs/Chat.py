@@ -91,7 +91,7 @@ class Chat(commands.Cog):
             sql = "SELECT user_message, assistant_message FROM chat WHERE shared_chat = ? ORDER BY id DESC LIMIT 10"
             params = (shared_chat,)
         else:
-            sql = "SELECT user_message, assistant_message FROM chat WHERE user_id = ? ORDER BY id DESC LIMIT 10"
+            sql = "SELECT user_message, assistant_message FROM chat WHERE user_id = ? AND shared_chat = 0 ORDER BY id DESC LIMIT 10"
             params = (user_id,)
         rows = self.db_conn.execute(sql, params).fetchall()
         messages = []
@@ -161,7 +161,7 @@ class Chat(commands.Cog):
             params = (shared_chat,)
         else:
             user_id = ctx.author.id
-            sql = "DELETE FROM chat WHERE user_id = ?"
+            sql = "DELETE FROM chat WHERE user_id = ? AND shared_chat = 0"
             params = (user_id,)
         self.db_conn.execute(sql, params)
 
@@ -170,10 +170,13 @@ class Chat(commands.Cog):
             conversation_history = await self.database_read(ctx, True)
         else:
             conversation_history = await self.database_read(ctx, False)
-        messages = []
-        for message in conversation_history:
-            messages.append(f"{message['role'].title()}: {message['content']}")
-        await ctx.reply("\n".join(messages), silent=True)
+        if conversation_history:
+            messages = []
+            for message in conversation_history:
+                messages.append(f"{message['role'].title()}: {message['content']}")
+            await ctx.reply("\n".join(messages), silent=True)
+        else:
+            await ctx.reply("No chat history found.", silent=True)
 
     @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a shared chat using the OpenAI API/ChatGPT.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
