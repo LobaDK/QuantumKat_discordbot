@@ -9,10 +9,11 @@ If you wish to use this bot and it's features yourself, in your own server(s), p
 If you chose to run it yourself, please note the following:
 
 #### Token/API key
-The Application/Bot token is read from a file named `.env` using `python-dotenv`. Feel free to rewrite this, but if you wanna use it as is, without changing anything, this is how it gets the token for the bot. Please note the file is ignored in Git, so you'll have to manually create the file and add the token. The API key used for the OpenAI API are also stored here. If no key is found, the related commands simply disable themselves.
-
-#### Version
-The bot recently got rewritten for Discord.py 2.0, which means only 2.0 and up will work correctly. If you for whatever reason want or need the 1.7 version, you'll need to use the version control/git history.
+Required tokens/keys can be stored in a file named `.env`. The file is ignored by git to prevent leaking secrets.  
+`OPENAI_API_KEY=` sets the API key used by OpenAI.  
+`OPENAI_SESSION_KEY=` sets the session key used to login to the user page and fetch data.  
+`TOKEN=` sets the API key used to connect the bot to Discord.  
+`OWNER_ID=` sets the Discord ID of the bot owner
 
 #### ar and pr commands
 The ar and pr commands get the appropriate files locally through Python itself or shell commands, and then chooses 1-5 random files in the list. For external use, https://aaaa.lobadk.com/botrandom.php and https://possum.lobadk.com/botrandom.php can be used to get a single random file
@@ -24,7 +25,8 @@ The cogs are split up into different groups of purposes/accessibility.
 `Entanglement` contains bot-owner only commands, for management of the bot's features.  
 `Activity` is anything that requires or uses a loop, and also limited to the bot owner.  
 `Tunnel` is background code for handling exceptions, or listening to specific actions.  
-`Control` is anything used to control either the bot, or manage the users in the server, and is a mix of bot-owner, server-owner and admin/mod-limited commands.
+`Control` is anything used to control either the bot, or manage the users in the server, and is a mix of bot-owner, server-owner and admin/mod-limited commands.  
+`Chat` Is used to chat with the bot via OpenAI/ChatGPT and manage it's chat history.
 
 # Features
 
@@ -94,3 +96,5 @@ In case the bot is in a server that the bot owner is not in, and wish the bot to
 `?Chatclear`Clears the entire chat history for the user, in the current server, that initiated the command. Useful in case the prompts are starting to return garbage/deteriorated text, or they just wanna start new a chat.
 ### shared[command]
 `?Shared[command]` All commands have an additional shared version where a prompt is not tied to a specific user i.e. everyone in a server is sharing the same history. The only difference in the commands here is that clearing is limited to the bot owner, server owner and server moderators
+### View chat status
+`?chatstatus` Checks and shows if there's an API key present. If there's also a session key, it attempts to get the current monthly total spending
