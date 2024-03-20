@@ -159,11 +159,11 @@ class Chat(commands.Cog):
         Returns:
             dict: A dictionary containing the usage statistics for the OpenAI API key.
         """
-        month = str(datetime.datetime.month)
+        month = datetime.datetime.month
         if len(month) == 1:
             month = f"0{month}"
-        year = str(datetime.datetime.year)
-        last_day = str(calendar.monthrange(int(year), int(month))[1])
+        year = datetime.datetime.year
+        last_day = calendar.monthrange(year, month)[1]
         try:
             response = requests.get(f"https://api.openai.com/v1/usage?end_date={year}-{month}-01&start_date={year}-{month}-{last_day}", headers={"Authorization": self.session_key})
             response.raise_for_status()
