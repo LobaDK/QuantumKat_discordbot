@@ -35,5 +35,5 @@ soupsieve==2.4
 tiktoken==0.6.0
 tqdm==4.66.2
 typing_extensions==4.10.0
-urllib3==1.26.15
+urllib3==1.26.18
 yarl==1.8.2
