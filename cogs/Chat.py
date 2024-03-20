@@ -16,19 +16,25 @@ class Chat(commands.Cog):
 
         self.db_conn = bot.db_conn
 
-        self.logger = logging.getLogger('discord.Chat')
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(filename='logs/chat.log', encoding='utf-8', mode='a')
-        date_format = '%Y-%m-%d %H:%M:%S'
-        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        if 'discord.Chat' in logging.Logger.manager.loggerDict:
+            self.logger = logging.getLogger('discord.Chat')
+        else:
+            self.logger = logging.getLogger('discord.Chat')
+            self.logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(filename='logs/chat.log', encoding='utf-8', mode='a')
+            date_format = '%Y-%m-%d %H:%M:%S'
+            formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
 
-        self.historylogger = logging.getLogger('discord.ChatHistory')
-        self.historylogger.setLevel(logging.INFO)
-        history_handler = logging.FileHandler(filename='logs/chat_history.log', encoding='utf-8', mode='a')
-        history_handler.setFormatter(formatter)
-        self.historylogger.addHandler(history_handler)
+        if 'discord.ChatHistory' in logging.Logger.manager.loggerDict:
+            self.historylogger = logging.getLogger('discord.ChatHistory')
+        else:
+            self.historylogger = logging.getLogger('discord.ChatHistory')
+            self.historylogger.setLevel(logging.INFO)
+            history_handler = logging.FileHandler(filename='logs/chat_history.log', encoding='utf-8', mode='a')
+            history_handler.setFormatter(formatter)
+            self.historylogger.addHandler(history_handler)
 
         # Set the model encoding for tiktoken
         self.encoding = tiktoken.encoding_for_model('gpt-3.5-turbo')

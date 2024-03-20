@@ -20,13 +20,17 @@ from psutil import cpu_percent, disk_usage, virtual_memory
 class Entanglements(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.logger = logging.getLogger('discord.Entanglement')
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(filename='logs/entanglement.log', encoding='utf-8', mode='a')
-        date_format = '%Y-%m-%d %H:%M:%S'
-        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+
+        if 'discord.Entanglement' in logging.Logger.manager.loggerDict:
+            self.logger = logging.getLogger('discord.Entanglement')
+        else:
+            self.logger = logging.getLogger('discord.Entanglement')
+            self.logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(filename='logs/entanglement.log', encoding='utf-8', mode='a')
+            date_format = '%Y-%m-%d %H:%M:%S'
+            formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
 
     initial_extensions = []
     for cog in listdir('./cogs'):

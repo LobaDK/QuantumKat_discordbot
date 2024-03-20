@@ -10,13 +10,16 @@ class Activity(commands.Cog):
 
         self.bot = bot
 
-        self.logger = logging.getLogger('discord.Activity')
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(filename='logs/activity.log', encoding='utf-8', mode='a')
-        date_format = '%Y-%m-%d %H:%M:%S'
-        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        if 'discord.Activity' in logging.Logger.manager.loggerDict:
+            self.logger = logging.getLogger('discord.Activity')
+        else:
+            self.logger = logging.getLogger('discord.Activity')
+            self.logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(filename='logs/activity.log', encoding='utf-8', mode='a')
+            date_format = '%Y-%m-%d %H:%M:%S'
+            formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
 
         self.hissList = ['Hissing',
                          'Hissed']

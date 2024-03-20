@@ -18,13 +18,16 @@ class Fields(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = logging.getLogger('discord.Field')
-        self.logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(filename='logs/field.log', encoding='utf-8', mode='a')
-        date_format = '%Y-%m-%d %H:%M:%S'
-        formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        if 'discord.Field' in logging.Logger.manager.loggerDict:
+            self.logger = logging.getLogger('discord.Field')
+        else:
+            self.logger = logging.getLogger('discord.Field')
+            self.logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(filename='logs/field.log', encoding='utf-8', mode='a')
+            date_format = '%Y-%m-%d %H:%M:%S'
+            formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
 
         self.aURL = 'https://aaaa.lobadk.com/'
         self.a_folder = '/var/www/aaaa/'
