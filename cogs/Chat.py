@@ -164,7 +164,7 @@ class Chat(commands.Cog):
         year = datetime.datetime.now().year
         last_day = calendar.monthrange(year, int(month))[1]
         try:
-            response = requests.get(f"https://api.openai.com/dashboard/billing/usage?end_date={year}-{month}-01&start_date={year}-{month}-{last_day}", headers={"Authorization": self.session_key})
+            response = requests.get(f"https://api.openai.com/dashboard/billing/usage?end_date={year}-{month}-{last_day}&start_date={year}-{month}-01", headers={"Authorization": self.session_key})
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
