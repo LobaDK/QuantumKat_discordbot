@@ -3,6 +3,9 @@ import logging
 import tiktoken
 import os
 import sqlite3
+import requests
+import datetime
+import calendar
 
 from discord.ext import commands
 
@@ -37,7 +40,14 @@ class Chat(commands.Cog):
             self.openai = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
         else:
             self.FOUND_API_KEY = False
-            self.logger.error("OpenAI API key not found. Chat commands will not work.")
+            self.logger.error("OpenAI API key not found. Chatstatus command will not work.")
+
+        if os.environ.get('OPENAI_SESSION_KEY'):
+            self.session_key = os.environ.get('OPENAI_SESSION_KEY')
+            self.openai = OpenAI(api_key=os.environ.get('OPENAI_SESSION_KEY'))
+        else:
+            self.session_key = None
+            self.logger.error("OpenAI Session key not found. Chatstatus command will not work.")
 
     async def calculate_tokens(self, user_message: str) -> int:
         """
@@ -138,6 +148,30 @@ class Chat(commands.Cog):
         except sqlite3.Error as e:
             self.logger.error(f"An error occurred while removing chat messages from the database: {e}")
             await ctx.reply("An error occurred while removing chat messages from the database.", silent=True)
+
+    async def get_usage(self, ctx: commands.Context) -> dict:
+        """
+        Retrieves the usage statistics for the OpenAI API key.
+
+        Args:
+            ctx (commands.Context): The context object representing the invocation context of the command.
+
+        Returns:
+            dict: A dictionary containing the usage statistics for the OpenAI API key.
+        """
+        month = str(datetime.datetime.month)
+        if len(month) == 1:
+            month = f"0{month}"
+        year = str(datetime.datetime.year)
+        last_day = str(calendar.monthrange(year, month)[1])
+        try:
+            response = requests.get(f"https://api.openai.com/v1/usage?end_date={year}-{month}-01&start_date={year}-{month}-{last_day}", headers={"Authorization": self.session_key})
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"An error occurred while retrieving the usage statistics for the OpenAI API key: {e}")
+            await ctx.reply("An error occurred while retrieving the usage statistics for the OpenAI API key.", silent=True)
+            return {}
 
     async def get_server_id_and_name(self, ctx: commands.Context) -> tuple:
         """
@@ -269,6 +303,18 @@ class Chat(commands.Cog):
     @commands.command(aliases=['sharedchatview', 'sharedviewchat', 'sharedchathistory', 'scv'], brief='View the shared chat history.', description='View the shared chat history in the current server.')
     async def SharedChatView(self, ctx: commands.Context):
         await self.initiatechatview(ctx, True)
+
+    @commands.command(aliases=['chatstatus', 'cs'], brief='Check the status of the chat commands.', description='Check the status of the chat commands, including the OpenAI API key status.')
+    async def ChatStatus(self, ctx: commands.Context):
+        messages = []
+        if self.FOUND_API_KEY:
+            messages.append("Chat commands are enabled and the OpenAI API key is found.")
+        else:
+            messages.append("Chat commands are disabled. OpenAI API key not found.")
+        if self.session_key:
+            usage = await self.get_usage(ctx)
+            if usage:
+                messages.append("OpenAI API key usage: {:.2f}$ of tokens used this month.".format(usage['total_usage'] / 100))
 
     print("Started Chat!")
 
