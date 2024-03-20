@@ -316,6 +316,8 @@ class Chat(commands.Cog):
             if usage:
                 messages.append("OpenAI API key usage: {:.2f}$ of tokens used this month.".format(usage['total_usage'] / 100))
 
+        await ctx.reply("\n".join(messages), silent=True)
+
     print("Started Chat!")
 
 
