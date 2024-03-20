@@ -237,7 +237,7 @@ class Chat(commands.Cog):
         else:
             await ctx.reply("No chat history found in this server.", silent=True)
 
-    @commands.command(aliases=['sharedchat', 'sharedtalk', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a chat shared with all users, using the OpenAI API/ChatGPT. Is not shared between servers.')
+    @commands.command(aliases=['sharedchat', 'sharedtalk', 'schat', 'sc'], brief='Talk to QuantumKat in a shared chat.', description='Talk to QuantumKat in a chat shared with all users, using the OpenAI API/ChatGPT. Is not shared between servers.')
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
         await self.initiateChat(ctx, user_message, True)
 
