@@ -311,10 +311,13 @@ class Chat(commands.Cog):
             messages.append("Chat commands are enabled and the OpenAI API key is found.")
         else:
             messages.append("Chat commands are disabled. OpenAI API key not found.")
+
         if self.session_key:
             usage = await self.get_usage(ctx)
             if usage:
                 messages.append("OpenAI API key usage: {:.2f}$ of tokens used this month.".format(usage['total_usage'] / 100))
+        else:
+            messages.append("OpenAI API key usage: Session key not found.")
 
         await ctx.reply("\n".join(messages), silent=True)
 
