@@ -346,9 +346,7 @@ class Chat(commands.Cog):
                             else:
                                 await ctx.reply(chat_response, silent=True)
                         except OpenAIError as e:
-                            self.logger.error(
-                                f"Error message: {e}"
-                            )
+                            self.logger.error(f"Error message: {e}")
                             await ctx.reply(
                                 f"OpenAI returned an error with the error {e}. Please try again later.",
                                 silent=True,
