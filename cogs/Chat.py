@@ -382,7 +382,13 @@ class Chat(commands.Cog):
             messages.append("Chat history for this server:")
             for message in conversation_history:
                 messages.append(f"{message['role'].title()}: {message['content']}")
-            await ctx.reply("\n".join(messages), silent=True)
+            message = "\n".join(messages)
+            if len(message) > 2000:
+                message = await self.split_message_by_sentence(message)
+                for msg in message:
+                    await ctx.reply(msg, silent=True)
+            else:
+                await ctx.reply(message, silent=True)
         else:
             await ctx.reply("No chat history found in this server.", silent=True)
 
