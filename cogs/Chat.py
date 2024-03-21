@@ -246,6 +246,35 @@ class Chat(commands.Cog):
             server_name = "DM or Group Chat"
         return server_id, server_name
 
+    async def split_message_by_sentence(self, message: str) -> list:
+        """
+        Splits a given message by sentence, into multiple messages with a maximum length of 2000 characters.
+
+        Args:
+            message (str): The message to be split into sentences.
+
+        Returns:
+            list: A list of sentences, each with a maximum length of 2000 characters.
+        """
+        sentences = message.split(". ")
+        current_length = 0
+        messages = []
+        current_message = ""
+
+        for sentence in sentences:
+            if current_length + len(sentence) + 1 > 2000:  # +1 for the period
+                messages.append(current_message)
+                current_length = 0
+                current_message = ""
+
+            current_message += sentence + ". "
+            current_length += len(sentence) + 1
+
+        if current_message:  # Any leftover sentence
+            messages.append(current_message)
+
+        return messages
+
     async def initiateChat(
         self, ctx: commands.Context, user_message: str, shared_chat: bool
     ):
@@ -281,7 +310,7 @@ class Chat(commands.Cog):
                                 top_p=1,
                                 frequency_penalty=1,
                                 presence_penalty=0,
-                                user=ctx.message.id
+                                user=ctx.message.id,
                             )
                             chat_response = response.choices[0].message.content
 
@@ -308,13 +337,20 @@ class Chat(commands.Cog):
                             self.logger.info(
                                 f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message}. [Response]: {chat_response}. [Tokens]: {response.usage.total_tokens} tokens used in total."
                             )
-                            await ctx.reply(chat_response, silent=True)
+                            if len(chat_response) > 2000:
+                                chat_response = await self.split_message_by_sentence(
+                                    chat_response
+                                )
+                                for message in chat_response:
+                                    await ctx.reply(message, silent=True)
+                            else:
+                                await ctx.reply(chat_response, silent=True)
                         except OpenAIError as e:
                             self.logger.error(
-                                f"HTTP status code: {e.http_status}, Error message: {e}"
+                                f"Error message: {e}"
                             )
                             await ctx.reply(
-                                f"OpenAI returned an error with the status code {e.http_status}. Please try again later.",
+                                f"OpenAI returned an error with the error {e}. Please try again later.",
                                 silent=True,
                             )
                 else:
