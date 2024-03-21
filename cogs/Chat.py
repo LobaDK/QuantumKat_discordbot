@@ -281,7 +281,7 @@ class Chat(commands.Cog):
         if self.FOUND_API_KEY is True:
             if user_message:
                 tokens = await self.calculate_tokens(user_message)
-                if not tokens > 256:
+                if not tokens > 1024:
                     command = ctx.invoked_with
                     user_message = ctx.message.content.split(
                         f"{self.bot.command_prefix}{command}", 1
