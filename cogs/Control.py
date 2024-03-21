@@ -1,11 +1,12 @@
 from random import choice
 import logging
+import discord
 
 from discord.ext import commands
 
 
 class Control(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
@@ -26,7 +27,7 @@ class Control(commands.Cog):
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
 
-    async def get_permissions(self, guild) -> list[str]:
+    async def get_permissions(self, guild: discord.Guild) -> list[str]:
         permissions = []
         for permission in guild.me.guild_permissions:
             if permission[1] is True:
@@ -49,7 +50,7 @@ class Control(commands.Cog):
     )
     @commands.is_owner()
     @commands.dm_only()
-    async def ServerOwnerList(self, ctx):
+    async def ServerOwnerList(self, ctx: commands.Context):
         servers_and_owners = []
         for guild in self.bot.guilds:
             servers_and_owners.append(
@@ -75,7 +76,7 @@ class Control(commands.Cog):
     )
     @commands.is_owner()
     @commands.dm_only()
-    async def LeaveServer(self, ctx, Server_ID=""):
+    async def LeaveServer(self, ctx: commands.Context, Server_ID: str = ""):
         if Server_ID:
             if Server_ID.isnumeric():
                 guild = self.bot.get_guild(int(Server_ID))
@@ -109,7 +110,7 @@ class Control(commands.Cog):
             "can do this. Supports no arguments."
         ),
     )
-    async def Leave(self, ctx):
+    async def Leave(self, ctx: commands.Context):
         if ctx.guild is not None:
             application = await self.bot.application_info()
             if (
@@ -137,7 +138,7 @@ class Control(commands.Cog):
             "optional argument as the server ID."
         ),
     )
-    async def ListPermissions(self, ctx, Server_ID=""):
+    async def ListPermissions(self, ctx: commands.Context, Server_ID: str = ""):
         guild = None
         # If Server_ID is provided and the command was used in DM's
         if Server_ID and ctx.guild is None:
@@ -179,11 +180,11 @@ class Control(commands.Cog):
         )
 
     @commands.command()
-    async def test(self, ctx):
+    async def test(self, ctx: commands.Context):
         await ctx.send("*Meows*")
 
     print("Started Control!")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Control(bot))

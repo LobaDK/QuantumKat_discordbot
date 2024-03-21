@@ -8,7 +8,7 @@ import logging
 
 
 class Tunnel(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
         if "discord.Tunnel" in logging.Logger.manager.loggerDict:
@@ -29,7 +29,9 @@ class Tunnel(commands.Cog):
             self.logger.addHandler(handler)
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def on_command_error(
+        self, ctx: commands.Context, error: commands.CommandError
+    ):
         if hasattr(ctx.command, "on_error"):
             return
 
@@ -69,7 +71,7 @@ class Tunnel(commands.Cog):
             )
 
     @commands.Cog.listener()
-    async def on_command_completion(self, ctx):
+    async def on_command_completion(self, ctx: commands.Context):
         self.logger.info(
             f"Command {ctx.command} completed by {ctx.author}, {ctx.author.id} Message ID: {ctx.message.id} Time: {datetime.now()}"
         )
@@ -77,5 +79,5 @@ class Tunnel(commands.Cog):
     print("Started Tunnel!")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Tunnel(bot))

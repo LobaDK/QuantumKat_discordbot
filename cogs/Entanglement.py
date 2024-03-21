@@ -18,7 +18,7 @@ from psutil import cpu_percent, disk_usage, virtual_memory
 
 
 class Entanglements(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
         if "discord.Entanglement" in logging.Logger.manager.loggerDict:
@@ -134,7 +134,7 @@ class Entanglements(commands.Cog):
         description=("Stops and disconnects the bot. " "Supports no arguments."),
     )
     @commands.is_owner()
-    async def observe(self, ctx):
+    async def observe(self, ctx: commands.Context):
         await ctx.reply("QuantumKat's superposition has collapsed!", silent=True)
         await self.bot.close()
 
@@ -150,7 +150,7 @@ class Entanglements(commands.Cog):
         "to reload all.",
     )
     @commands.is_owner()
-    async def stabilise(self, ctx, *, module: str = ""):
+    async def stabilise(self, ctx: commands.Context, *, module: str = ""):
         if module:
             location = choice(["reality", "universe", "dimension", "timeline"])
             if module == "*":
@@ -228,7 +228,7 @@ class Entanglements(commands.Cog):
         ),
     )
     @commands.is_owner()
-    async def entangle(self, ctx, *, module: str = ""):
+    async def entangle(self, ctx: commands.Context, *, module: str = ""):
         if module:
             cogs = module.split()
             for cog in cogs:
@@ -268,7 +268,7 @@ class Entanglements(commands.Cog):
         ),
     )
     @commands.is_owner()
-    async def unentangle(self, ctx, *, module: str = ""):
+    async def unentangle(self, ctx: commands.Context, *, module: str = ""):
         if module:
             cogs = module.split()
             for cog in cogs:
@@ -312,7 +312,14 @@ class Entanglements(commands.Cog):
         ),
     )
     @commands.is_owner()
-    async def quantize(self, ctx, URL="", filename="", location="", mode=""):
+    async def quantize(
+        self,
+        ctx: commands.Context,
+        URL: str = "",
+        filename: str = "",
+        location: str = "",
+        mode: str = "",
+    ):
         oldfilename = filename
 
         # Check if user has given all required inputs
@@ -628,7 +635,9 @@ class Entanglements(commands.Cog):
         description="Renames the specified file. Requires and supports 2 arguments. Only alphanumeric, underscores and a single dot allowed, and at least one character must appear after the dot when choosing a new name.",
     )
     @commands.is_owner()
-    async def requantize(self, ctx, current_filename="", new_filename=""):
+    async def requantize(
+        self, ctx: commands.Context, current_filename: str = "", new_filename: str = ""
+    ):
         if current_filename and new_filename:
 
             data_dir = self.aaaa_dir
@@ -680,7 +689,7 @@ class Entanglements(commands.Cog):
         description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.",
     )
     @commands.is_owner()
-    async def git(self, ctx, *, git_arguments=""):
+    async def git(self, ctx: commands.Context, *, git_arguments: str = ""):
         if git_arguments:
 
             # Only allow alphanumeric, underscores, hyphens and whitespaces
@@ -882,7 +891,9 @@ class Entanglements(commands.Cog):
         description="Attempts to delete the specified file. Supports and requires 2 arguments, being the filename, and location (aaaa|possum).",
     )
     @commands.is_owner()
-    async def dequantise(self, ctx, filename="", location=""):
+    async def dequantise(
+        self, ctx: commands.Context, filename: str = "", location: str = ""
+    ):
         if filename and location:
 
             data_dir = ""
@@ -937,7 +948,7 @@ class Entanglements(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def status(self, ctx):
+    async def status(self, ctx: commands.Context):
         await ctx.reply(
             f"""
 Current CPU Usage: {cpu_percent(1)}%
@@ -951,7 +962,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
     @commands.command()
     @commands.is_owner()
-    async def reboot(self, ctx):
+    async def reboot(self, ctx: commands.Context):
         await ctx.send("Shutting down extensions and rebooting...")
         for cog in listdir("./cogs"):
             if cog.endswith(".py"):
@@ -967,5 +978,5 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     print("Started Entanglements!")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Entanglements(bot))

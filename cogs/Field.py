@@ -112,7 +112,7 @@ class Fields(commands.Cog):
         brief="Pets another user, the bot or themselves a random amount.",
         description="Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 1 and 20 long pet.",
     )
-    async def pet(self, ctx: commands.Context, *, optional_user_or_object=""):
+    async def pet(self, ctx: commands.Context, *, optional_user_or_object: str = ""):
         quantum_amount = randint(1, 20)
         if quantum_amount == 1:
             verb = "time"
@@ -164,7 +164,7 @@ class Fields(commands.Cog):
         brief="Hugs another user, the bot or themselves a random amount.",
         description="Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 1 and 20 long hug.",
     )
-    async def hug(self, ctx: commands.Context, *, optional_user_or_object=""):
+    async def hug(self, ctx: commands.Context, *, optional_user_or_object: str = ""):
         quantum_amount = randint(1, 20)
         if quantum_amount == 1:
             verb = "time"
@@ -212,7 +212,9 @@ class Fields(commands.Cog):
         brief="Pets another user, the bot or themselves a large random amount.",
         description="Supports one argument, being whatever or whoever the user wants to pet. If no argument is included, the bot pets the user who ran the command. Does between a 100 and 1000 long pet.",
     )
-    async def quantumpet(self, ctx: commands.Context, *, optional_user_or_object=""):
+    async def quantumpet(
+        self, ctx: commands.Context, *, optional_user_or_object: str = ""
+    ):
         mention = f"<@{self.bot.user.id}>"
         quantum_amount = randint(100, 1000)
         qpets = "pe" + ("t" * int(str(quantum_amount)[:2])) + "s"
@@ -256,7 +258,9 @@ class Fields(commands.Cog):
         brief="Hugs another user, the bot or themselves a large random amount.",
         description="Supports one argument, being whatever or whoever the user wants to hug. If no argument is included, the bot hugs the user who ran the command. Does between a 100 and 1000 long hug.",
     )
-    async def quantumhug(self, ctx: commands.Context, *, optional_user_or_object=""):
+    async def quantumhug(
+        self, ctx: commands.Context, *, optional_user_or_object: str = ""
+    ):
         mention = f"<@{self.bot.user.id}>"
         quantum_amount = randint(100, 1000)
         qhugs = "hu" + ("g" * int(str(quantum_amount)[:2])) + "s"
@@ -292,7 +296,7 @@ class Fields(commands.Cog):
         brief="Rock, Paper, Scissors game.",
         description="A Rock, Paper, Scissors game. Supports one argument, being the chosen gesture. Emote is also supported. Is not rigged.",
     )
-    async def rps(self, ctx: commands.Context, *, item=""):
+    async def rps(self, ctx: commands.Context, *, item: str = ""):
         substring = [
             "rock",
             "rocks",
@@ -331,7 +335,7 @@ class Fields(commands.Cog):
         brief="aaaa search function.",
         description="Searches aaaa with the given argument and returns the results. Only takes one, and limited to a minimum of two characters, being alphanumeric as well as a dot.",
     )
-    async def aaaasearch(self, ctx: commands.Context, search_keyword=""):
+    async def aaaasearch(self, ctx: commands.Context, search_keyword: str = ""):
         if len(search_keyword) >= 2:
             allowed = compile("^(\.?)[a-zA-Z0-9]+(\.?)$")
             if allowed.match(search_keyword):
@@ -364,7 +368,7 @@ class Fields(commands.Cog):
         brief="Appends filename to aaaa.lobadk.com.",
         description="Appends the provided filename to the end of aaaa.lobadk.com/, to quickly link the file. Only alphanumeric characters and a dot is allowed.",
     )
-    async def a(self, ctx: commands.Context, filename=""):
+    async def a(self, ctx: commands.Context, filename: str = ""):
         if filename:
             allowed = compile("[^\w.\-]")
             if not allowed.match(filename):
@@ -404,7 +408,7 @@ class Fields(commands.Cog):
         brief="Search aaaa.lobadk.com and return a random result.",
         description="Queries aaaa.lobadk.com with the provided search, and returns a random file from it. Supports one argument",
     )
-    async def arsearch(self, ctx: commands.Context, search_keyword=""):
+    async def arsearch(self, ctx: commands.Context, search_keyword: str = ""):
         if search_keyword:
             allowed = compile("[^\w.\-]")
             if not allowed.match(search_keyword):
@@ -431,7 +435,7 @@ class Fields(commands.Cog):
         brief="Test if the bot works, and it's latency.",
         description="Tests if the bot is seeing the command as well as capable of responding. Supports one, but not required, argument, as 'latency'. If latency argument is used, tests and displays the one-way latency from your home, to Discord, and then to the bot (with a multiplication of 2 to simulate round-trip), as well as the round-trip latency between the bot and Discord.",
     )
-    async def ping(self, ctx: commands.Context, ping_mode=""):
+    async def ping(self, ctx: commands.Context, ping_mode: str = ""):
         LatencyResponses = [
             "Fiber is fast and all but they really should consider swapping to QuantumCables:tm:.",
             "You know, I could've quantised *at least* 100x the amount of data in that time.",

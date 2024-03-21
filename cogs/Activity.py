@@ -6,7 +6,7 @@ import logging
 
 
 class Activity(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
 
         self.bot = bot
 
@@ -124,7 +124,7 @@ class Activity(commands.Cog):
         ),
     )
     @commands.is_owner()
-    async def ActivityStop(self, ctx):
+    async def ActivityStop(self, ctx: commands.Context):
         if self.change_activity.is_running():
             self.change_activity.cancel()
             await ctx.message.add_reaction("👌")
@@ -148,7 +148,7 @@ class Activity(commands.Cog):
         ),
     )
     @commands.is_owner()
-    async def ActivityRestart(self, ctx):
+    async def ActivityRestart(self, ctx: commands.Context):
         self.change_activity.restart()
         await ctx.message.add_reaction("👌")
 
@@ -165,7 +165,7 @@ class Activity(commands.Cog):
         ),
     )
     @commands.is_owner()
-    async def ActivityStart(self, ctx):
+    async def ActivityStart(self, ctx: commands.Context):
         if not self.change_activity.is_running():
             self.change_activity.start()
             await ctx.message.add_reaction("👌")

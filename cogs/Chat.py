@@ -11,7 +11,7 @@ from discord.ext import commands
 
 
 class Chat(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
         self.db_conn = bot.db_conn
@@ -485,5 +485,5 @@ class Chat(commands.Cog):
     print("Started Chat!")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Chat(bot))

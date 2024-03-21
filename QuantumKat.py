@@ -88,7 +88,7 @@ for cog in listdir("./cogs"):
         initial_extensions.append(f"cogs.{path.splitext(cog)[0]}")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     if not ignoreMissingExe:
         for executable in executables:
             if not is_installed(executable):
