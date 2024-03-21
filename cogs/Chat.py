@@ -283,12 +283,12 @@ class Chat(commands.Cog):
                 tokens = await self.calculate_tokens(user_message)
                 if not tokens > 256:
                     command = ctx.invoked_with
-                    user_message = ctx.message.clean_content.split(
+                    user_message = ctx.message.content.split(
                         f"{self.bot.command_prefix}{command}", 1
                     )[1].strip()
                     for member in ctx.message.mentions:
                         user_message = user_message.replace(
-                            "@" + member.mention, member.display_name
+                            member.mention, member.display_name
                         )
                     conversation_history = await self.database_read(ctx, shared_chat)
                     async with ctx.typing():
