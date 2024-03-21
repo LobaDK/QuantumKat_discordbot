@@ -129,11 +129,12 @@ async def on_ready():
     )"""
     )
 
-    try:
-        bot.db_conn.execute(sql)
-        bot.db_conn.commit()
-    except sqlite3.Error as e:
-        logger.error(f"Error creating chat table: {e}")
+    for s in sql:
+        try:
+            bot.db_conn.execute(s)
+            bot.db_conn.commit()
+        except sqlite3.Error as e:
+            logger.error(f"Error creating chat table: {e}")
 
     bot.appinfo = await bot.application_info()
     quantum = ["reality", "universe", "dimension", "timeline"]
