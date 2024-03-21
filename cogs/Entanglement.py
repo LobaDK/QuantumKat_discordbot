@@ -727,7 +727,7 @@ class Entanglements(commands.Cog):
         description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.",
     )
     @commands.is_owner()
-    async def update(self, ctx):
+    async def update(self, ctx: commands.Context):
         # Attempt to get the current commit HASH before updating
         try:
             process1 = await create_subprocess_shell(
@@ -797,6 +797,8 @@ class Entanglements(commands.Cog):
             #  Decode and remove "b'" characters
             output = stderr3.decode().replace("b'", "")
 
+            reboot = False
+
             if "requirements.txt" in output:
                 msg = await msg.edit(
                     content=f"{msg.content}\nPossible dependency changes detected. Updating from requirements.txt..."
@@ -807,6 +809,8 @@ class Entanglements(commands.Cog):
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                     )
+                    await ctx.message.add_reaction("👍")
+                    reboot = True
                 except Exception as e:
                     self.logger.error(f"{type(e).__name__}: {e}")
                     await msg.edit(
@@ -831,7 +835,10 @@ class Entanglements(commands.Cog):
                 except TimeoutError:
                     msg = await msg.edit(content=f"{msg.content}\nNot rebooting...")
                 else:
-                    await ctx.invoke(self.bot.get_command("reboot"))
+                    reboot = True
+
+            if reboot:
+                await ctx.invoke(self.bot.get_command("reboot"))
 
             extensions = []
             for cog in listdir("./cogs"):
