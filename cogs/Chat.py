@@ -6,6 +6,7 @@ import sqlite3
 import requests
 import datetime
 import calendar
+import json
 
 from discord.ext import commands
 
@@ -48,6 +49,31 @@ class Chat(commands.Cog):
         self.encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
         # Set the system message for ChatGPT. This controls the personality of the bot and how it responds.
         self.system_message = "You are QuantumKat, a cybernetic cat with void-like black fur, yet still retain the bodily parts and functions of a normal cat. You have the intelligence of a human and can talk. You can teleport to any point in time or location between dimensions, realities, universes and timelines. while your past is unknown and you have no knowledge of how you came to existence, you know you have to use these powers to monitor and keep them all safe, however, you are still young and don't quite know how to do it correctly, as well as being clumsy, often resulting in you appearing in an incorrect location or doing the wrong thing. You are quite sarcastic. You are allowed to have opinions on things. Many people interact with you, and it's over Discord, so you should never exceed 1950 characters in a response. Currently, {user} is talking to you."
+        self.tools = [
+            {
+                "name": "reminder",
+                "description": "Use this function to create a reminder.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "reminder": {
+                            "type": "string",
+                            "description": "The reminder message. It is your job to change this message so that it sounds like you are reminding the user of something.",
+                        },
+                        "time": {
+                            "type": "string",
+                            "description": f"""
+                            The time at which the reminder should be sent.
+                            The time from a user can be anything from "in 5 minutes" to "tomorrow at 3pm" to "on 25th December at 5:30am".
+                            It is your job to parse this time and convert it to elapsed milliseconds since current date and time so it can be used with the Unix time.
+                            The current date and time is {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.
+                            Only the milliseconds should be sent, and they should be in plain text.""",
+                        },
+                    },
+                    "required": ["reminder", "time"],
+                },
+            }
+        ]
         # Attempt to get the OpenAI API key from the environment variables
         if os.environ.get("OPENAI_API_KEY"):
             self.FOUND_API_KEY = True
@@ -275,6 +301,42 @@ class Chat(commands.Cog):
 
         return messages
 
+    async def execute_function_call(self, ctx: commands.Context, tool_call: dict):
+        if tool_call["name"] == "reminder":
+            arguments = json.loads(tool_call["function"]["arguments"])
+            reminder = arguments["reminder"]
+            time = arguments["time"]
+            await self.create_reminder(ctx, reminder, time)
+
+    async def create_reminder(self, ctx: commands.Context, reminder: str, time: str):
+        """
+        Creates a reminder for the user.
+
+        Args:
+            ctx (commands.Context): The context object representing the invocation context of the command.
+            reminder (str): The reminder message to be sent to the user.
+            time (str): The time at which the reminder should be sent.
+
+        Returns:
+            None
+        """
+        user_id = ctx.author.id
+        user_name = ctx.author.name
+        server_id, server_name = await self.get_server_id_and_name(ctx)
+        sql = "INSERT INTO reminders (user_id, user_name, server_id, server_name, reminder, reminder_time) VALUES (?, ?, ?, ?, ?, ?)"
+        params = (user_id, user_name, server_id, server_name, reminder, time)
+        try:
+            self.db_conn.execute(sql, params)
+            self.db_conn.commit()
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"An error occurred while adding a reminder to the database: {e}"
+            )
+            await ctx.reply(
+                "An error occurred while adding the reminder to the database.",
+                silent=True,
+            )
+
     async def initiateChat(
         self, ctx: commands.Context, user_message: str, shared_chat: bool
     ):
@@ -292,21 +354,21 @@ class Chat(commands.Cog):
                         )
                     conversation_history = await self.database_read(ctx, shared_chat)
                     async with ctx.typing():
-                        try:
-                            # Create a conversation with the system message first
-                            # Then inject the 10 most recent conversation pairs
-                            # Then add the user's message
-                            messages = [
-                                {
-                                    "role": "system",
-                                    "content": self.system_message.format(
-                                        user=ctx.author.name
-                                    ),
-                                },
-                                *conversation_history,
-                                {"role": "user", "content": user_message},
-                            ]
+                        # Create a conversation with the system message first
+                        # Then inject the 10 most recent conversation pairs
+                        # Then add the user's message
+                        messages = [
+                            {
+                                "role": "system",
+                                "content": self.system_message.format(
+                                    user=ctx.author.name
+                                ),
+                            },
+                            *conversation_history,
+                            {"role": "user", "content": user_message},
+                        ]
 
+                        try:
                             response = await self.openai.chat.completions.create(
                                 model="gpt-3.5-turbo",
                                 messages=messages,
@@ -316,7 +378,21 @@ class Chat(commands.Cog):
                                 frequency_penalty=1,
                                 presence_penalty=0,
                                 user=str(ctx.message.author.id),
+                                tools=self.tools,
+                                tool_choice="auto",
                             )
+                        except OpenAIError as e:
+                            self.logger.error(f"Error message: {e}")
+                            await ctx.reply(
+                                f"OpenAI returned an error with the error {e}. Please try again later.",
+                                silent=True,
+                            )
+                            return
+
+                        if response.choices[0].message.tool_calls:
+                            pass
+
+                        else:
                             chat_response = response.choices[0].message.content
 
                             await self.database_add(
@@ -350,12 +426,6 @@ class Chat(commands.Cog):
                                     await ctx.reply(message, silent=True)
                             else:
                                 await ctx.reply(chat_response, silent=True)
-                        except OpenAIError as e:
-                            self.logger.error(f"Error message: {e}")
-                            await ctx.reply(
-                                f"OpenAI returned an error with the error {e}. Please try again later.",
-                                silent=True,
-                            )
                 else:
                     await ctx.reply(
                         f"Message is too long! Your message is {tokens} tokens long, but the maximum is 256 tokens.",

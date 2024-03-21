@@ -103,7 +103,10 @@ async def setup(bot: commands.Bot):
 
 @bot.event
 async def on_ready():
-    sql = """CREATE TABLE IF NOT EXISTS chat (
+    # TODO: Improve database. Maybe some many-to-many relationships to lessen repetitive data.
+    sql = []
+    sql.append(
+        """CREATE TABLE IF NOT EXISTS chat (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
@@ -113,6 +116,18 @@ async def on_ready():
     assistant_message TEXT NOT NULL,
     shared_chat INTEGER NOT NULL DEFAULT 0
     )"""
+    )
+    sql.append(
+        """CREATE TABLE IF NOT EXISTS reminders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    user_name TEXT NOT NULL,
+    server_id INTEGER NOT NULL,
+    server_name TEXT NOT NULL,
+    reminder TEXT NOT NULL,
+    reminder_time TEXT NOT NULL
+    )"""
+    )
 
     try:
         bot.db_conn.execute(sql)
