@@ -20,17 +20,21 @@ def is_installed(executable: str) -> bool:
 
 
 try:
-    mkdir('logs')
+    mkdir("logs")
 except FileExistsError:
     pass
 
-logger = logging.getLogger('discord.QuantumKat')
+logger = logging.getLogger("discord.QuantumKat")
 logger.setLevel(logging.INFO)
 
-handler = logging.FileHandler(filename='logs/quantumkat.log', encoding='utf-8', mode='a')
+handler = logging.FileHandler(
+    filename="logs/quantumkat.log", encoding="utf-8", mode="a"
+)
 
-date_format = '%Y-%m-%d %H:%M:%S'
-formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', datefmt=date_format, style='{')
+date_format = "%Y-%m-%d %H:%M:%S"
+formatter = logging.Formatter(
+    "[{asctime}] [{levelname:<8}] {name}: {message}", datefmt=date_format, style="{"
+)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -39,15 +43,15 @@ logger.addHandler(handler)
 ignoreMissingExe = False
 
 # List of required executables
-executables = ['ffmpeg', 'ffprobe', 'youtube-dl']
+executables = ["ffmpeg", "ffprobe", "youtube-dl"]
 
 # Load .env file which contains bot token and my user ID
 # and store in OS user environment variables
 load_dotenv()
 
 # Get the bot token and my user ID from the environment variables
-OWNER_ID = environ.get('OWNER_ID')
-TOKEN = environ.get('TOKEN')
+OWNER_ID = environ.get("OWNER_ID")
+TOKEN = environ.get("TOKEN")
 
 # If the bot token or my user ID is not set, exit the program
 if OWNER_ID is None or OWNER_ID == "":
@@ -65,19 +69,23 @@ intents.message_content = True
 intents.members = True
 
 # Sets the bot's command prefix, help command, intents, and adds my ID to owner_ids
-bot = commands.Bot(command_prefix='?',
-                   help_command=commands.DefaultHelpCommand(
-                       sort_commands=False, show_parameter_descriptions=False,
-                       width=100), intents=intents, owner_ids=[int(OWNER_ID)])
+bot = commands.Bot(
+    command_prefix="?",
+    help_command=commands.DefaultHelpCommand(
+        sort_commands=False, show_parameter_descriptions=False, width=100
+    ),
+    intents=intents,
+    owner_ids=[int(OWNER_ID)],
+)
 
-bot.db_conn = sqlite3.connect('quantumkat.db')
+bot.db_conn = sqlite3.connect("quantumkat.db")
 
 # Get and add cogs to a list
 initial_extensions = []
-for cog in listdir('./cogs'):
-    if cog.endswith('.py'):
-        logger.info(f'Loading cog: {cog}')
-        initial_extensions.append(f'cogs.{path.splitext(cog)[0]}')
+for cog in listdir("./cogs"):
+    if cog.endswith(".py"):
+        logger.info(f"Loading cog: {cog}")
+        initial_extensions.append(f"cogs.{path.splitext(cog)[0]}")
 
 
 async def setup(bot):
@@ -95,7 +103,7 @@ async def setup(bot):
 
 @bot.event
 async def on_ready():
-    sql = '''CREATE TABLE IF NOT EXISTS chat (
+    sql = """CREATE TABLE IF NOT EXISTS chat (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
@@ -104,7 +112,7 @@ async def on_ready():
     user_message TEXT NOT NULL,
     assistant_message TEXT NOT NULL,
     shared_chat INTEGER NOT NULL DEFAULT 0
-    )'''
+    )"""
 
     try:
         bot.db_conn.execute(sql)
@@ -113,8 +121,8 @@ async def on_ready():
         logger.error(f"Error creating chat table: {e}")
 
     bot.appinfo = await bot.application_info()
-    quantum = ['reality', 'universe', 'dimension', 'timeline']
-    message = (f'''
+    quantum = ["reality", "universe", "dimension", "timeline"]
+    message = f"""
 ----------info----------
 Application ID: {bot.appinfo.id}
 Application name: {bot.appinfo.name}
@@ -124,8 +132,9 @@ Latency to Discord: {int(bot.latency * 1000)}ms.
 Discord.py version: {__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000),
-    to="ordinal_num")} {choice(quantum)}!''')
+    to="ordinal_num")} {choice(quantum)}!"""
     logger.info(message)
     print(message)
+
 
 run(setup(bot))
