@@ -797,6 +797,22 @@ class Entanglements(commands.Cog):
             #  Decode and remove "b'" characters
             output = stderr3.decode().replace("b'", "")
 
+            if "requirements.txt" in output:
+                msg = await msg.edit(
+                    content=f"{msg.content}\nPossible dependency changes detected. Updating from requirements.txt..."
+                )
+                try:
+                    await create_subprocess_shell(
+                        "pip install -r requirements.txt",
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                    )
+                except Exception as e:
+                    self.logger.error(f"{type(e).__name__}: {e}")
+                    await msg.edit(
+                        content=f"{msg.content}\nError updating requirements.txt"
+                    )
+
             # Iterate through each listed file
             if "QuantumKat.py" in output:
                 msg = await msg.edit(
