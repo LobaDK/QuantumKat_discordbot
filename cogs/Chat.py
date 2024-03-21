@@ -310,7 +310,7 @@ class Chat(commands.Cog):
                                 top_p=1,
                                 frequency_penalty=1,
                                 presence_penalty=0,
-                                user=ctx.message.id,
+                                user=str(ctx.message.id),
                             )
                             chat_response = response.choices[0].message.content
 
