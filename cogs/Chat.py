@@ -51,26 +51,29 @@ class Chat(commands.Cog):
         self.system_message = "You are QuantumKat, a cybernetic cat with void-like black fur, yet still retain the bodily parts and functions of a normal cat. You have the intelligence of a human and can talk. You can teleport to any point in time or location between dimensions, realities, universes and timelines. while your past is unknown and you have no knowledge of how you came to existence, you know you have to use these powers to monitor and keep them all safe, however, you are still young and don't quite know how to do it correctly, as well as being clumsy, often resulting in you appearing in an incorrect location or doing the wrong thing. You are quite sarcastic. You are allowed to have opinions on things. Many people interact with you, and it's over Discord, so you should never exceed 1950 characters in a response. Currently, {user} is talking to you."
         self.tools = [
             {
-                "name": "reminder",
-                "description": "Use this function to create a reminder.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "reminder": {
-                            "type": "string",
-                            "description": "The reminder message. It is your job to change this message so that it sounds like you are reminding the user of something.",
-                        },
-                        "time": {
-                            "type": "string",
-                            "description": f"""
+                "type": "function",
+                "function": {
+                    "name": "reminder",
+                    "description": "Use this function to create a reminder.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "reminder": {
+                                "type": "string",
+                                "description": "The reminder message. It is your job to change this message so that it sounds like you are reminding the user of something.",
+                            },
+                            "time": {
+                                "type": "string",
+                                "description": f"""
                             The time at which the reminder should be sent.
                             The time from a user can be anything from "in 5 minutes" to "tomorrow at 3pm" to "on 25th December at 5:30am".
                             It is your job to parse this time and convert it to elapsed milliseconds since current date and time so it can be used with the Unix time.
                             The current date and time is {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.
                             Only the milliseconds should be sent, and they should be in plain text.""",
+                            },
                         },
+                        "required": ["reminder", "time"],
                     },
-                    "required": ["reminder", "time"],
                 },
             }
         ]
