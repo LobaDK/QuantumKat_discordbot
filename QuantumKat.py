@@ -5,7 +5,8 @@ from random import choice, randint
 from sys import exit
 
 import sqlite3
-import aiologger as logging
+import logging
+import logging.handlers
 from discord import Intents, __version__
 from discord.ext import commands
 from dotenv import load_dotenv

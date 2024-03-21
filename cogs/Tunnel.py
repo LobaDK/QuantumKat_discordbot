@@ -4,7 +4,7 @@ from datetime import datetime
 from discord.ext import commands
 from discord import Client
 
-import aiologger as logging
+import logging
 
 
 class Tunnel(commands.Cog):
