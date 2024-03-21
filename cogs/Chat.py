@@ -1,5 +1,5 @@
 from openai import AsyncOpenAI as OpenAI, OpenAIError
-import logging
+import aiologger as logging
 import tiktoken
 import os
 import sqlite3

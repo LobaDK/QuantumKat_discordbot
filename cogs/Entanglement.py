@@ -9,7 +9,7 @@ from shlex import quote
 from re import compile
 from pathlib import Path
 from requests import get
-import logging
+import aiologger as logging
 
 from discord import Message
 from discord.ext import commands

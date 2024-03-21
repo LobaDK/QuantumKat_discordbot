@@ -1,5 +1,5 @@
 from random import choice
-import logging
+import aiologger as logging
 
 from discord.ext import commands
 

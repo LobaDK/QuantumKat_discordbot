@@ -6,7 +6,7 @@ from urllib import parse
 from pathlib import Path
 from asyncio import create_subprocess_shell, subprocess
 from random import random
-import logging
+import aiologger as logging
 
 from discord.ext import commands
 from ntplib import NTPClient

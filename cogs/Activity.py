@@ -2,7 +2,7 @@ from random import randint, choice
 from discord import Game
 from discord.ext import commands, tasks
 from num2words import num2words
-import logging
+import aiologger as logging
 
 
 class Activity(commands.Cog):
