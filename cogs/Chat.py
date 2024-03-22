@@ -344,7 +344,10 @@ class Chat(commands.Cog):
             )
             self.db_conn.commit()
             server = self.bot.get_guild(server_id)
-            channel = server.get_channel(channel_id)
+            if channel_name != "DM":
+                channel = server.get_channel(channel_id)
+            else:
+                channel = await ctx.author.create_dm()
             user = await self.bot.fetch_user(user_id)
             self.logger.info(f"Reminder scheduled for {time / 1000} seconds from now.")
             cog = self.bot.get_cog("Activity")
