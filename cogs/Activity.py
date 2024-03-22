@@ -1,14 +1,19 @@
 from random import randint, choice
-from discord import Game
+from discord import Game, User, TextChannel, DMChannel
 from discord.ext import commands, tasks
 from num2words import num2words
 import logging
+import threading
+
+ONE_HOUR_IN_MILLISECONDS = 3_600_000
 
 
 class Activity(commands.Cog):
     def __init__(self, bot: commands.Bot):
 
         self.bot = bot
+
+        self.db_conn = bot.db_conn
 
         if "discord.Activity" in logging.Logger.manager.loggerDict:
             self.logger = logging.getLogger("discord.Activity")
@@ -78,6 +83,67 @@ class Activity(commands.Cog):
     def cog_unload(self):
         self.logger.info("Stopping Activity!")
         self.change_activity.cancel()
+
+    async def remind_user(
+        self,
+        user: User,
+        channel: TextChannel | DMChannel,
+        reminder_message: str,
+    ) -> None:
+        await channel.send(f"{user.mention}, {reminder_message}")
+
+    async def create_reminder(
+        self,
+        user: User,
+        channel: TextChannel | DMChannel,
+        reminder_id: int,
+        reminder_message: str,
+        reminder_time: int,
+    ) -> None:
+        self.logger.info(
+            f"Reminder {reminder_id} is scheduled for {reminder_time}ms from now."
+        )
+        threading.Timer(
+            reminder_time / 1000,
+            self.remind_user,
+            args=(user, channel, reminder_message),
+        ).start()
+        self.db_conn.execute(
+            """UPDATE reminders SET is_in_queue = 1 WHERE id = ?""",
+            (reminder_id,),
+        )
+        self.db_conn.commit()
+
+    async def check_reminder(self, reminder):
+        reminder_time = reminder[8]
+        is_in_queue = reminder[9]
+        if reminder_time <= ONE_HOUR_IN_MILLISECONDS and not is_in_queue:
+            user_id = reminder[1]
+            server_id = reminder[3]
+            channel_id = reminder[5]
+            server = self.bot.get_guild(server_id)
+            channel = server.get_channel(channel_id)
+            user = await self.bot.fetch_user(user_id)
+            reminder_message = reminder[7]
+            reminder_id = reminder[0]
+            await self.create_reminder(
+                user, channel, reminder_id, reminder_message, reminder_time
+            )
+
+    @tasks.loop(hours=1, count=None, reconnect=True)
+    async def reminder_listener(self):
+        reminders = self.db_conn.execute(
+            """SELECT * FROM reminders WHERE is_in_queue = 0"""
+        ).fetchall()
+
+        for reminder in reminders:
+            self.check_reminder(reminder)
+
+    @reminder_listener.before_loop
+    async def before_reminder_listener(self):
+        self.logger.info("Starting Reminder listener...")
+        await self.bot.wait_until_ready()
+        self.logger.info("Reminder listener started!")
 
     # command splitter for easier reading and navigating
 

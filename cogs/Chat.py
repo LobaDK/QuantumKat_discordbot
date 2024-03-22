@@ -10,6 +10,8 @@ import json
 
 from discord.ext import commands
 
+ONE_HOUR_IN_MILLISECONDS = 3_600_000
+
 
 class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -277,11 +279,22 @@ class Chat(commands.Cog):
         return messages
 
     async def execute_function_call(self, ctx: commands.Context, tool_call: dict):
+        """
+        Executes a function call based on the provided tool_call dictionary.
+
+        Args:
+            ctx (commands.Context): The context of the command.
+            tool_call (dict): A dictionary representing the function call.
+
+        Returns:
+            None
+        """
         if tool_call.function.name == "reminder":
             arguments = json.loads(tool_call.function.arguments)
             reminder = arguments["reminder"]
             time = arguments["time"]
             confirmation_message = arguments["confirmation_message"]
+            await ctx.reply(confirmation_message, silent=True)
             await self.create_reminder(ctx, reminder, time)
 
     async def create_reminder(self, ctx: commands.Context, reminder: str, time: str):
@@ -298,9 +311,21 @@ class Chat(commands.Cog):
         """
         user_id = ctx.author.id
         user_name = ctx.author.name
+        channel_id = ctx.channel.id
+        channel_name = ctx.channel.name
         server_id, server_name = await self.get_server_id_and_name(ctx)
-        sql = "INSERT INTO reminders (user_id, user_name, server_id, server_name, reminder, reminder_time) VALUES (?, ?, ?, ?, ?, ?)"
-        params = (user_id, user_name, server_id, server_name, reminder, time)
+        sql = "INSERT INTO reminders (user_id, user_name, server_id, server_name, channel_id, channel_name, reminder, reminder_time, is_in_queue) VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?)"
+        params = (
+            user_id,
+            user_name,
+            server_id,
+            server_name,
+            channel_id,
+            channel_name,
+            reminder,
+            time,
+            0,
+        )
         try:
             self.db_conn.execute(sql, params)
             self.db_conn.commit()
@@ -312,6 +337,18 @@ class Chat(commands.Cog):
                 "An error occurred while adding the reminder to the database.",
                 silent=True,
             )
+        if time <= ONE_HOUR_IN_MILLISECONDS:
+            self.db_conn.execute(
+                """UPDATE reminders SET is_in_queue = 1 WHERE user_id = ? AND server_id = ? AND channel_id = ? AND reminder = ? AND reminder_time = ?""",
+                (user_id, server_id, channel_id, reminder, time),
+            )
+            self.db_conn.commit()
+            server = self.bot.get_guild(server_id)
+            channel = server.get_channel(channel_id)
+            user = await self.bot.fetch_user(user_id)
+            self.logger.info(f"Reminder scheduled for {time / 1000} seconds from now.")
+            cog = self.bot.get_cog("Activity")
+            await cog.create_reminder(user, channel, user_id, reminder, time)
 
     async def get_tools(self, ctx: commands.Context) -> list:
         tools = [
@@ -333,7 +370,8 @@ class Chat(commands.Cog):
                                 "type": "string",
                                 "description": f"""
                                 The confirmation message being sent to the user.
-                                It will be used to confirm what the reminder is about and when it will be sent.
+                                it is your job to make sure it sounds like you're confirming their reminder.
+                                The confirmation message should always contain the thing that the user is being reminded of and the time at which the reminder will be sent.
                                 Their username is {ctx.author.name}.""",
                             },
                             "time": {
