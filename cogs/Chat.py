@@ -292,19 +292,19 @@ class Chat(commands.Cog):
         if tool_call.function.name == "reminder":
             arguments = json.loads(tool_call.function.arguments)
             reminder = arguments["reminder"]
-            time = arguments["time"]
+            time = int(arguments["time"])
             confirmation_message = arguments["confirmation_message"]
             await ctx.reply(confirmation_message, silent=True)
             await self.create_reminder(ctx, reminder, time)
 
-    async def create_reminder(self, ctx: commands.Context, reminder: str, time: str):
+    async def create_reminder(self, ctx: commands.Context, reminder: str, time: int):
         """
         Creates a reminder for the user.
 
         Args:
             ctx (commands.Context): The context object representing the invocation context of the command.
             reminder (str): The reminder message to be sent to the user.
-            time (str): The time at which the reminder should be sent.
+            time (int): The time at which the reminder should be sent.
 
         Returns:
             None
@@ -337,7 +337,6 @@ class Chat(commands.Cog):
                 "An error occurred while adding the reminder to the database.",
                 silent=True,
             )
-        time = int(time)
         if time <= ONE_HOUR_IN_MILLISECONDS:
             self.db_conn.execute(
                 """UPDATE reminders SET is_in_queue = 1 WHERE user_id = ? AND server_id = ? AND channel_id = ? AND reminder = ? AND reminder_time = ?""",
@@ -349,7 +348,7 @@ class Chat(commands.Cog):
             user = await self.bot.fetch_user(user_id)
             self.logger.info(f"Reminder scheduled for {time / 1000} seconds from now.")
             cog = self.bot.get_cog("Activity")
-            await cog.create_reminder(user, channel, user_id, reminder, time)
+            await cog.start_reminder(user, channel, user_id, reminder, time)
 
     async def get_tools(self, ctx: commands.Context) -> list:
         tools = [
