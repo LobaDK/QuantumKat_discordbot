@@ -8,6 +8,7 @@ import datetime
 import calendar
 import json
 import discord
+import time
 
 from discord.ext import commands
 
@@ -293,12 +294,14 @@ class Chat(commands.Cog):
         if tool_call.function.name == "reminder":
             arguments = json.loads(tool_call.function.arguments)
             reminder = arguments["reminder"]
-            time = int(arguments["time"])
+            reminder_time = int(arguments["time"])
             confirmation_message = arguments["confirmation_message"]
             await ctx.reply(confirmation_message, silent=True)
-            await self.create_reminder(ctx, reminder, time)
+            await self.create_reminder(ctx, reminder, reminder_time)
 
-    async def create_reminder(self, ctx: commands.Context, reminder: str, time: int):
+    async def create_reminder(
+        self, ctx: commands.Context, reminder: str, reminder_time: int
+    ):
         """
         Creates a reminder for the user.
 
@@ -324,7 +327,7 @@ class Chat(commands.Cog):
             channel_id,
             channel_name,
             reminder,
-            time,
+            int(time.time() * 1000) + reminder_time,
             0,
         )
         try:
@@ -338,7 +341,7 @@ class Chat(commands.Cog):
                 "An error occurred while adding the reminder to the database.",
                 silent=True,
             )
-        if time <= ONE_HOUR_IN_MILLISECONDS:
+        if reminder_time <= ONE_HOUR_IN_MILLISECONDS:
             self.db_conn.execute(
                 """UPDATE reminders SET is_in_queue = 1 WHERE user_id = ? AND server_id = ? AND channel_id = ? AND reminder = ? AND reminder_time = ?""",
                 (user_id, server_id, channel_id, reminder, time),
@@ -375,6 +378,7 @@ class Chat(commands.Cog):
                                 "description": f"""
                                 The confirmation message being sent to the user.
                                 it is your job to make sure it sounds like you're confirming their reminder.
+                                It should start with something like "Sure thing!" or "Got it!".
                                 The confirmation message should always contain the thing that the user is being reminded of and the time at which the reminder will be sent.
                                 Their username is {ctx.author.name}.""",
                             },
@@ -447,45 +451,43 @@ class Chat(commands.Cog):
                             )
                             return
 
-                        if response.choices[0].message.tool_calls:
-                            await self.execute_function_call(
-                                ctx, response.choices[0].message.tool_calls[0]
-                            )
+                    if response.choices[0].message.tool_calls:
+                        await self.execute_function_call(
+                            ctx, response.choices[0].message.tool_calls[0]
+                        )
 
+                    else:
+                        chat_response = response.choices[0].message.content
+
+                        await self.database_add(
+                            ctx, user_message, chat_response, shared_chat
+                        )
+
+                        messages = []
+                        for message in conversation_history:
+                            messages.append(
+                                f"{message['role'].title()}: {message['content']}"
+                            )
+                        messages = "\n".join(messages)
+
+                        username = ctx.author.name
+                        user_id = ctx.author.id
+                        server_id, server_name = await self.get_server_id_and_name(ctx)
+
+                        self.historylogger.info(
+                            f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message} [History]: {messages}."
+                        )
+                        self.logger.info(
+                            f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message}. [Response]: {chat_response}. [Tokens]: {response.usage.total_tokens} tokens used in total."
+                        )
+                        if len(chat_response) > 2000:
+                            chat_response = await self.split_message_by_sentence(
+                                chat_response
+                            )
+                            for message in chat_response:
+                                await ctx.reply(message, silent=True)
                         else:
-                            chat_response = response.choices[0].message.content
-
-                            await self.database_add(
-                                ctx, user_message, chat_response, shared_chat
-                            )
-
-                            messages = []
-                            for message in conversation_history:
-                                messages.append(
-                                    f"{message['role'].title()}: {message['content']}"
-                                )
-                            messages = "\n".join(messages)
-
-                            username = ctx.author.name
-                            user_id = ctx.author.id
-                            server_id, server_name = await self.get_server_id_and_name(
-                                ctx
-                            )
-
-                            self.historylogger.info(
-                                f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message} [History]: {messages}."
-                            )
-                            self.logger.info(
-                                f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message}. [Response]: {chat_response}. [Tokens]: {response.usage.total_tokens} tokens used in total."
-                            )
-                            if len(chat_response) > 2000:
-                                chat_response = await self.split_message_by_sentence(
-                                    chat_response
-                                )
-                                for message in chat_response:
-                                    await ctx.reply(message, silent=True)
-                            else:
-                                await ctx.reply(chat_response, silent=True)
+                            await ctx.reply(chat_response, silent=True)
                 else:
                     await ctx.reply(
                         f"Message is too long! Your message is {tokens} tokens long, but the maximum is 256 tokens.",

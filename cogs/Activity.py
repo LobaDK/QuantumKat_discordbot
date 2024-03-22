@@ -3,7 +3,8 @@ from discord import Game, User, TextChannel, DMChannel
 from discord.ext import commands, tasks
 from num2words import num2words
 import logging
-import threading
+import asyncio
+import time
 
 ONE_HOUR_IN_MILLISECONDS = 3_600_000
 
@@ -106,11 +107,8 @@ class Activity(commands.Cog):
         self.logger.info(
             f"Reminder {reminder_id} is scheduled for {reminder_time}ms from now."
         )
-        threading.Timer(
-            reminder_time / 1000,
-            self.remind_user,
-            args=(user, channel, reminder_message),
-        ).start()
+        await asyncio.sleep(reminder_time / 1000)
+        await self.remind_user(user, channel, reminder_message)
         self.db_conn.execute(
             """UPDATE reminders SET is_in_queue = 1 WHERE id = ?""",
             (reminder_id,),
@@ -119,6 +117,7 @@ class Activity(commands.Cog):
 
     async def check_reminder(self, reminder):
         reminder_time = reminder[8]
+        reminder_time = int(time.time() * 1000) - reminder_time
         is_in_queue = reminder[9]
         if reminder_time <= ONE_HOUR_IN_MILLISECONDS and not is_in_queue:
             user_id = reminder[1]
@@ -144,6 +143,9 @@ class Activity(commands.Cog):
 
     @reminder_listener.before_loop
     async def before_reminder_listener(self):
+        self.db_conn.execute(
+            "UPDATE reminders SET is_in_queue = 0 WHERE is_in_queue = 1"
+        )
         self.logger.info("Starting Reminder listener...")
         await self.bot.wait_until_ready()
         self.logger.info("Reminder listener started!")
