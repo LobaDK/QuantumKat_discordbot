@@ -337,6 +337,7 @@ class Chat(commands.Cog):
                 "An error occurred while adding the reminder to the database.",
                 silent=True,
             )
+        time = int(time)
         if time <= ONE_HOUR_IN_MILLISECONDS:
             self.db_conn.execute(
                 """UPDATE reminders SET is_in_queue = 1 WHERE user_id = ? AND server_id = ? AND channel_id = ? AND reminder = ? AND reminder_time = ?""",

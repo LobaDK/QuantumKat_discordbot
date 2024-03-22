@@ -92,7 +92,7 @@ class Activity(commands.Cog):
     ) -> None:
         await channel.send(f"{user.mention}, {reminder_message}")
 
-    async def create_reminder(
+    async def start_reminder(
         self,
         user: User,
         channel: TextChannel | DMChannel,
@@ -126,7 +126,7 @@ class Activity(commands.Cog):
             user = await self.bot.fetch_user(user_id)
             reminder_message = reminder[7]
             reminder_id = reminder[0]
-            await self.create_reminder(
+            await self.start_reminder(
                 user, channel, reminder_id, reminder_message, reminder_time
             )
 
