@@ -119,7 +119,7 @@ async def setup(bot: commands.Bot):
     channel_id INTEGER NOT NULL,
     channel_name TEXT NOT NULL,
     reminder TEXT NOT NULL,
-    reminder_time TEXT NOT NULL
+    reminder_time TEXT NOT NULL,
     is_in_queue INTEGER NOT NULL DEFAULT 0
     )"""
     )
