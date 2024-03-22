@@ -376,13 +376,13 @@ class Chat(commands.Cog):
                                 Their username is {ctx.author.name}.""",
                             },
                             "time": {
-                                "type": "string",
+                                "type": "integer",
                                 "description": f"""
-                            The time at which the reminder should be sent.
+                            The time at which the reminder should be sent in milliseconds.
                             The time from a user can be anything from "in 5 minutes" to "tomorrow at 3pm" to "on 25th December at 5:30am".
-                            It is your job to parse this time and convert it to elapsed milliseconds since current date and time so it can be used with the Unix time.
+                            It is your job to parse this time and convert it to elapsed milliseconds since current date and user specified time so it can be used with the Unix time.
                             The current date and time is {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.
-                            Only the milliseconds should be sent, and they should be in plain text.""",
+                            Only the milliseconds should be sent""",
                             },
                         },
                         "required": ["reminder", "time", "confirmation_message"],
