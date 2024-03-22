@@ -312,7 +312,7 @@ class Chat(commands.Cog):
         user_id = ctx.author.id
         user_name = ctx.author.name
         channel_id = ctx.channel.id
-        channel_name = ctx.channel.name
+        channel_name = ctx.channel.name if ctx.guild is not None else "DM"
         server_id, server_name = await self.get_server_id_and_name(ctx)
         sql = "INSERT INTO reminders (user_id, user_name, server_id, server_name, channel_id, channel_name, reminder, reminder_time, is_in_queue) VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?)"
         params = (
