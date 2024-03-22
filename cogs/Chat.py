@@ -7,6 +7,7 @@ import requests
 import datetime
 import calendar
 import json
+import discord
 
 from discord.ext import commands
 
@@ -344,9 +345,9 @@ class Chat(commands.Cog):
             )
             self.db_conn.commit()
             server = self.bot.get_guild(server_id)
-            if channel_name != "DM":
+            if isinstance(ctx.channel, discord.TextChannel):
                 channel = server.get_channel(channel_id)
-            else:
+            elif isinstance(ctx.channel, discord.DMChannel):
                 channel = await ctx.author.create_dm()
             user = await self.bot.fetch_user(user_id)
             self.logger.info(f"Reminder scheduled for {time / 1000} seconds from now.")

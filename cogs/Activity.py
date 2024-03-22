@@ -90,7 +90,10 @@ class Activity(commands.Cog):
         channel: TextChannel | DMChannel,
         reminder_message: str,
     ) -> None:
-        await channel.send(f"{user.mention}, {reminder_message}")
+        if isinstance(channel, DMChannel):
+            await channel.send(reminder_message)
+        elif isinstance(channel, TextChannel):
+            await channel.send(f"{user.mention}, {reminder_message}")
 
     async def start_reminder(
         self,
