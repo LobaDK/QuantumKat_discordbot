@@ -95,14 +95,6 @@ async def setup(bot: commands.Bot):
                 logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
-    # Iterate through each cog and start it
-    for extension in initial_extensions:
-        await bot.load_extension(extension)
-    await bot.start(TOKEN, reconnect=True)
-
-
-@bot.event
-async def on_ready():
     # TODO: Improve database. Maybe some many-to-many relationships to lessen repetitive data.
     sql = []
     sql.append(
@@ -124,18 +116,30 @@ async def on_ready():
     user_name TEXT NOT NULL,
     server_id INTEGER NOT NULL,
     server_name TEXT NOT NULL,
+    channel_id INTEGER NOT NULL,
+    channel_name TEXT NOT NULL,
     reminder TEXT NOT NULL,
     reminder_time TEXT NOT NULL
+    is_in_queue INTEGER NOT NULL DEFAULT 0
     )"""
     )
+    sql.append("UPDATE reminders SET is_in_queue = 0 WHERE is_in_queue = 1")
 
     for s in sql:
         try:
             bot.db_conn.execute(s)
             bot.db_conn.commit()
         except sqlite3.Error as e:
-            logger.error(f"Error creating chat table: {e}")
+            logger.error(f"Error creating table: {e}")
 
+    # Iterate through each cog and start it
+    for extension in initial_extensions:
+        await bot.load_extension(extension)
+    await bot.start(TOKEN, reconnect=True)
+
+
+@bot.event
+async def on_ready():
     bot.appinfo = await bot.application_info()
     quantum = ["reality", "universe", "dimension", "timeline"]
     message = f"""
