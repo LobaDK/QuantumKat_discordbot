@@ -996,6 +996,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                         parameters = command.params
                         if parameters:
                             message = reply_message.content
+                            reply_ctx = await self.bot.get_context(reply_message)
                             # Remove the first and second parameter, which is self and ctx
                             parameters = dict(
                                 itertools.islice(command.params.items(), 2, None)
@@ -1005,7 +1006,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                                 await ctx.reply(
                                     f"Retrying command {command}... with no parameters. That's pretty lazy, don't you think?",
                                 )
-                                await ctx.invoke(command)
+                                await reply_ctx.invoke(command)
                             # check if it's positional or variable keyword, or keyword only
                             elif len(parameters) == 1:
                                 parameter = list(parameters.values())[0]
@@ -1018,21 +1019,21 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                                     await ctx.reply(
                                         f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
                                     )
-                                    await ctx.invoke(
+                                    await reply_ctx.invoke(
                                         command, **{parameter_name: message}
                                     )
                                 elif parameter_kind == Parameter.KEYWORD_ONLY:
                                     await ctx.reply(
                                         f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
                                     )
-                                    await ctx.invoke(command, message)
+                                    await reply_ctx.invoke(command, message)
                             elif len(parameters) > 1:
                                 message = shlex.split(message)
                                 if len(message) == len(parameters):
                                     await ctx.reply(
                                         f"Retrying command {command}... with {len(parameters)} parameters.",
                                     )
-                                    await ctx.invoke(command, *message)
+                                    await reply_ctx.invoke(command, *message)
                                 else:
                                     await ctx.reply(
                                         f"Command {command} requires {len(parameters)} parameters, but {len(message)} were given.",
