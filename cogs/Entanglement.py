@@ -985,7 +985,11 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
         if ctx.message.reference:
             reply_message = await ctx.fetch_message(ctx.message.reference.message_id)
             if reply_message:
-                if reply_message.content.startswith(self.bot.command_prefix):
+                if reply_message.content.startswith(
+                    self.bot.command_prefix
+                ) and not reply_message.content.startswith(
+                    f"{self.bot.command_prefix}retry"
+                ):
                     command = self.bot.get_command(
                         reply_message.content.split(" ")[0].replace(
                             self.bot.command_prefix, ""
@@ -993,51 +997,45 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                     )
                     if command:
                         parameters = command.params
-                        if parameters:
-                            message = reply_message.content
-                            reply_ctx = await self.bot.get_context(reply_message)
-                            # If there are no parameters, just invoke the command
-                            if len(parameters) == 0:
-                                await ctx.reply(
-                                    f"Retrying command {command}... with no parameters. That's pretty lazy, don't you think?",
-                                )
-                                await reply_ctx.invoke(command)
-                            # check if it's positional or variable keyword, or keyword only
-                            elif len(parameters) == 1:
-                                parameter = list(parameters.values())[0]
-                                parameter_name = parameter.name
-                                parameter_kind = parameter.kind
-                                if (
-                                    parameter_kind == Parameter.POSITIONAL_OR_KEYWORD
-                                    or parameter_kind == Parameter.VAR_KEYWORD
-                                ):
-                                    await ctx.reply(
-                                        f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
-                                    )
-                                    await reply_ctx.invoke(
-                                        command, **{parameter_name: message}
-                                    )
-                                elif parameter_kind == Parameter.KEYWORD_ONLY:
-                                    await ctx.reply(
-                                        f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
-                                    )
-                                    await reply_ctx.invoke(command, message)
-                            elif len(parameters) > 1:
-                                message = shlex.split(message)
-                                if len(message) == len(parameters):
-                                    await ctx.reply(
-                                        f"Retrying command {command}... with {len(parameters)} parameters.",
-                                    )
-                                    await reply_ctx.invoke(command, *message)
-                                else:
-                                    await ctx.reply(
-                                        f"Command {command} requires {len(parameters)} parameters, but {len(message)} were given.",
-                                    )
-                        else:
+                        message = " ".join(reply_message.content.split(" ")[1:])
+                        reply_ctx = await self.bot.get_context(reply_message)
+                        # If there are no parameters, just invoke the command
+                        if len(parameters) == 0:
                             await ctx.reply(
-                                "Failed to get parameters from the command!",
-                                silent=True,
+                                f"Retrying command {command}... with no parameters. That's pretty lazy, don't you think?",
                             )
+                            await reply_ctx.invoke(command)
+                        # check if it's positional or variable keyword, or keyword only
+                        elif len(parameters) == 1:
+                            parameter = list(parameters.values())[0]
+                            parameter_name = parameter.name
+                            parameter_kind = parameter.kind
+                            if (
+                                parameter_kind == Parameter.POSITIONAL_OR_KEYWORD
+                                or parameter_kind == Parameter.VAR_KEYWORD
+                            ):
+                                await ctx.reply(
+                                    f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
+                                )
+                                await reply_ctx.invoke(
+                                    command, **{parameter_name: message}
+                                )
+                            elif parameter_kind == Parameter.KEYWORD_ONLY:
+                                await ctx.reply(
+                                    f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
+                                )
+                                await reply_ctx.invoke(command, message)
+                        elif len(parameters) > 1:
+                            message = shlex.split(message)
+                            if len(message) == len(parameters):
+                                await ctx.reply(
+                                    f"Retrying command {command}... with {len(parameters)} parameters.",
+                                )
+                                await reply_ctx.invoke(command, *message)
+                            else:
+                                await ctx.reply(
+                                    f"Command {command} requires {len(parameters)} parameters, but {len(message)} were given.",
+                                )
                     else:
                         await ctx.reply(
                             "Failed to get command from replied message or command doesn't exist!",
