@@ -10,6 +10,9 @@ from re import compile
 from pathlib import Path
 from requests import get
 import logging
+import itertools
+from inspect import Parameter
+import shlex
 
 from discord import Message
 from discord.ext import commands
@@ -976,6 +979,85 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     # command splitter for easier reading and navigating
 
     print("Started Entanglements!")
+
+    @commands.command()
+    @commands.is_owner()
+    async def retry(self, ctx: commands.Context):
+        if ctx.message.reference:
+            reply_message = await ctx.fetch_message(ctx.message.reference.message_id)
+            if reply_message:
+                if reply_message.content.startswith(self.bot.command_prefix):
+                    command = self.bot.get_command(
+                        reply_message.content.split(" ")[0].replace(
+                            self.bot.command_prefix, ""
+                        )
+                    )
+                    if command:
+                        parameters = command.params
+                        if parameters:
+                            message = reply_message.content
+                            # Remove the first and second parameter, which is self and ctx
+                            parameters = dict(
+                                itertools.islice(command.params.items(), 2, None)
+                            )
+                            # If there are no parameters, just invoke the command
+                            if len(parameters) == 0:
+                                await ctx.reply(
+                                    f"Retrying command {command}... with no parameters. That's pretty lazy, don't you think?",
+                                )
+                                await ctx.invoke(command)
+                            # check if it's positional or variable keyword, or keyword only
+                            elif len(parameters) == 1:
+                                parameter = list(parameters.values())[0]
+                                parameter_name = parameter.name
+                                parameter_kind = parameter.kind
+                                if (
+                                    parameter_kind == Parameter.POSITIONAL_OR_KEYWORD
+                                    or parameter_kind == Parameter.VAR_KEYWORD
+                                ):
+                                    await ctx.reply(
+                                        f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
+                                    )
+                                    await ctx.invoke(
+                                        command, **{parameter_name: message}
+                                    )
+                                elif parameter_kind == Parameter.KEYWORD_ONLY:
+                                    await ctx.reply(
+                                        f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
+                                    )
+                                    await ctx.invoke(command, message)
+                            elif len(parameters) > 1:
+                                message = shlex.split(message)
+                                if len(message) == len(parameters):
+                                    await ctx.reply(
+                                        f"Retrying command {command}... with {len(parameters)} parameters.",
+                                    )
+                                    await ctx.invoke(command, *message)
+                                else:
+                                    await ctx.reply(
+                                        f"Command {command} requires {len(parameters)} parameters, but {len(message)} were given.",
+                                    )
+                        else:
+                            await ctx.reply(
+                                "Failed to get parameters from the command!",
+                                silent=True,
+                            )
+                    else:
+                        await ctx.reply(
+                            "Failed to get command from replied message or command doesn't exist!",
+                            silent=True,
+                        )
+                else:
+                    await ctx.reply(
+                        "A message with a valid command `?` needs to be replied to when this is used!",
+                        silent=True,
+                    )
+            else:
+                await ctx.reply("Failed to get reply or message is empty!", silent=True)
+        else:
+            await ctx.reply(
+                "You need to be replying to a message to use this command!", silent=True
+            )
 
 
 async def setup(bot: commands.Bot):
