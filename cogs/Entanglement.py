@@ -10,7 +10,6 @@ from re import compile
 from pathlib import Path
 from requests import get
 import logging
-import itertools
 from inspect import Parameter
 import shlex
 
@@ -997,10 +996,6 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                         if parameters:
                             message = reply_message.content
                             reply_ctx = await self.bot.get_context(reply_message)
-                            # Remove the first and second parameter, which is self and ctx
-                            parameters = dict(
-                                itertools.islice(command.params.items(), 2, None)
-                            )
                             # If there are no parameters, just invoke the command
                             if len(parameters) == 0:
                                 await ctx.reply(
