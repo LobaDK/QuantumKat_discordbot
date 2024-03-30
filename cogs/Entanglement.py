@@ -83,7 +83,7 @@ class Entanglements(commands.Cog):
         except OSError as e:
             await ctx.reply(f"Error getting file type: {e}", silent=True)
             self.logger.error("Error getting file type", exc_info=True)
-            return
+            return None
         file_extension = await self.get_mime_type(mime_type)
         return file_extension
 
@@ -420,15 +420,6 @@ class Entanglements(commands.Cog):
 
             while True:
 
-                if not Path(filename).suffix:
-                    file_extension = await self.get_file_type(
-                        ctx, str(Path(data_dir, filename))
-                    )
-                    msg = await msg.edit(
-                        content=f"{msg.content} \nFile extension detected: {file_extension}"
-                    )
-                    filename = f"{filename}{file_extension}"
-
                 # If the filename already exists
                 if Path(data_dir, filename).exists():
 
@@ -466,11 +457,25 @@ class Entanglements(commands.Cog):
 
                         quantizer.write(block)
 
-                    await msg.edit(
-                        content=f"{msg.content} \nSuccess! Data quantized to {data_domain}{filename}",
-                        suppress=True,
+                if not Path(filename).suffix:
+                    file_extension = await self.get_file_type(
+                        ctx, str(Path(data_dir, filename))
                     )
-                    return
+                    if not file_extension:
+                        return
+                    msg = await msg.edit(
+                        content=f"{msg.content} \nFile extension detected: {file_extension}"
+                    )
+                    rename(
+                        f"{Path(data_dir, filename)}",
+                        f"{Path(data_dir, filename)}{file_extension}",
+                    )
+                    filename = f"{filename}{file_extension}"
+                await msg.edit(
+                    content=f"{msg.content} \nSuccess! Data quantized to {data_domain}{filename}",
+                    suppress=True,
+                )
+                return
 
         # If mode is 'yt' i.e. requires yt-dlp
         elif mode.casefold() == "yt":
