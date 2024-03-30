@@ -1,6 +1,6 @@
 from asyncio import create_subprocess_shell, subprocess
 from json import loads
-from os import execl, listdir, remove, rename, stat, system
+from os import execl, listdir, remove, rename, stat
 from random import choice, randint
 from string import ascii_letters, digits
 from sys import argv, executable
@@ -860,11 +860,12 @@ class Entanglements(commands.Cog):
                     content=f"{msg.content}\nPossible dependency changes detected. Updating from requirements.txt..."
                 )
                 try:
-                    await create_subprocess_shell(
+                    proc = await create_subprocess_shell(
                         "pip install -r requirements.txt",
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                     )
+                    proc.wait()
                     await ctx.message.add_reaction("👍")
                     reboot = True
                 except Exception as e:
@@ -874,7 +875,7 @@ class Entanglements(commands.Cog):
                     )
 
             # Iterate through each listed file
-            if "QuantumKat.py" in output:
+            if "QuantumKat.py" in output and not reboot:
                 msg = await msg.edit(
                     content=f"{msg.content}\nMain script updated, reboot?"
                 )
