@@ -1,6 +1,6 @@
 from asyncio import create_subprocess_shell, subprocess
 from json import loads
-from os import execl, listdir, remove, rename, stat
+from os import execl, listdir, remove, rename, stat, system
 from random import choice, randint
 from string import ascii_letters, digits
 from sys import argv, executable
@@ -13,6 +13,8 @@ import logging
 from inspect import Parameter
 import shlex
 
+import mimetypes
+import magic
 import discord
 from discord.ext import commands
 from num2words import num2words
@@ -51,6 +53,39 @@ class Entanglements(commands.Cog):
     possum_domain = "https://possum.lobadk.com/"
 
     characters = f"{ascii_letters}{digits}"
+
+    async def get_mime_type(self, mime_type: str) -> str:
+        """
+        Returns the file extension corresponding to the given MIME type.
+
+        Parameters:
+        - mime_type (str): The MIME type for which to determine the file extension.
+
+        Returns:
+        - str: The file extension corresponding to the given MIME type.
+        """
+        return mimetypes.guess_extension(mime_type)
+
+    async def get_file_type(self, ctx: commands.Context, filename: str) -> str:
+        """
+        Retrieves the file type of a given filename.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - filename (str): The name of the file.
+
+        Returns:
+        - str: The file extension of the given file.
+        """
+        mime = magic.Magic(mime=True)
+        try:
+            mime_type = mime.from_file(filename)
+        except OSError as e:
+            await ctx.reply(f"Error getting file type: {e}", silent=True)
+            self.logger.error("Error getting file type", exc_info=True)
+            return
+        file_extension = await self.get_mime_type(mime_type)
+        return file_extension
 
     async def parameter_kind_to_string(self, parameter: Parameter) -> str:
         """
@@ -385,18 +420,14 @@ class Entanglements(commands.Cog):
 
             while True:
 
-                # If the URL contains a file extension at the end
-                # and the input filename does not
-                # split and add the extension to the filename
-                if Path(URL).suffix and not Path(filename).suffix:
-                    filename = f"{filename}{Path(URL).suffix[:4].lower()}"
-
-                # If the filename doesn't contain a file extension either
-                elif not Path(filename).suffix:
-                    await ctx.reply(
-                        "No file extension was found for the filename!", silent=True
+                if not Path(filename).suffix:
+                    file_extension = await self.get_file_type(
+                        ctx, str(Path(data_dir, filename))
                     )
-                    return
+                    msg = await msg.edit(
+                        content=f"{msg.content} \nFile extension detected: {file_extension}"
+                    )
+                    filename = f"{filename}{file_extension}"
 
                 # If the filename already exists
                 if Path(data_dir, filename).exists():
