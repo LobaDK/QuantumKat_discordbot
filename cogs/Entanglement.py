@@ -1016,6 +1016,8 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @commands.command()
     @commands.is_owner()
     async def reboot(self, ctx: commands.Context):
+        with open("rebooted", "w") as f:
+            f.write(f"{ctx.message.id}\n{ctx.channel.id}\n{ctx.guild.id}")
         await ctx.send("Shutting down extensions and rebooting...")
         for cog in listdir("./cogs"):
             if cog.endswith(".py"):

@@ -7,6 +7,7 @@ from sys import exit
 import sqlite3
 import logging
 import logging.handlers
+from pathlib import Path
 from discord import Intents, __version__
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -99,6 +100,19 @@ async def setup(bot: commands.Bot):
     for extension in initial_extensions:
         await bot.load_extension(extension)
     await bot.start(TOKEN, reconnect=True)
+
+    if Path("rebooted").exists():
+        with open("rebooted", "r") as f:
+            IDs = f.read()
+        # Order: message ID, channel ID, guild ID
+        IDs = IDs.split("\n")
+        message = await bot.get_channel(int(IDs[1])).fetch_message(int(IDs[0]))
+        if message:
+            await message.edit(content="Rebooted successfully!")
+        else:
+            # if the message is not found, instead send a message to the bot owner
+            await bot.get_user(int(OWNER_ID)).send("Rebooted successfully!")
+        Path("rebooted").unlink()
 
 
 @bot.event
