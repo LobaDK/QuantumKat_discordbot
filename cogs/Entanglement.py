@@ -870,7 +870,7 @@ class Entanglements(commands.Cog):
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                     )
-                    proc.wait()
+                    await proc.wait()
                     await ctx.message.add_reaction("👍")
                     reboot = True
                 except Exception as e:
