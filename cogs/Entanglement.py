@@ -1045,7 +1045,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                         # If there are no parameters, just invoke the command
                         if len(parameters) == 0:
                             await ctx.reply(
-                                f"Retrying command {command}... with no parameters. That's pretty lazy, don't you think?",
+                                f"Retrying command `{command}`... with no parameters. That's pretty lazy, don't you think?",
                             )
                             await reply_ctx.invoke(command)
                         # check if it's positional or variable keyword, or keyword only
@@ -1058,14 +1058,14 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                                 or parameter_kind == Parameter.VAR_KEYWORD
                             ):
                                 await ctx.reply(
-                                    f"Retrying command {command}... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
+                                    f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
                                 )
                                 await reply_ctx.invoke(
                                     command, **{parameter_name: message}
                                 )
                             elif parameter_kind == Parameter.KEYWORD_ONLY:
                                 await ctx.reply(
-                                    f"Retrying command {command}... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
+                                    f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
                                 )
                                 await reply_ctx.invoke(command, message)
                         elif len(parameters) > 1:
@@ -1073,12 +1073,12 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                             message = shlex.split(message)
                             if len(message) == len(parameters):
                                 await ctx.reply(
-                                    f"Retrying command {command}... with {len(parameters)} parameters of types {', '.join([await self.parameter_kind_to_string(parameter) for parameter in parameters.values()])}.",
+                                    f"Retrying command `{self.bot.command_prefix}{command}`... with {len(parameters)} parameters of types {', '.join([await self.parameter_kind_to_string(parameter) for parameter in parameters.values()])}.",
                                 )
                                 await reply_ctx.invoke(command, *message)
                             else:
                                 await ctx.reply(
-                                    f"Command {command} requires {len(parameters)} parameters, but {len(message)} were given.",
+                                    f"Command `{self.bot.command_prefix}{command}` requires {len(parameters)} parameters, but {len(message)} were given.",
                                 )
                     else:
                         await ctx.reply(
