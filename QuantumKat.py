@@ -126,9 +126,15 @@ async def on_ready():
             IDs = f.read()
         # Order: message ID, channel ID, guild ID
         IDs = IDs.split("\n")
-        message = await bot.get_channel(int(IDs[1])).fetch_message(int(IDs[0]))
+        try:
+            message = await bot.get_channel(int(IDs[1])).fetch_message(int(IDs[0]))
+        except Exception:
+            logger.error("Error fetching message to edit", exc_info=True)
         if message:
-            await message.edit(content="Rebooted successfully!")
+            try:
+                await message.edit(content=f"{message.content} Rebooted successfully!")
+            except Exception:
+                logger.error("Error editing message", exc_info=True)
         else:
             # if the message is not found, instead send a message to the bot owner
             await bot.get_user(int(OWNER_ID)).send("Rebooted successfully!")
