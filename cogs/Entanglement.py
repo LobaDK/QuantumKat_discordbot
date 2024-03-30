@@ -13,7 +13,7 @@ import logging
 from inspect import Parameter
 import shlex
 
-from discord import Message
+import discord
 from discord.ext import commands
 from num2words import num2words
 from psutil import cpu_percent, disk_usage, virtual_memory
@@ -51,6 +51,20 @@ class Entanglements(commands.Cog):
     possum_domain = "https://possum.lobadk.com/"
 
     characters = f"{ascii_letters}{digits}"
+
+    async def parameter_kind_to_string(self, parameter: Parameter) -> str:
+        """
+        Converts the parameter kind to a string representation.
+
+        Args:
+            parameter (Parameter): The parameter to convert.
+
+        Returns:
+            str: The string representation of the parameter kind.
+        """
+        parameter_kind = parameter.kind.name
+        parameter_kind_string = parameter_kind.replace("_", " ").capitalize()
+        return parameter_kind_string
 
     async def getvideometadata(self, data_dir: str, filename: str) -> dict:
         arg2 = (
@@ -834,7 +848,7 @@ class Entanglements(commands.Cog):
                     content=f"{msg.content}\nMain script updated, reboot?"
                 )
 
-                def check(m: Message):  # m = discord.Message.
+                def check(m: discord.Message):
                     return (
                         m.author.id == ctx.author.id
                         and m.channel.id == ctx.channel.id
@@ -982,22 +996,51 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @commands.command()
     @commands.is_owner()
     async def retry(self, ctx: commands.Context):
+        # Check if the user is replying to a message
         if ctx.message.reference:
-            reply_message = await ctx.fetch_message(ctx.message.reference.message_id)
+            try:
+                # Attempt to get the message that was replied to
+                reply_message = await ctx.fetch_message(
+                    ctx.message.reference.message_id
+                )
+            except discord.NotFound:
+                message = "Failed to get reply or message doesn't exist!"
+                await ctx.reply(message, silent=True)
+                self.logger.error(message, exc_info=True)
+                return
+            except discord.Forbidden:
+                message = "I don't have permission to fetch the message!"
+                await ctx.reply(message, silent=True)
+                self.logger.error(message, exc_info=True)
+                return
+            except discord.HTTPException:
+                message = "Unknown error trying to fetch the message!"
+                await ctx.reply(message, silent=True)
+                self.logger.error(message, exc_info=True)
+                return
+
             if reply_message:
+                # Check if the replied message is a command, and is not the retry command, to avoid infinite loops
                 if reply_message.content.startswith(
                     self.bot.command_prefix
                 ) and not reply_message.content.startswith(
                     f"{self.bot.command_prefix}retry"
                 ):
+                    # Attempt to get the internal command object from the command name in the replied message
                     command = self.bot.get_command(
                         reply_message.content.split(" ")[0].replace(
                             self.bot.command_prefix, ""
                         )
                     )
-                    if command:
+                    # Check if the command was found
+                    if command is not None:
+                        # Get a dictionary of the command's parameters
                         parameters = command.params
+                        # Get the message content after the command name
                         message = " ".join(reply_message.content.split(" ")[1:])
+                        # Get the context of the replied message.
+                        # This is used to invoke the command and provides the context needed
+                        # for the command to properly run if it's context-sensitive
                         reply_ctx = await self.bot.get_context(reply_message)
                         # If there are no parameters, just invoke the command
                         if len(parameters) == 0:
@@ -1015,21 +1058,22 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                                 or parameter_kind == Parameter.VAR_KEYWORD
                             ):
                                 await ctx.reply(
-                                    f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
+                                    f"Retrying command {command}... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
                                 )
                                 await reply_ctx.invoke(
                                     command, **{parameter_name: message}
                                 )
                             elif parameter_kind == Parameter.KEYWORD_ONLY:
                                 await ctx.reply(
-                                    f"Retrying command {command}... with 1 parameter of type {parameter_kind}.",
+                                    f"Retrying command {command}... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
                                 )
                                 await reply_ctx.invoke(command, message)
                         elif len(parameters) > 1:
+                            # Split the message into a list of parameters. This is done using shlex to allow for quoted strings
                             message = shlex.split(message)
                             if len(message) == len(parameters):
                                 await ctx.reply(
-                                    f"Retrying command {command}... with {len(parameters)} parameters.",
+                                    f"Retrying command {command}... with {len(parameters)} parameters of types {', '.join([await self.parameter_kind_to_string(parameter) for parameter in parameters.values()])}.",
                                 )
                                 await reply_ctx.invoke(command, *message)
                             else:
