@@ -101,19 +101,6 @@ async def setup(bot: commands.Bot):
         await bot.load_extension(extension)
     await bot.start(TOKEN, reconnect=True)
 
-    if Path("rebooted").exists():
-        with open("rebooted", "r") as f:
-            IDs = f.read()
-        # Order: message ID, channel ID, guild ID
-        IDs = IDs.split("\n")
-        message = await bot.get_channel(int(IDs[1])).fetch_message(int(IDs[0]))
-        if message:
-            await message.edit(content="Rebooted successfully!")
-        else:
-            # if the message is not found, instead send a message to the bot owner
-            await bot.get_user(int(OWNER_ID)).send("Rebooted successfully!")
-        Path("rebooted").unlink()
-
 
 @bot.event
 async def on_ready():
@@ -133,6 +120,19 @@ async def on_ready():
         bot.db_conn.commit()
     except sqlite3.Error as e:
         logger.error(f"Error creating chat table: {e}")
+
+    if Path("rebooted").exists():
+        with open("rebooted", "r") as f:
+            IDs = f.read()
+        # Order: message ID, channel ID, guild ID
+        IDs = IDs.split("\n")
+        message = await bot.get_channel(int(IDs[1])).fetch_message(int(IDs[0]))
+        if message:
+            await message.edit(content="Rebooted successfully!")
+        else:
+            # if the message is not found, instead send a message to the bot owner
+            await bot.get_user(int(OWNER_ID)).send("Rebooted successfully!")
+        Path("rebooted").unlink()
 
     bot.appinfo = await bot.application_info()
     quantum = ["reality", "universe", "dimension", "timeline"]
