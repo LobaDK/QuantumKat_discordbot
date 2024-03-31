@@ -1032,8 +1032,11 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
     print("Started Entanglements!")
 
-    @commands.command()
-    @commands.is_owner()
+    @commands.command(
+        alias=["try"],
+        brief="Retries a command.",
+        description="Retries a command with the same parameters as the original command. Requires a command to be replied to.",
+    )
     async def retry(self, ctx: commands.Context):
         # Check if the user is replying to a message
         if ctx.message.reference:
@@ -1057,80 +1060,84 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                 await ctx.reply(message, silent=True)
                 self.logger.error(message, exc_info=True)
                 return
-
-            if reply_message:
-                # Check if the replied message is a command, and is not the retry command, to avoid infinite loops
-                if reply_message.content.startswith(
-                    self.bot.command_prefix
-                ) and not reply_message.content.startswith(
-                    f"{self.bot.command_prefix}retry"
-                ):
-                    # Attempt to get the internal command object from the command name in the replied message
-                    command = self.bot.get_command(
-                        reply_message.content.split(" ")[0].replace(
-                            self.bot.command_prefix, ""
-                        )
-                    )
-                    # Check if the command was found
-                    if command is not None:
-                        # Get a dictionary of the command's parameters
-                        parameters = command.params
-                        # Get the message content after the command name
-                        message = " ".join(reply_message.content.split(" ")[1:])
-                        # Get the context of the replied message.
-                        # This is used to invoke the command and provides the context needed
-                        # for the command to properly run if it's context-sensitive
-                        reply_ctx = await self.bot.get_context(reply_message)
-                        # If there are no parameters, just invoke the command
-                        if len(parameters) == 0:
-                            await ctx.reply(
-                                f"Retrying command `{command}`... with no parameters. That's pretty lazy, don't you think?",
+            if ctx.author.id == reply_message.author.id:
+                if reply_message:
+                    # Check if the replied message is a command, and is not the retry command, to avoid infinite loops
+                    if reply_message.content.startswith(
+                        self.bot.command_prefix
+                    ) and not reply_message.content.startswith(
+                        f"{self.bot.command_prefix}retry"
+                    ):
+                        # Attempt to get the internal command object from the command name in the replied message
+                        command = self.bot.get_command(
+                            reply_message.content.split(" ")[0].replace(
+                                self.bot.command_prefix, ""
                             )
-                            await reply_ctx.invoke(command)
-                        # check if it's positional or variable keyword, or keyword only
-                        elif len(parameters) == 1:
-                            parameter = list(parameters.values())[0]
-                            parameter_name = parameter.name
-                            parameter_kind = parameter.kind
-                            if (
-                                parameter_kind == Parameter.POSITIONAL_OR_KEYWORD
-                                or parameter_kind == Parameter.VAR_KEYWORD
-                            ):
+                        )
+                        # Check if the command was found
+                        if command is not None:
+                            # Get a dictionary of the command's parameters
+                            parameters = command.params
+                            # Get the message content after the command name
+                            message = " ".join(reply_message.content.split(" ")[1:])
+                            # Get the context of the replied message.
+                            # This is used to invoke the command and provides the context needed
+                            # for the command to properly run if it's context-sensitive
+                            reply_ctx = await self.bot.get_context(reply_message)
+                            # If there are no parameters, just invoke the command
+                            if len(parameters) == 0:
                                 await ctx.reply(
-                                    f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
+                                    f"Retrying command `{command}`... with no parameters. That's pretty lazy, don't you think?",
                                 )
-                                await reply_ctx.invoke(
-                                    command, **{parameter_name: message}
-                                )
-                            elif parameter_kind == Parameter.KEYWORD_ONLY:
-                                await ctx.reply(
-                                    f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
-                                )
-                                await reply_ctx.invoke(command, message)
-                        elif len(parameters) > 1:
-                            # Split the message into a list of parameters. This is done using shlex to allow for quoted strings
-                            message = shlex.split(message)
-                            if len(message) == len(parameters):
-                                await ctx.reply(
-                                    f"Retrying command `{self.bot.command_prefix}{command}`... with {len(parameters)} parameters of types {', '.join([await self.parameter_kind_to_string(parameter) for parameter in parameters.values()])}.",
-                                )
-                                await reply_ctx.invoke(command, *message)
-                            else:
-                                await ctx.reply(
-                                    f"Command `{self.bot.command_prefix}{command}` requires {len(parameters)} parameters, but {len(message)} were given.",
-                                )
+                                await reply_ctx.invoke(command)
+                            # check if it's positional or variable keyword, or keyword only
+                            elif len(parameters) == 1:
+                                parameter = list(parameters.values())[0]
+                                parameter_name = parameter.name
+                                parameter_kind = parameter.kind
+                                if (
+                                    parameter_kind == Parameter.POSITIONAL_OR_KEYWORD
+                                    or parameter_kind == Parameter.VAR_KEYWORD
+                                ):
+                                    await ctx.reply(
+                                        f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
+                                    )
+                                    await reply_ctx.invoke(
+                                        command, **{parameter_name: message}
+                                    )
+                                elif parameter_kind == Parameter.KEYWORD_ONLY:
+                                    await ctx.reply(
+                                        f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
+                                    )
+                                    await reply_ctx.invoke(command, message)
+                            elif len(parameters) > 1:
+                                # Split the message into a list of parameters. This is done using shlex to allow for quoted strings
+                                message = shlex.split(message)
+                                if len(message) == len(parameters):
+                                    await ctx.reply(
+                                        f"Retrying command `{self.bot.command_prefix}{command}`... with {len(parameters)} parameters of types {', '.join([await self.parameter_kind_to_string(parameter) for parameter in parameters.values()])}.",
+                                    )
+                                    await reply_ctx.invoke(command, *message)
+                                else:
+                                    await ctx.reply(
+                                        f"Command `{self.bot.command_prefix}{command}` requires {len(parameters)} parameters, but {len(message)} were given.",
+                                    )
+                        else:
+                            await ctx.reply(
+                                "Failed to get command from replied message or command doesn't exist!",
+                                silent=True,
+                            )
                     else:
                         await ctx.reply(
-                            "Failed to get command from replied message or command doesn't exist!",
+                            "A message with a valid command `?` needs to be replied to when this is used!",
                             silent=True,
                         )
                 else:
                     await ctx.reply(
-                        "A message with a valid command `?` needs to be replied to when this is used!",
-                        silent=True,
+                        "Failed to get reply or message is empty!", silent=True
                     )
             else:
-                await ctx.reply("Failed to get reply or message is empty!", silent=True)
+                await ctx.reply("You can only retry your own commands!", silent=True)
         else:
             await ctx.reply(
                 "You need to be replying to a message to use this command!", silent=True
