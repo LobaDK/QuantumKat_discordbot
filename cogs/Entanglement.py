@@ -785,7 +785,7 @@ class Entanglements(commands.Cog):
 
     @commands.command(
         brief="(Bot owner only) Fetches new updates and reloads all changed/updated cogs/extensions.",
-        description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful.",
+        description="Fetches the newest version by running 'git pull' and then reloads the cogs/extensions if successful. If the bot's main script has been updated, it will ask if you want to reboot the bot. If any dependencies have been updated, it will automatically update them.",
     )
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
@@ -999,7 +999,9 @@ class Entanglements(commands.Cog):
 
     # command splitter for easier reading and navigating
 
-    @commands.command()
+    @commands.command(
+        brief="(Bot owner only) Displays some basic system usage information."
+    )
     @commands.is_owner()
     async def status(self, ctx: commands.Context):
         await ctx.reply(
@@ -1013,7 +1015,10 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
     # command splitter for easier reading and navigating
 
-    @commands.command()
+    @commands.command(
+        brief="(Bot owner only) Restarts the main script and all extensions.",
+        description="Restarts the main script and all extensions. Useful for when the main script has been updated.",
+    )
     @commands.is_owner()
     async def reboot(self, ctx: commands.Context):
         msg = await ctx.send("Shutting down extensions and rebooting...")
