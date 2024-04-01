@@ -69,7 +69,6 @@ class Chat(commands.Cog):
 
         if os.environ.get("OPENAI_SESSION_KEY"):
             self.session_key = os.environ.get("OPENAI_SESSION_KEY")
-            self.openai = OpenAI(api_key=os.environ.get("OPENAI_SESSION_KEY"))
         else:
             self.session_key = None
             self.logger.error(
