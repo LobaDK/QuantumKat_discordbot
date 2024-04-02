@@ -204,12 +204,9 @@ class Chat(commands.Cog):
                 silent=True,
             )
 
-    async def get_usage(self, ctx: commands.Context) -> dict:
+    async def get_usage(self) -> dict:
         """
         Retrieves the usage statistics for the OpenAI API key.
-
-        Args:
-            ctx (commands.Context): The context object representing the invocation context of the command.
 
         Returns:
             dict: A dictionary containing the usage statistics for the OpenAI API key.
@@ -218,23 +215,12 @@ class Chat(commands.Cog):
         month = f"{month:02}"
         year = datetime.datetime.now().year
         last_day = calendar.monthrange(year, int(month))[1]
-        try:
-            response = requests.get(
-                f"https://api.openai.com/dashboard/billing/usage?end_date={year}-{month}-{last_day}&start_date={year}-{month}-01",
-                headers={"Authorization": f"Bearer {self.session_key}"},
-            )
-            self.logger.info(response.json())
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            self.logger.error(
-                f"An error occurred while retrieving the usage statistics for the OpenAI API key: {e}"
-            )
-            await ctx.reply(
-                "An error occurred while retrieving the usage statistics for the OpenAI API key.",
-                silent=True,
-            )
-            return {}
+        response = requests.get(
+            f"https://api.openai.com/dashboard/billing/usage?end_date={year}-{month}-{last_day}&start_date={year}-{month}-01",
+            headers={"Authorization": f"Bearer {self.session_key}"},
+        )
+        response.raise_for_status()
+        return response.json()
 
     async def get_server_id_and_name(self, ctx: commands.Context) -> tuple:
         """
@@ -574,7 +560,16 @@ class Chat(commands.Cog):
             messages.append("Chat commands are disabled. OpenAI API key not found.")
 
         if self.session_key:
-            usage = await self.get_usage(ctx)
+            try:
+                usage = await self.get_usage()
+            except requests.exceptions.RequestException:
+                self.logger.error(
+                    "An error occurred while retrieving the usage statistics for the OpenAI API key",
+                    exc_info=True,
+                )
+                messages.append(
+                    "An error occurred while retrieving the usage statistics for the OpenAI API key."
+                )
             if usage:
                 messages.append(
                     "OpenAI API key usage: {:.2f}$ of tokens used this month.".format(
