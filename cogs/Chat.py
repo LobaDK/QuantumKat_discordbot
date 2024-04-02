@@ -286,6 +286,17 @@ class Chat(commands.Cog):
     async def initiateChat(
         self, ctx: commands.Context, user_message: str, shared_chat: bool
     ):
+        """
+        Initiates a chat conversation with the OpenAI chat model.
+
+        Args:
+            ctx (commands.Context): The context object representing the command invocation.
+            user_message (str): The message input by the user.
+            shared_chat (bool): Indicates whether the chat is shared among multiple users.
+
+        Returns:
+            None
+        """
         if self.FOUND_API_KEY is True:
             if user_message:
                 tokens = await self.calculate_tokens(user_message)
@@ -380,10 +391,30 @@ class Chat(commands.Cog):
             )
 
     async def initiatechatclear(self, ctx: commands.Context, shared_chat: bool):
+        """
+        Clears the chat history for the server.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - shared_chat (bool): Indicates whether the chat history is shared across servers.
+
+        Returns:
+        None
+        """
         await self.database_remove(ctx, shared_chat)
         await ctx.reply("Chat history cleared for this server.", silent=True)
 
     async def initiatechatview(self, ctx: commands.Context, shared_chat: bool):
+        """
+        Initiates a chat view for the specified context and shared_chat flag.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation context.
+        - shared_chat (bool): A flag indicating whether to retrieve shared chat history or not.
+
+        Returns:
+        None
+        """
         if shared_chat:
             conversation_history = await self.database_read(ctx, True)
         else:
@@ -409,6 +440,16 @@ class Chat(commands.Cog):
         description="Talk to QuantumKat in a chat shared with all users, using the OpenAI API/ChatGPT. Is not shared between servers.",
     )
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
+        """
+        Initiates a shared chat session with the bot.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - user_message (str): The user's message to start the conversation.
+
+        Returns:
+        None
+        """
         await self.initiateChat(ctx, user_message, True)
 
     @commands.command(
@@ -417,6 +458,16 @@ class Chat(commands.Cog):
         description="Talk to QuantumKat using the OpenAI API/ChatGPT. Each user has their own chat history. Is not shared between servers.",
     )
     async def Chat(self, ctx: commands.Context, *, user_message=""):
+        """
+        Initiates a user-separated chat session with the bot.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - user_message (str): The user's message to start the conversation.
+
+        Returns:
+        None
+        """
         await self.initiateChat(ctx, user_message, False)
 
     @commands.command(
@@ -425,6 +476,15 @@ class Chat(commands.Cog):
         description="Clears the chat history in the current server, for the user that started the command.",
     )
     async def ChatClear(self, ctx: commands.Context):
+        """
+        Clears the chat for the user initiating the command.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation context.
+
+        Returns:
+        - None
+        """
         await self.initiatechatclear(ctx, False)
 
     @commands.command(
@@ -433,6 +493,15 @@ class Chat(commands.Cog):
         description="Clears the shared chat history in the current server. Only server and bot owner, and mods can do this.",
     )
     async def SharedChatClear(self, ctx: commands.Context):
+        """
+        Clears the shared chat history if the user has the necessary permissions.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation of the command.
+
+        Returns:
+        None
+        """
         application = await self.bot.application_info()
         if (
             ctx.author.id == ctx.guild.owner.id
@@ -453,6 +522,15 @@ class Chat(commands.Cog):
         description="View the chat history in the current server, for the user that started the command.",
     )
     async def ChatView(self, ctx: commands.Context):
+        """
+        Retrieves the chat history for the user initiating the command.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+
+        Returns:
+        - None
+        """
         await self.initiatechatview(ctx, False)
 
     @commands.command(
@@ -461,6 +539,15 @@ class Chat(commands.Cog):
         description="View the shared chat history in the current server.",
     )
     async def SharedChatView(self, ctx: commands.Context):
+        """
+        Retrieves the shared chat history for the server.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation context.
+
+        Returns:
+        - None
+        """
         await self.initiatechatview(ctx, True)
 
     @commands.command(
@@ -469,6 +556,15 @@ class Chat(commands.Cog):
         description="Check the status of the chat commands, including the OpenAI API key status.",
     )
     async def ChatStatus(self, ctx: commands.Context):
+        """
+        Retrieves the status of chat commands and OpenAI API key usage.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation context.
+
+        Returns:
+        - None
+        """
         messages = []
         if self.FOUND_API_KEY:
             messages.append(
