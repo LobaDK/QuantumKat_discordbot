@@ -26,7 +26,8 @@ The cogs are split up into different groups of purposes/accessibility.
 `Activity` is anything that requires or uses a loop, and also limited to the bot owner.  
 `Tunnel` is background code for handling exceptions, or listening to specific actions.  
 `Control` is anything used to control either the bot, or manage the users in the server, and is a mix of bot-owner, server-owner and admin/mod-limited commands.  
-`Chat` Is used to chat with the bot via OpenAI/ChatGPT and manage it's chat history.
+`Chat` Is used to chat with the bot via OpenAI/ChatGPT and manage it's chat history.  
+`Auth` Is used to authenticate the bot with the server it is in. Without being authenticated (Approved) by the owner, all commands in that server will fail with an appropriate message.
 
 # Features
 
@@ -95,6 +96,11 @@ In case the bot is in a server that the bot owner is not in, and wish the bot to
 ### Clear the chat history
 `?Chatclear`Clears the entire chat history for the user, in the current server, that initiated the command. Useful in case the prompts are starting to return garbage/deteriorated text, or they just wanna start new a chat.
 ### shared[command]
-`?Shared[command]` All commands have an additional shared version where a prompt is not tied to a specific user i.e. everyone in a server is sharing the same history. The only difference in the commands here is that clearing is limited to the bot owner, server owner and server moderators
+`?Shared[command]` All commands have an additional shared version where a prompt is not tied to a specific user i.e. everyone in a server is sharing the same history. The only difference in the commands here is that clearing is limited to the bot owner, server owner and server moderators.
 ### View chat status
-`?chatstatus` Checks and shows if there's an API key present. If there's also a session key, it attempts to get the current monthly total spending
+`?chatstatus` Checks and shows if there's an API key present. If there's also a session key, it attempts to get the current monthly total spending.
+## Auth
+### Authenticating the bot
+`auth` Before any commands from the bot can be used within a new server, a server admin/mod, the owner, or the bot owner, must run this command to request approval. Regardless if the request is approved or denied, the server will get added to the database, with a flag respective to the choice. If it's approved, it can run commands, and if it's denied, it will prevent subsequent approval requests, as well as any commands from being run. If the owner has not decided within 5 minutes, the command will simply time out.
+### Removing an approved server from the list
+`deauth` Can be used to remove a server that has previously been approved. If nothing is specified, it assume the current server should be deauthenticated. If a server ID or name is included, it will attempt to look it up in the database and remove it from the list. For obvious reasons, deauthenticating a specific server is limited to the bot owner.
