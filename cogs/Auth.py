@@ -137,6 +137,8 @@ class Auth(commands.Cog):
                 content=f"{server_msg.content}\nRequest timed out. Please try again later."
             )
 
+    print("Started Auth!")
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Auth(bot))
