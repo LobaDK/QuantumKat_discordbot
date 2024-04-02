@@ -1,5 +1,4 @@
 from discord.ext import commands, tasks
-import discord
 import asyncio
 
 
@@ -9,10 +8,18 @@ class Auth(commands.Cog):
         self.db_conn = bot.db_conn
         self.authenticated_server_ids = []
         self.denied_server_ids = []
-        self.check_auth.start()
+        self.update_auth.start()
+
+    async def is_privileged_user(self, ctx: commands.Context) -> bool:
+        return (
+            ctx.author.guild_permissions.administrator
+            or ctx.author.guild_permissions.manage_guild
+            or ctx.author.id == ctx.guild.owner_id
+            or ctx.author.id == self.bot.owner_ids[0]
+        )
 
     @tasks.loop(seconds=10, count=None, reconnect=True)
-    async def check_auth(self) -> None:
+    async def update_auth(self) -> None:
         """
         Periodically checks the authentication status of servers.
 
@@ -28,33 +35,9 @@ class Auth(commands.Cog):
         self.authenticated_server_ids = [server[1] for server in authenticated_servers]
         self.denied_server_ids = [server[1] for server in denied_servers]
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message) -> None:
-        """
-        Handles the event when a command is invoked.
-
-        Parameters:
-        - message (discord.Message): The message object representing the command invocation.
-
-        Returns:
-        - None
-
-        Raises:
-        - None
-        """
-        if not message.author.bot:
-            if message.content.startswith(self.bot.command_prefix):
-                if message.guild.id not in self.authenticated_server_ids:
-                    await message.reply(
-                        "This server is not authenticated to use this bot. Please run `?auth` to authenticate this server.",
-                        silent=True,
-                    )
-                    return
-                else:
-                    await self.bot.process_commands(message)
-
-    @commands.command()
-    async def auth(self, ctx: commands.Context) -> None:
+    @commands.command(aliases=["requestauth", "auth"])
+    @commands.cooldown(1, 300, commands.BucketType.guild)
+    async def request_auth(self, ctx: commands.Context) -> None:
         """
         Authenticates a server by sending a request to the bot owner for approval.
 
@@ -72,12 +55,7 @@ class Auth(commands.Cog):
                 "This server has been denied authentication. Please contact the bot owner for more information."
             )
             return
-        if (
-            not ctx.author.guild_permissions.administrator
-            and not ctx.author.guild_permissions.manage_guild
-            and not ctx.author.id == ctx.guild.owner_id
-            and not ctx.author.id == self.bot.owner_ids[0]
-        ):
+        if not self.is_privileged_user(ctx):
             await ctx.send(
                 "You must be a server admin/moderator, owner or the bot owner to request authentication."
             )
@@ -131,7 +109,7 @@ class Auth(commands.Cog):
                 self.db_conn.commit()
                 return
             self.db_conn.execute(
-                "INSERT INTO authenticated_servers (server_id, server_name, authenticated_by_id, authenticated_by_name) VALUES (?, ?, ?, ?)",
+                "INSERT INTO authenticated_servers (server_id, server_name, authenticated_by_id, authenticated_by_name, is_authenticated) VALUES (?, ?, ?, ?, 1)",
                 (ctx.guild.id, ctx.guild.name, ctx.author.id, ctx.author.name),
             )
             self.db_conn.commit()
@@ -141,6 +119,51 @@ class Auth(commands.Cog):
         else:
             await server_msg.edit(
                 content=f"{server_msg.content}\nRequest timed out. Please try again later."
+            )
+
+    @commands.command()
+    async def deauth(
+        self, ctx: commands.Context, server_id_or_name: int | str = ""
+    ) -> None:
+        """
+        Deauthenticates a server.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation of the command.
+        - server_id_or_name (int | str): Optional. The ID or name of the server to deauthenticate.
+
+        Returns:
+        None
+        """
+        if server_id_or_name:
+            if ctx.author.id != self.bot.owner_ids[0]:
+                await ctx.send("You must be the bot owner to deauthenticate a server.")
+                return
+            server = self.db_conn.execute(
+                "SELECT * FROM authenticated_servers WHERE server_id = ? OR server_name = ?",
+                (server_id_or_name, server_id_or_name),
+            ).fetchone()
+            if server is None:
+                await ctx.send("Server not found.")
+                return
+            self.db_conn.execute(
+                "DELETE FROM authenticated_servers WHERE server_id = ? OR server_name = ?",
+                (server_id_or_name, server_id_or_name),
+            )
+            self.db_conn.commit()
+            await ctx.send(
+                f"Deauthenticated server `{server[2]}` with ID `{server[1]}`."
+            )
+        elif await self.is_privileged_user(ctx):
+            self.db_conn.execute(
+                "DELETE FROM authenticated_servers WHERE server_id = ?",
+                (ctx.guild.id,),
+            )
+            self.db_conn.commit()
+            await ctx.send("This server has been deauthenticated.")
+        else:
+            await ctx.send(
+                "You must be a server admin/moderator, owner or the bot owner to deauthenticate this server."
             )
 
     print("Started Auth!")

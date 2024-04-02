@@ -102,6 +102,32 @@ async def setup(bot: commands.Bot):
     await bot.start(TOKEN, reconnect=True)
 
 
+async def is_authenticated(ctx: commands.Context) -> bool:
+    if not ctx.message.content.startswith(f"{bot.command_prefix}auth"):
+        authenticated_server_ids = bot.db_conn.execute(
+            "SELECT server_id FROM authenticated_servers WHERE is_authenticated = 1"
+        ).fetchall()
+        authenticated_server_ids = [server[0] for server in authenticated_server_ids]
+        if ctx.guild is None:
+            # If the command is run in a DM, check if the user is in an authenticated server
+            for guild in bot.guilds:
+                if guild.id in authenticated_server_ids:
+                    if guild.get_member(ctx.author.id):
+                        return True
+            await ctx.send(
+                "You need to be in an at least one authenticated server to interact with me in DMs."
+            )
+            return False
+        if ctx.guild.id in authenticated_server_ids:
+            return True
+        else:
+            await ctx.send(
+                "This server is not authenticated. Please run the `?auth` command to authenticate this server."
+            )
+            return False
+    return True
+
+
 @bot.event
 async def on_ready():
     sql_list = []
@@ -170,6 +196,8 @@ Discord.py version: {__version__}
     to="ordinal_num")} {choice(quantum)}!"""
     logger.info(message)
     print(message)
+
+    bot.add_check(is_authenticated)
 
 
 run(setup(bot))

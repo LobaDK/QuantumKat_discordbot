@@ -45,6 +45,7 @@ class Tunnel(commands.Cog):
             commands.CheckFailure,
             commands.UnexpectedQuoteError,
             commands.InvalidEndOfQuotedStringError,
+            commands.CommandOnCooldown,
         )
 
         error = getattr(error, "original", error)
@@ -53,6 +54,18 @@ class Tunnel(commands.Cog):
             await ctx.send(
                 f"I'm sorry {ctx.author.mention}. I'm afraid I can't do that."
             )
+        if isinstance(error, commands.CommandOnCooldown):
+            minutes, seconds = divmod(error.retry_after, 60)
+            minutes = int(minutes)
+            seconds = int(seconds)
+            try:
+                await ctx.send(
+                    f"Command on cooldown. Please wait {minutes:02d}:{seconds:02d} before trying again."
+                )
+            except Exception:
+                self.logger.error(
+                    "Exception ocurred while sending cooldown message.", exc_info=True
+                )
         if isinstance(error, ignored_errors):
             return
 
