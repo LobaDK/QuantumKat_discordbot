@@ -104,7 +104,9 @@ async def setup(bot: commands.Bot):
 
 @bot.event
 async def on_ready():
-    sql = """CREATE TABLE IF NOT EXISTS chat (
+    sql_list = []
+    sql_list.append(
+        """CREATE TABLE IF NOT EXISTS chat (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     user_name TEXT NOT NULL,
@@ -114,11 +116,24 @@ async def on_ready():
     assistant_message TEXT NOT NULL,
     shared_chat INTEGER NOT NULL DEFAULT 0
     )"""
+    )
+    sql_list.append(
+        """CREATE TABLE IF NOT EXISTS authenticated_servers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    server_id INTEGER NOT NULL,
+    server_name TEXT NOT NULL,
+    authenticated_by_id INTEGER NOT NULL,
+    authenticated_by_name TEXT NOT NULL,
+    is_authenticated INTEGER NOT NULL DEFAULT 0
+    )"""
+    )
 
     try:
-        bot.db_conn.execute(sql)
-        bot.db_conn.commit()
+        for sql in sql_list:
+            bot.db_conn.execute(sql)
+            bot.db_conn.commit()
     except sqlite3.Error as e:
+        print(e)
         logger.error(f"Error creating chat table: {e}")
 
     if Path("rebooted").exists():
