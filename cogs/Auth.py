@@ -139,4 +139,4 @@ class Auth(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    bot.add_cog(Auth(bot))
+    await bot.add_cog(Auth(bot))
