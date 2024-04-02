@@ -154,6 +154,9 @@ class Auth(commands.Cog):
             await ctx.send(
                 f"Deauthenticated server `{server[2]}` with ID `{server[1]}`."
             )
+        elif ctx.guild is None:
+            await ctx.send("This command must be used in a server.")
+            return
         elif await self.is_privileged_user(ctx):
             self.db_conn.execute(
                 "DELETE FROM authenticated_servers WHERE server_id = ?",
