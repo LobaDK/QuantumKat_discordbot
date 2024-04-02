@@ -55,7 +55,7 @@ class Auth(commands.Cog):
                 "This server has been denied authentication. Please contact the bot owner for more information."
             )
             return
-        if not self.is_privileged_user(ctx):
+        if not await self.is_privileged_user(ctx):
             await ctx.send(
                 "You must be a server admin/moderator, owner or the bot owner to request authentication."
             )
