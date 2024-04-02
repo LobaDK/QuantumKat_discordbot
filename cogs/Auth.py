@@ -1,4 +1,5 @@
 from discord.ext import commands, tasks
+import discord
 import asyncio
 
 
@@ -28,12 +29,12 @@ class Auth(commands.Cog):
         self.denied_server_ids = [server[1] for server in denied_servers]
 
     @commands.Cog.listener()
-    async def on_command(self, ctx: commands.Context):
+    async def on_message(self, message: discord.Message) -> None:
         """
         Handles the event when a command is invoked.
 
         Parameters:
-        - ctx (commands.Context): The context of the command.
+        - message (discord.Message): The message object representing the command invocation.
 
         Returns:
         - None
@@ -41,11 +42,16 @@ class Auth(commands.Cog):
         Raises:
         - None
         """
-        if ctx.guild.id not in self.authenticated_server_ids:
-            await ctx.send(
-                "This server is not authenticated to use this bot. Please run `?auth` to authenticate this server."
-            )
-            return
+        if not message.author.bot:
+            if message.content.startswith(self.bot.command_prefix):
+                if message.guild.id not in self.authenticated_server_ids:
+                    await message.reply(
+                        "This server is not authenticated to use this bot. Please run `?auth` to authenticate this server.",
+                        silent=True,
+                    )
+                    return
+                else:
+                    await self.bot.process_commands(message)
 
     @commands.command()
     async def auth(self, ctx: commands.Context) -> None:
