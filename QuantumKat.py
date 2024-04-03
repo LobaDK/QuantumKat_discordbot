@@ -1,23 +1,17 @@
 from asyncio import run
 from datetime import datetime
-from os import environ, listdir, path
+from os import environ
 from random import choice, randint
 from sys import exit
 
+from helpers import LogHelper, MiscHelper, DiscordHelper, DBHelper
 import sqlite3
-import logging
-import logging.handlers
 from pathlib import Path
 from discord import Intents, __version__
 from discord.ext import commands
 from dotenv import load_dotenv
 from num2words import num2words
-from shutil import which
 from os import mkdir
-
-
-def is_installed(executable: str) -> bool:
-    return which(executable) is not None
 
 
 try:
@@ -25,19 +19,7 @@ try:
 except FileExistsError:
     pass
 
-logger = logging.getLogger("discord.QuantumKat")
-logger.setLevel(logging.INFO)
-
-handler = logging.FileHandler(
-    filename="logs/quantumkat.log", encoding="utf-8", mode="a"
-)
-
-date_format = "%Y-%m-%d %H:%M:%S"
-formatter = logging.Formatter(
-    "[{asctime}] [{levelname:<8}] {name}: {message}", datefmt=date_format, style="{"
-)
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = LogHelper.create_logger("QuantumKat", "logs/QuantumKat.log")
 
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
@@ -80,25 +62,41 @@ bot = commands.Bot(
 )
 
 bot.db_conn = sqlite3.connect("quantumkat.db")
-
-# Get and add cogs to a list
-initial_extensions = []
-for cog in listdir("./cogs"):
-    if cog.endswith(".py"):
-        logger.info(f"Loading cog: {cog}")
-        initial_extensions.append(f"cogs.{path.splitext(cog)[0]}")
+bot.db_helper = DBHelper(bot.db_conn, logger)
+try:
+    bot.db_helper.create(
+        "chat",
+        "id INTEGER PRIMARY KEY AUTOINCREMENT",
+        "user_id INTEGER NOT NULL",
+        "user_name TEXT NOT NULL",
+        "server_id INTEGER NOT NULL",
+        "server_name TEXT NOT NULL",
+        "user_message TEXT NOT NULL",
+        "assistant_message TEXT NOT NULL",
+        "shared_chat INTEGER NOT NULL DEFAULT 0",
+    )
+    bot.db_helper.create(
+        "authenticated_servers",
+        "id INTEGER PRIMARY KEY AUTOINCREMENT",
+        "server_id INTEGER NOT NULL",
+        "server_name TEXT NOT NULL",
+        "authenticated_by_id INTEGER NOT NULL",
+        "authenticated_by_name TEXT NOT NULL",
+        "is_authenticated INTEGER NOT NULL DEFAULT 0",
+    )
+except sqlite3.Error:
+    logger.error("Error creating tables.", exc_info=True)
+    exit(1)
 
 
 async def setup(bot: commands.Bot):
     if not ignoreMissingExe:
         for executable in executables:
-            if not is_installed(executable):
+            if not MiscHelper.is_installed(executable):
                 logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
-    # Iterate through each cog and start it
-    for extension in initial_extensions:
-        await bot.load_extension(extension)
+    DiscordHelper.first_load_cogs(bot, "./cogs")
     await bot.start(TOKEN, reconnect=True)
 
 
@@ -130,38 +128,6 @@ async def is_authenticated(ctx: commands.Context) -> bool:
 
 @bot.event
 async def on_ready():
-    sql_list = []
-    sql_list.append(
-        """CREATE TABLE IF NOT EXISTS chat (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    user_name TEXT NOT NULL,
-    server_id INTEGER NOT NULL,
-    server_name TEXT NOT NULL,
-    user_message TEXT NOT NULL,
-    assistant_message TEXT NOT NULL,
-    shared_chat INTEGER NOT NULL DEFAULT 0
-    )"""
-    )
-    sql_list.append(
-        """CREATE TABLE IF NOT EXISTS authenticated_servers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    server_id INTEGER NOT NULL,
-    server_name TEXT NOT NULL,
-    authenticated_by_id INTEGER NOT NULL,
-    authenticated_by_name TEXT NOT NULL,
-    is_authenticated INTEGER NOT NULL DEFAULT 0
-    )"""
-    )
-
-    try:
-        for sql in sql_list:
-            bot.db_conn.execute(sql)
-            bot.db_conn.commit()
-    except sqlite3.Error as e:
-        print(e)
-        logger.error(f"Error creating chat table: {e}")
-
     if Path("rebooted").exists():
         with open("rebooted", "r") as f:
             IDs = f.read()
