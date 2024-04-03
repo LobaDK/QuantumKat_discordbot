@@ -66,23 +66,28 @@ bot.db_helper = DBHelper(bot.db_conn, logger)
 try:
     bot.db_helper.create(
         "chat",
-        "id INTEGER PRIMARY KEY AUTOINCREMENT",
-        "user_id INTEGER NOT NULL",
-        "user_name TEXT NOT NULL",
-        "server_id INTEGER NOT NULL",
-        "server_name TEXT NOT NULL",
-        "user_message TEXT NOT NULL",
-        "assistant_message TEXT NOT NULL",
-        "shared_chat INTEGER NOT NULL DEFAULT 0",
+        (
+            "id INTEGER PRIMARY KEY AUTOINCREMENT",
+            "user_id INTEGER NOT NULL",
+            "user_name TEXT NOT NULL",
+            "server_id INTEGER NOT NULL",
+            "server_name TEXT NOT NULL",
+            "user_message TEXT NOT NULL",
+            "assistant_message TEXT NOT NULL",
+            "shared_chat INTEGER NOT NULL DEFAULT 0",
+        ),
     )
     bot.db_helper.create(
         "authenticated_servers",
-        "id INTEGER PRIMARY KEY AUTOINCREMENT",
-        "server_id INTEGER NOT NULL",
-        "server_name TEXT NOT NULL",
-        "authenticated_by_id INTEGER NOT NULL",
-        "authenticated_by_name TEXT NOT NULL",
-        "is_authenticated INTEGER NOT NULL DEFAULT 0",
+        (
+            "authenticated_servers",
+            "id INTEGER PRIMARY KEY AUTOINCREMENT",
+            "server_id INTEGER NOT NULL",
+            "server_name TEXT NOT NULL",
+            "authenticated_by_id INTEGER NOT NULL",
+            "authenticated_by_name TEXT NOT NULL",
+            "is_authenticated INTEGER NOT NULL DEFAULT 0",
+        ),
     )
 except sqlite3.Error:
     logger.error("Error creating tables.", exc_info=True)
