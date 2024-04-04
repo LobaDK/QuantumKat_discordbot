@@ -1,5 +1,4 @@
 from openai import AsyncOpenAI as OpenAI, OpenAIError
-import logging
 import tiktoken
 import os
 import sqlite3
@@ -7,6 +6,7 @@ import requests
 import datetime
 import calendar
 
+from helpers import LogHelper, DiscordHelper
 from discord.ext import commands
 
 
@@ -16,33 +16,11 @@ class Chat(commands.Cog):
 
         self.db_conn = bot.db_conn
 
-        if "discord.Chat" in logging.Logger.manager.loggerDict:
-            self.logger = logging.getLogger("discord.Chat")
-        else:
-            self.logger = logging.getLogger("discord.Chat")
-            self.logger.setLevel(logging.INFO)
-            handler = logging.FileHandler(
-                filename="logs/chat.log", encoding="utf-8", mode="a"
-            )
-            date_format = "%Y-%m-%d %H:%M:%S"
-            formatter = logging.Formatter(
-                "[{asctime}] [{levelname:<8}] {name}: {message}",
-                datefmt=date_format,
-                style="{",
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+        self.logger = LogHelper.create_logger("Chat", "logs/Chat.log")
 
-        if "discord.ChatHistory" in logging.Logger.manager.loggerDict:
-            self.historylogger = logging.getLogger("discord.ChatHistory")
-        else:
-            self.historylogger = logging.getLogger("discord.ChatHistory")
-            self.historylogger.setLevel(logging.INFO)
-            history_handler = logging.FileHandler(
-                filename="logs/chat_history.log", encoding="utf-8", mode="a"
-            )
-            history_handler.setFormatter(formatter)
-            self.historylogger.addHandler(history_handler)
+        self.historylogger = LogHelper.create_logger(
+            "ChatHistory", "logs/ChatHistory.log"
+        )
 
         # Set the model encoding for tiktoken
         self.encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
@@ -232,7 +210,7 @@ class Chat(commands.Cog):
         Returns:
             tuple: A tuple containing the server ID and name.
         """
-        if ctx.guild is not None:
+        if not DiscordHelper.is_dm(ctx):
             server_id = ctx.guild.id
             server_name = ctx.guild.name
         else:
@@ -324,9 +302,37 @@ class Chat(commands.Cog):
                             )
                             chat_response = response.choices[0].message.content
 
-                            await self.database_add(
-                                ctx, user_message, chat_response, shared_chat
-                            )
+                            try:
+                                self.bot.db_helper.insert_into_table(
+                                    "chat",
+                                    (
+                                        "user_id",
+                                        "user_name",
+                                        "server_id",
+                                        "server_name",
+                                        "user_message",
+                                        "assistant_message",
+                                        "shared_chat",
+                                    ),
+                                    (
+                                        ctx.author.id,
+                                        ctx.author.name,
+                                        ctx.guild.id,
+                                        ctx.guild.name,
+                                        user_message,
+                                        chat_response,
+                                        shared_chat,
+                                    ),
+                                )
+                            except sqlite3.Error:
+                                self.logger.error(
+                                    "An error occurred while adding a chat message to the database.",
+                                    exc_info=True,
+                                )
+                                await ctx.reply(
+                                    "An error occurred while adding the chat message to the database.",
+                                    silent=True,
+                                )
 
                             messages = []
                             for message in conversation_history:
@@ -363,7 +369,7 @@ class Chat(commands.Cog):
                             )
                 else:
                     await ctx.reply(
-                        f"Message is too long! Your message is {tokens} tokens long, but the maximum is 256 tokens.",
+                        f"Message is too long! Your message is {tokens} tokens long, but the maximum is 1024 tokens.",
                         silent=True,
                     )
             else:
@@ -488,13 +494,7 @@ class Chat(commands.Cog):
         Returns:
         None
         """
-        application = await self.bot.application_info()
-        if (
-            ctx.author.id == ctx.guild.owner.id
-            or ctx.author.id == application.owner.id
-            or ctx.author.guild_permissions.administrator
-            or ctx.author.guild_permissions.moderate_members
-        ):
+        if DiscordHelper.is_privileged_user(ctx):
             await self.initiatechatclear(ctx, True)
         else:
             await ctx.reply(
