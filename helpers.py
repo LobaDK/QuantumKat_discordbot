@@ -64,7 +64,7 @@ class LogHelper:
             return logging.getLogger(logger_name)
 
         logger = logging.getLogger(logger_name)
-
+        logger.setLevel(logging.DEBUG)
         file_handler = self._create_file_handler(log_file, file_log_level)
         logger.addHandler(file_handler)
 
