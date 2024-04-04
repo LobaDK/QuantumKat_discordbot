@@ -340,7 +340,7 @@ class DiscordHelper:
             or self.is_mod(ctx)
         )
 
-    def first_load_cogs(self, bot: commands.Bot, cog_dir: str):
+    def first_load_cogs(self, bot: commands.Bot, cog_dir: str, logger: logging.Logger):
         """
         Loads initial extensions (cogs) for the bot.
 
@@ -357,7 +357,7 @@ class DiscordHelper:
         initial_extensions = []
         for cog in os.listdir(cog_dir):
             if cog.endswith(".py"):
-                bot.logger.info(f"Loading cog: {cog}")
+                logger.info(f"Loading cog: {cog}")
                 initial_extensions.append(f"cogs.{os.path.splitext(cog)[0]}")
 
         for extension in initial_extensions:

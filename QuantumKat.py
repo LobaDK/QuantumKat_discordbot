@@ -107,7 +107,7 @@ async def setup(bot: commands.Bot):
                 logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
-    bot.discord_helper.first_load_cogs(bot, "./cogs")
+    bot.discord_helper.first_load_cogs(bot, "./cogs", logger)
     await bot.start(TOKEN, reconnect=True)
 
 
