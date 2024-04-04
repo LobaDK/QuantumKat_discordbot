@@ -2,7 +2,7 @@ from random import randint, choice
 from discord import Game
 from discord.ext import commands, tasks
 from num2words import num2words
-import logging
+from helpers import LogHelper
 
 
 class Activity(commands.Cog):
@@ -10,22 +10,7 @@ class Activity(commands.Cog):
 
         self.bot = bot
 
-        if "discord.Activity" in logging.Logger.manager.loggerDict:
-            self.logger = logging.getLogger("discord.Activity")
-        else:
-            self.logger = logging.getLogger("discord.Activity")
-            self.logger.setLevel(logging.INFO)
-            handler = logging.FileHandler(
-                filename="logs/activity.log", encoding="utf-8", mode="a"
-            )
-            date_format = "%Y-%m-%d %H:%M:%S"
-            formatter = logging.Formatter(
-                "[{asctime}] [{levelname:<8}] {name}: {message}",
-                datefmt=date_format,
-                style="{",
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+        self.logger = LogHelper.create_logger("Activity", "logs/Activity.log")
 
         self.hissList = ["Hissing", "Hissed"]
 
@@ -171,9 +156,6 @@ class Activity(commands.Cog):
             await ctx.message.add_reaction("👌")
         else:
             await ctx.reply("Activity is already running!", silent=True)
-
-
-# command splitter for easier reading and navigating
 
 
 async def setup(bot):
