@@ -64,7 +64,7 @@ bot = commands.Bot(
 bot.db_conn = sqlite3.connect("quantumkat.db")
 bot.db_helper = DBHelper(bot.db_conn, logger)
 try:
-    bot.db_helper.create(
+    bot.db_helper.create_table(
         "chat",
         (
             "id INTEGER PRIMARY KEY AUTOINCREMENT",
@@ -77,10 +77,9 @@ try:
             "shared_chat INTEGER NOT NULL DEFAULT 0",
         ),
     )
-    bot.db_helper.create(
+    bot.db_helper.create_table(
         "authenticated_servers",
         (
-            "authenticated_servers",
             "id INTEGER PRIMARY KEY AUTOINCREMENT",
             "server_id INTEGER NOT NULL",
             "server_name TEXT NOT NULL",
@@ -111,11 +110,11 @@ async def is_authenticated(ctx: commands.Context) -> bool:
             "SELECT server_id FROM authenticated_servers WHERE is_authenticated = 1"
         ).fetchall()
         authenticated_server_ids = [server[0] for server in authenticated_server_ids]
-        if ctx.guild is None:
+        if DiscordHelper.is_dm(ctx):
             # If the command is run in a DM, check if the user is in an authenticated server
             for guild in bot.guilds:
                 if guild.id in authenticated_server_ids:
-                    if guild.get_member(ctx.author.id):
+                    if DiscordHelper.user_in_guild(ctx.author, guild):
                         return True
             await ctx.send(
                 "You need to be in an at least one authenticated server to interact with me in DMs."
