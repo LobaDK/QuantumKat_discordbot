@@ -1,5 +1,5 @@
 from discord.ext import commands, tasks
-from helpers import LogHelper, DBHelper, DiscordHelper, MiscHelper
+from helpers import LogHelper, DiscordHelper, MiscHelper
 import asyncio
 
 
@@ -22,10 +22,10 @@ class Auth(commands.Cog):
         Retrieves the list of authenticated servers and denied servers from the database.
         Updates the `authenticated_server_ids` and `denied_server_ids` attributes accordingly.
         """
-        authenticated_servers = DBHelper.read_table(
+        authenticated_servers = self.bot.db_helper.read_table(
             "authenticated_servers", ("server_id",), "is_authenticated = 1"
         )
-        denied_servers = DBHelper.read_table(
+        denied_servers = self.bot.db_helper.read_table(
             "authenticated_servers", ("server_id",), "is_authenticated = 0"
         )
         self.authenticated_server_ids = [server[1] for server in authenticated_servers]
@@ -100,7 +100,7 @@ class Auth(commands.Cog):
                 await server_msg.edit(
                     content=f"{server_msg.content}\nRequest denied. If you believe this is a mistake, please contact the bot owner."
                 )
-                DBHelper.insert_into_table(
+                self.bot.db_helper.insert_into_table(
                     "authenticated_servers",
                     (
                         "server_id",
@@ -112,7 +112,7 @@ class Auth(commands.Cog):
                     (ctx.guild.id, ctx.guild.name, ctx.author.id, ctx.author.name, 0),
                 )
                 return
-            DBHelper.insert_into_table(
+            self.bot.db_helper.insert_into_table(
                 "authenticated_servers",
                 (
                     "server_id",
