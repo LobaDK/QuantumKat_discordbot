@@ -6,7 +6,6 @@ import requests
 import datetime
 import calendar
 
-from helpers import LogHelper, DiscordHelper
 from discord.ext import commands
 
 
@@ -16,9 +15,9 @@ class Chat(commands.Cog):
 
         self.db_conn = bot.db_conn
 
-        self.logger = LogHelper.create_logger("Chat", "logs/Chat.log")
+        self.logger = bot.log_helper.create_logger("Chat", "logs/Chat.log")
 
-        self.historylogger = LogHelper.create_logger(
+        self.historylogger = bot.log_helper.create_logger(
             "ChatHistory", "logs/ChatHistory.log"
         )
 
@@ -210,7 +209,7 @@ class Chat(commands.Cog):
         Returns:
             tuple: A tuple containing the server ID and name.
         """
-        if not DiscordHelper.is_dm(ctx):
+        if not self.bot.discord_helper.is_dm(ctx):
             server_id = ctx.guild.id
             server_name = ctx.guild.name
         else:
@@ -494,7 +493,7 @@ class Chat(commands.Cog):
         Returns:
         None
         """
-        if DiscordHelper.is_privileged_user(ctx):
+        if self.bot.discord_helper.is_privileged_user(ctx):
             await self.initiatechatclear(ctx, True)
         else:
             await ctx.reply(

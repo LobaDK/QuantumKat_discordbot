@@ -12,7 +12,6 @@ from requests import get
 from inspect import Parameter
 import shlex
 
-from helpers import LogHelper, DiscordHelper
 import mimetypes
 import magic
 import discord
@@ -25,7 +24,7 @@ class Entanglements(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = LogHelper.create_logger("Entanglements", "logs/Entanglements.log")
+        self.logger = bot.log_helper.create_logger("Entanglements", "logs/Entanglements.log")
 
     initial_extensions = []
     for cog in listdir("./cogs"):
@@ -1008,7 +1007,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     async def reboot(self, ctx: commands.Context):
         msg = await ctx.send("Shutting down extensions and rebooting...")
         with open("rebooted", "w") as f:
-            if DiscordHelper.is_dm(ctx):
+            if self.bot.discord_helper.is_dm(ctx):
                 f.write(f"{msg.id}\n{msg.channel.id}\nNone")
             else:
                 f.write(f"{msg.id}\n{msg.channel.id}\n{msg.guild.id}")

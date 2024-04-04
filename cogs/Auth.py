@@ -1,5 +1,4 @@
 from discord.ext import commands, tasks
-from helpers import LogHelper, DiscordHelper, MiscHelper
 import asyncio
 
 
@@ -7,7 +6,7 @@ class Auth(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-        self.logger = LogHelper.create_logger("Auth", "logs/Auth.log")
+        self.logger = bot.log_helper.create_logger("Auth", "logs/Auth.log")
         self.db_conn = bot.db_conn
         self.authenticated_server_ids = []
         self.denied_server_ids = []
@@ -52,7 +51,7 @@ class Auth(commands.Cog):
                 "This server has been denied authentication. Please contact the bot owner for more information."
             )
             return
-        if not DiscordHelper.is_privileged_user(ctx):
+        if not self.bot.discord_helper.is_privileged_user(ctx):
             await ctx.send(
                 "You must be a server admin/moderator, owner or the bot owner to request authentication."
             )
@@ -78,7 +77,7 @@ class Auth(commands.Cog):
 
         async def update_server_msg():
             for remaining in range(300, 0, -10):
-                time = MiscHelper.remaining_time(remaining)
+                time = self.bot.misc_helper.remaining_time(remaining)
                 await server_msg.edit(
                     content=f"{server_msg.content}\nTime remaining: {time}"
                 )
@@ -146,7 +145,7 @@ class Auth(commands.Cog):
         None
         """
         if server_id_or_name:
-            if not DiscordHelper.is_bot_owner(ctx):
+            if not self.bot.discord_helper.is_bot_owner(ctx):
                 await ctx.send("You must be the bot owner to deauthenticate a server.")
                 return
             server = self.db_conn.execute(
@@ -164,10 +163,10 @@ class Auth(commands.Cog):
             await ctx.send(
                 f"Deauthenticated server `{server[2]}` with ID `{server[1]}`."
             )
-        elif DiscordHelper.is_dm(ctx):
+        elif self.bot.discord_helper.is_dm(ctx):
             await ctx.send("This command must be used in a server.")
             return
-        elif DiscordHelper.is_privileged_user(ctx):
+        elif self.bot.discord_helper.is_privileged_user(ctx):
             self.db_conn.execute(
                 "DELETE FROM authenticated_servers WHERE server_id = ?",
                 (ctx.guild.id,),

@@ -7,7 +7,6 @@ from pathlib import Path
 from asyncio import create_subprocess_shell, subprocess
 from random import random
 
-from helpers import LogHelper
 from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
@@ -18,7 +17,7 @@ class Fields(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = LogHelper.create_logger("Fields", "logs/Fields.log")
+        self.logger = bot.log_helper.create_logger("Fields", "logs/Fields.log")
 
         self.aURL = "https://aaaa.lobadk.com/"
         self.a_folder = "/var/www/aaaa/"

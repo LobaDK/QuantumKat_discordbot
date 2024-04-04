@@ -19,7 +19,11 @@ try:
 except FileExistsError:
     pass
 
-logger = LogHelper.create_logger("QuantumKat", "logs/QuantumKat.log")
+log_helper = LogHelper()
+misc_helper = MiscHelper()
+discord_helper = DiscordHelper()
+
+logger = log_helper.create_logger("QuantumKat", "logs/QuantumKat.log")
 
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
@@ -63,6 +67,9 @@ bot = commands.Bot(
 
 bot.db_conn = sqlite3.connect("quantumkat.db")
 bot.db_helper = DBHelper(bot.db_conn, logger)
+bot.log_helper = log_helper
+bot.misc_helper = misc_helper
+bot.discord_helper = discord_helper
 try:
     bot.db_helper.create_table(
         "chat",
@@ -96,11 +103,11 @@ except sqlite3.Error:
 async def setup(bot: commands.Bot):
     if not ignoreMissingExe:
         for executable in executables:
-            if not MiscHelper.is_installed(executable):
+            if not bot.misc_helper.is_installed(executable):
                 logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
-    DiscordHelper.first_load_cogs(bot, "./cogs")
+    bot.discord_helper.first_load_cogs(bot, "./cogs")
     await bot.start(TOKEN, reconnect=True)
 
 
@@ -110,11 +117,11 @@ async def is_authenticated(ctx: commands.Context) -> bool:
             "SELECT server_id FROM authenticated_servers WHERE is_authenticated = 1"
         ).fetchall()
         authenticated_server_ids = [server[0] for server in authenticated_server_ids]
-        if DiscordHelper.is_dm(ctx):
+        if bot.discord_helper.is_dm(ctx):
             # If the command is run in a DM, check if the user is in an authenticated server
             for guild in bot.guilds:
                 if guild.id in authenticated_server_ids:
-                    if DiscordHelper.user_in_guild(ctx.author, guild):
+                    if bot.discord_helper.user_in_guild(ctx.author, guild):
                         return True
             await ctx.send(
                 "You need to be in an at least one authenticated server to interact with me in DMs."
