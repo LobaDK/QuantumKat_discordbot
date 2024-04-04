@@ -340,7 +340,9 @@ class DiscordHelper:
             or self.is_mod(ctx)
         )
 
-    def first_load_cogs(self, bot: commands.Bot, cog_dir: str, logger: logging.Logger):
+    async def first_load_cogs(
+        self, bot: commands.Bot, cog_dir: str, logger: logging.Logger
+    ):
         """
         Loads initial extensions (cogs) for the bot.
 
@@ -361,7 +363,7 @@ class DiscordHelper:
                 initial_extensions.append(f"cogs.{os.path.splitext(cog)[0]}")
 
         for extension in initial_extensions:
-            bot.load_extension(extension)
+            await bot.load_extension(extension)
 
     def user_in_guild(self, user: discord.User, guild: discord.Guild) -> bool:
         """
