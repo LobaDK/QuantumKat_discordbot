@@ -24,7 +24,9 @@ class Entanglements(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger("Entanglements", "logs/Entanglements.log")
+        self.logger = bot.log_helper.create_logger(
+            "Entanglements", "logs/Entanglements.log"
+        )
 
     initial_extensions = []
     for cog in listdir("./cogs"):
@@ -1101,7 +1103,9 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                                     await ctx.reply(
                                         f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
                                     )
-                                    await reply_ctx.invoke(command, message)
+                                    await reply_ctx.invoke(
+                                        command, **{parameter_name: message}
+                                    )
                             elif len(parameters) > 1:
                                 # Split the message into a list of parameters. This is done using shlex to allow for quoted strings
                                 message = shlex.split(message)
