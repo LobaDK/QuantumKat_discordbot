@@ -4,29 +4,14 @@ from datetime import datetime
 from discord.ext import commands
 from discord import Client
 
-import logging
+from helpers import LogHelper
 
 
 class Tunnel(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        if "discord.Tunnel" in logging.Logger.manager.loggerDict:
-            self.logger = logging.getLogger("discord.Tunnel")
-        else:
-            self.logger = logging.getLogger("discord.Tunnel")
-            self.logger.setLevel(logging.INFO)
-            handler = logging.FileHandler(
-                filename="logs/tunnel.log", encoding="utf-8", mode="a"
-            )
-            date_format = "%Y-%m-%d %H:%M:%S"
-            formatter = logging.Formatter(
-                "[{asctime}] [{levelname:<8}] {name}: {message}",
-                datefmt=date_format,
-                style="{",
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+        self.logger = LogHelper.create_logger("Tunnel", "logs/Tunnel.log")
 
     @commands.Cog.listener()
     async def on_command_error(
