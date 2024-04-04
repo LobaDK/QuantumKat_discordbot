@@ -1,7 +1,7 @@
 from random import choice
-import logging
 import discord
 
+from helpers import LogHelper, DiscordHelper
 from discord.ext import commands
 
 
@@ -10,22 +10,7 @@ class Control(commands.Cog):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
-        if "discord.Control" in logging.Logger.manager.loggerDict:
-            self.logger = logging.getLogger("discord.Control")
-        else:
-            self.logger = logging.getLogger("discord.Control")
-            self.logger.setLevel(logging.INFO)
-            handler = logging.FileHandler(
-                filename="logs/control.log", encoding="utf-8", mode="a"
-            )
-            date_format = "%Y-%m-%d %H:%M:%S"
-            formatter = logging.Formatter(
-                "[{asctime}] [{levelname:<8}] {name}: {message}",
-                datefmt=date_format,
-                style="{",
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+        self.logger = LogHelper.create_logger("Control", "logs/Control.log")
 
     async def get_permissions(self, guild: discord.Guild) -> list[str]:
         permissions = []
@@ -51,6 +36,7 @@ class Control(commands.Cog):
     @commands.is_owner()
     @commands.dm_only()
     async def ServerOwnerList(self, ctx: commands.Context):
+        # TODO: Remove discriminator since Discord phased it out
         servers_and_owners = []
         for guild in self.bot.guilds:
             servers_and_owners.append(
@@ -111,14 +97,8 @@ class Control(commands.Cog):
         ),
     )
     async def Leave(self, ctx: commands.Context):
-        if ctx.guild is not None:
-            application = await self.bot.application_info()
-            if (
-                ctx.author.id == ctx.guild.owner.id
-                or ctx.author.id == application.owner.id
-                or ctx.author.guild_permissions.administrator
-                or ctx.author.guild_permissions.moderate_members
-            ):
+        if not DiscordHelper.is_dm(ctx):
+            if DiscordHelper.is_privileged_user(ctx):
                 await ctx.send(f"*Poofs to another {choice(self.locations)}*")
                 await ctx.guild.leave()
             else:
@@ -141,7 +121,7 @@ class Control(commands.Cog):
     async def ListPermissions(self, ctx: commands.Context, Server_ID: str = ""):
         guild = None
         # If Server_ID is provided and the command was used in DM's
-        if Server_ID and ctx.guild is None:
+        if Server_ID and DiscordHelper.is_dm(ctx):
             if Server_ID.isnumeric():
                 # Get a guild object of the server from it's ID
                 guild = self.bot.get_guild(int(Server_ID))
@@ -161,7 +141,7 @@ class Control(commands.Cog):
                 return
 
         # If Server_ID is not provided and the command was used in a server
-        elif ctx.guild is not None and not Server_ID:
+        elif not DiscordHelper.is_dm(ctx) and not Server_ID:
             guild = ctx.guild
         else:
             await ctx.send(
