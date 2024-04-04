@@ -9,10 +9,10 @@ from shlex import quote
 from re import compile
 from pathlib import Path
 from requests import get
-import logging
 from inspect import Parameter
 import shlex
 
+from helpers import LogHelper, DiscordHelper
 import mimetypes
 import magic
 import discord
@@ -25,22 +25,7 @@ class Entanglements(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        if "discord.Entanglement" in logging.Logger.manager.loggerDict:
-            self.logger = logging.getLogger("discord.Entanglement")
-        else:
-            self.logger = logging.getLogger("discord.Entanglement")
-            self.logger.setLevel(logging.INFO)
-            handler = logging.FileHandler(
-                filename="logs/entanglement.log", encoding="utf-8", mode="a"
-            )
-            date_format = "%Y-%m-%d %H:%M:%S"
-            formatter = logging.Formatter(
-                "[{asctime}] [{levelname:<8}] {name}: {message}",
-                datefmt=date_format,
-                style="{",
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+        self.logger = LogHelper.create_logger("Entanglements", "logs/Entanglements.log")
 
     initial_extensions = []
     for cog in listdir("./cogs"):
@@ -514,7 +499,7 @@ class Entanglements(commands.Cog):
                 # yt-dlp sometimes outputs non-fatal errors or warnings
                 # making it unreliable for canceling the process.
                 # Instead we're supplying the error for verbosity.
-                # To-do: Test and figure out the warning and error messages
+                # TODO: Test and figure out the warning and error messages
                 # it can return, for better process handling
                 if stderr:
                     await ctx.reply(stderr.decode(), silent=True)
@@ -1023,7 +1008,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     async def reboot(self, ctx: commands.Context):
         msg = await ctx.send("Shutting down extensions and rebooting...")
         with open("rebooted", "w") as f:
-            if msg.guild is None:
+            if DiscordHelper.is_dm(ctx):
                 f.write(f"{msg.id}\n{msg.channel.id}\nNone")
             else:
                 f.write(f"{msg.id}\n{msg.channel.id}\n{msg.guild.id}")
