@@ -187,16 +187,18 @@ class DBHelper:
         rows = cursor.fetchall()
         return rows
 
-    def insert_into_table(self, table_name: str, values: tuple):
+    def insert_into_table(self, table_name: str, columns: tuple, values: tuple):
         """
         Insert values into the table with the given name.
 
         Args:
             table_name (str): The name of the table to insert into.
+            columns (tuple): The columns to insert the values into.
             values (tuple): The values to insert into the table.
         """
         placeholders = ", ".join(["?" for _ in values])
-        query = f"INSERT INTO {table_name} VALUES ({placeholders})"
+        columns = ", ".join(columns)
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
         self.logger.info(f"Inserting values into table {table_name}: {values}")
         self.conn.execute(query, values)
         self.conn.commit()
