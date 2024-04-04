@@ -1,4 +1,4 @@
-from discord.ext import commands, tasks
+from discord.ext import commands
 import asyncio
 
 
@@ -8,27 +8,6 @@ class Auth(commands.Cog):
 
         self.logger = bot.log_helper.create_logger("Auth", "logs/Auth.log")
         self.db_conn = bot.db_conn
-        self.authenticated_server_ids = []
-        self.denied_server_ids = []
-        self.update_auth.start()
-
-    @tasks.loop(seconds=10, count=None, reconnect=True)
-    async def update_auth(self) -> None:
-        # TODO: Remove this function and just check the database when needed instead of periodically
-        """
-        Periodically checks the authentication status of servers.
-
-        Retrieves the list of authenticated servers and denied servers from the database.
-        Updates the `authenticated_server_ids` and `denied_server_ids` attributes accordingly.
-        """
-        authenticated_servers = self.bot.db_helper.read_table(
-            "authenticated_servers", ("server_id",), "is_authenticated = 1"
-        )
-        denied_servers = self.bot.db_helper.read_table(
-            "authenticated_servers", ("server_id",), "is_authenticated = 0"
-        )
-        self.authenticated_server_ids = [server[1] for server in authenticated_servers]
-        self.denied_server_ids = [server[1] for server in denied_servers]
 
     @commands.command(aliases=["requestauth", "auth"])
     @commands.cooldown(1, 300, commands.BucketType.guild)
@@ -42,11 +21,21 @@ class Auth(commands.Cog):
         Returns:
         None
         """
-        # TODO: Prevent authentication requests from being made in DMs
-        if ctx.guild.id in self.authenticated_server_ids:
+        if self.bot.discord_helper.is_dm(ctx):
+            await ctx.send("This command must be used in a server.")
+            return
+        authenticated_servers = self.bot.db_helper.read_table(
+            "authenticated_servers", ("server_id",), "is_authenticated = 1"
+        )
+        denied_servers = self.bot.db_helper.read_table(
+            "authenticated_servers", ("server_id",), "is_authenticated = 0"
+        )
+        authenticated_server_ids = [server[0] for server in authenticated_servers]
+        denied_server_ids = [server[0] for server in denied_servers]
+        if ctx.guild.id in authenticated_server_ids:
             await ctx.send("This server is already authenticated.")
             return
-        if ctx.guild.id in self.denied_server_ids:
+        if ctx.guild.id in denied_server_ids:
             await ctx.send(
                 "This server has been denied authentication. Please contact the bot owner for more information."
             )
@@ -66,9 +55,8 @@ class Auth(commands.Cog):
 
         def check(m):
             return (
-                # TODO: Allow the bot owner to approve/deny the request in the channel where the request was made
                 m.author == bot_owner
-                and m.channel == dm_msg.channel
+                and (m.channel == dm_msg.channel or m.channel == ctx.channel)
                 and m.content.lower() in ["yes", "no"]
             )
 
