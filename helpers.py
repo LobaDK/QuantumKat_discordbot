@@ -130,11 +130,11 @@ class DBHelper:
         logger (logging.Logger): The logger object for logging database operations.
 
     Methods:
-        create(table_name, columns): Create a table with the given name and columns.
-        read(table_name, columns, condition): Read data from the table with the given name and columns.
-        insert(table_name, values): Insert values into the table with the given name.
-        update(table_name, values, condition): Update rows in the table with the given values and condition.
-        delete(table_name, condition): Delete rows from the table with the given condition.
+        create_table(table_name, columns): Create a table with the given name and columns.
+        read_table(table_name, columns, condition): Read data from the table with the given name and columns.
+        insert_into_table(table_name, values): Insert values into the table with the given name.
+        update_rows(table_name, values, condition): Update rows in the table with the given values and condition.
+        delete_rows(table_name, condition): Delete rows from the table with the given condition.
     """
 
     def __init__(
@@ -152,9 +152,9 @@ class DBHelper:
         self.conn = conn
         self.logger = logger
 
-    def create(self, table_name: str, columns: tuple):
+    def create_table(self, table_name: str, columns: tuple):
         """
-        Create a table with the given name and columns.
+        Create a table with the given name and columns if it does not already exist.
 
         Args:
             table_name (str): The name of the table to create.
@@ -166,7 +166,7 @@ class DBHelper:
         self.conn.execute(query)
         self.conn.commit()
 
-    def read(self, table_name: str, columns: tuple, condition: str = "") -> list:
+    def read_table(self, table_name: str, columns: tuple, condition: str = "") -> list:
         """
         Read data from the table with the given name and columns.
 
@@ -187,7 +187,7 @@ class DBHelper:
         rows = cursor.fetchall()
         return rows
 
-    def insert(self, table_name: str, values: tuple):
+    def insert_into_table(self, table_name: str, values: tuple):
         """
         Insert values into the table with the given name.
 
@@ -201,7 +201,7 @@ class DBHelper:
         self.conn.execute(query, values)
         self.conn.commit()
 
-    def update(self, table_name: str, values: dict, condition: str):
+    def update_rows(self, table_name: str, values: dict, condition: str):
         """
         Update rows in the table with the given values and condition.
 
@@ -218,7 +218,7 @@ class DBHelper:
         self.conn.execute(query, list(values.values()))
         self.conn.commit()
 
-    def delete(self, table_name: str, condition: str):
+    def delete_rows(self, table_name: str, condition: str):
         """
         Delete rows from the table with the given condition.
 
