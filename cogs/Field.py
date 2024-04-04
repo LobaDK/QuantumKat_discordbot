@@ -6,8 +6,8 @@ from urllib import parse
 from pathlib import Path
 from asyncio import create_subprocess_shell, subprocess
 from random import random
-import logging
 
+from helpers import LogHelper
 from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
@@ -18,22 +18,7 @@ class Fields(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        if "discord.Field" in logging.Logger.manager.loggerDict:
-            self.logger = logging.getLogger("discord.Field")
-        else:
-            self.logger = logging.getLogger("discord.Field")
-            self.logger.setLevel(logging.INFO)
-            handler = logging.FileHandler(
-                filename="logs/field.log", encoding="utf-8", mode="a"
-            )
-            date_format = "%Y-%m-%d %H:%M:%S"
-            formatter = logging.Formatter(
-                "[{asctime}] [{levelname:<8}] {name}: {message}",
-                datefmt=date_format,
-                style="{",
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+        self.logger = LogHelper.create_logger("Fields", "logs/Fields.log")
 
         self.aURL = "https://aaaa.lobadk.com/"
         self.a_folder = "/var/www/aaaa/"
