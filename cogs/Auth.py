@@ -103,17 +103,24 @@ class Auth(commands.Cog):
                 DBHelper.insert_into_table(
                     "authenticated_servers",
                     (
-                        ctx.guild.id,
-                        ctx.guild.name,
-                        ctx.author.id,
-                        ctx.author.name,
-                        0,
+                        "server_id",
+                        "server_name",
+                        "authenticated_by_id",
+                        "authenticated_by_name",
+                        "is_authenticated",
                     ),
+                    (ctx.guild.id, ctx.guild.name, ctx.author.id, ctx.author.name, 0),
                 )
-                self.db_conn.commit()
                 return
             DBHelper.insert_into_table(
                 "authenticated_servers",
+                (
+                    "server_id",
+                    "server_name",
+                    "authenticated_by_id",
+                    "authenticated_by_name",
+                    "is_authenticated",
+                ),
                 (ctx.guild.id, ctx.guild.name, ctx.author.id, ctx.author.name, 1),
             )
             await server_msg.edit(
