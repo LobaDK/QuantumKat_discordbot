@@ -1,4 +1,4 @@
-from asyncio import create_subprocess_shell, subprocess
+from asyncio import create_subprocess_shell, create_subprocess_exec, subprocess
 from json import loads
 from os import execl, listdir, remove, rename, stat
 from random import choice, randint
@@ -722,50 +722,95 @@ class Entanglements(commands.Cog):
 
     # command splitter for easier reading and navigating
 
-    @commands.command(
-        brief="(Bot owner only) Runs git commands in the bots directory.",
-        description="Run any git command by passing along the arguments specified. Mainly used for updating the bot or swapping versions, but there is no limit.",
-    )
+    @commands.group(brief="(Bot owner only) Git commands.", description="Git commands.")
     @commands.is_owner()
-    async def git(self, ctx: commands.Context, *, git_arguments: str = ""):
-        if git_arguments:
+    async def git(self, ctx: commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.reply("Invalid git command passed...", silent=True)
 
-            # Only allow alphanumeric, underscores, hyphens and whitespaces
-            allowed = compile("^[\w\s-]*$")
-            if allowed.match(git_arguments):
+    @git.command()
+    async def pull(self, ctx: commands.Context):
+        process = await create_subprocess_shell(
+            "git pull", stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
 
-                cmd = f"git {git_arguments}"
+        if stderr:
+            await ctx.reply(stderr.decode(), silent=True)
+        else:
+            await ctx.reply(stdout.decode(), silent=True)
 
-                try:
-                    process = await create_subprocess_shell(
-                        cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE
-                    )
-                except Exception as e:
-                    self.logger.error(f"{type(e).__name__}: {e}")
-                    await ctx.reply("Error running command", silent=True)
-                    return
+    @git.command()
+    async def status(self, ctx: commands.Context):
+        process = await create_subprocess_shell(
+            "git status", stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
 
-                stderr, stdout = await process.communicate()
-                stdout = stdout.decode()
-                stdout = stdout.replace("b'", "")
-                stdout = stdout.replace("\\n'", "")
-                stderr = stderr.decode()
-                stderr = stderr.replace("b'", "")
-                stderr = stderr.replace("\\n'", "")
+        if stderr:
+            await ctx.reply(stderr.decode(), silent=True)
+        else:
+            await ctx.reply(stdout.decode(), silent=True)
 
-                if stderr:
-                    await ctx.reply(stderr, silent=True)
+    @git.command()
+    async def checkout(self, ctx: commands.Context, branch: str = ""):
+        if not branch:
+            await ctx.reply("You must specify a branch name!", silent=True)
+            return
+        process = await create_subprocess_exec(
+            "git",
+            "checkout",
+            branch,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout, stderr = await process.communicate()
 
-                elif stdout:
-                    await ctx.reply(stdout, silent=True)
+        if stderr:
+            await ctx.reply(stderr.decode(), silent=True)
+        else:
+            await ctx.reply(stdout.decode(), silent=True)
 
-                else:
-                    await ctx.message.add_reaction("👍")
+    @git.command()
+    async def branch(self, ctx: commands.Context, option: str = "", branch: str = ""):
+        if not option:
+            await ctx.reply("You must specify an option!", silent=True)
+            return
+        if option.casefold() == "delete":
+            if not branch:
+                await ctx.reply("You must specify a branch name!", silent=True)
+                return
+            process = await create_subprocess_exec(
+                "git",
+                "branch",
+                "-d",
+                branch,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, stderr = await process.communicate()
+
+            if stderr:
+                await ctx.reply(stderr.decode(), silent=True)
             else:
-                await ctx.reply(
-                    "Only alphanumeric, underscores, hyphens and whitespaces allowed!",
-                    silent=True,
-                )
+                await ctx.reply(stdout.decode(), silent=True)
+
+        elif option.casefold() == "list":
+            process = await create_subprocess_exec(
+                "git",
+                "branch",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, stderr = await process.communicate()
+
+            if stderr:
+                await ctx.reply(stderr.decode(), silent=True)
+            else:
+                await ctx.reply(stdout.decode(), silent=True)
+
+        else:
+            await ctx.reply("Invalid option!", silent=True)
 
     # command splitter for easier reading and navigating
 
@@ -989,7 +1034,7 @@ class Entanglements(commands.Cog):
         brief="(Bot owner only) Displays some basic system usage information."
     )
     @commands.is_owner()
-    async def status(self, ctx: commands.Context):
+    async def serverstatus(self, ctx: commands.Context):
         await ctx.reply(
             f"""
 Current CPU Usage: {cpu_percent(1)}%
