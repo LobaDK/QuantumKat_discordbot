@@ -103,9 +103,7 @@ class Activity(commands.Cog):
     @commands.command(
         aliases=["activitystop", "astop"],
         brief="(Bot owner only) Stops the displayed activity.",
-        description=(
-            "Stops the loop that displays a random " "activity under the bot."
-        ),
+        description=("Stops the loop that displays a random activity under the bot."),
     )
     @commands.is_owner()
     async def ActivityStop(self, ctx: commands.Context):
@@ -125,10 +123,9 @@ class Activity(commands.Cog):
             "activityrefresh",
             "arefresh",
         ],
-        brief=("(Bot owner only) Restarts/Refreshes the " "displayed activity."),
+        brief=("(Bot owner only) Restarts/Refreshes the displayed activity."),
         description=(
-            "Restarts/Refreshes the loop that displays "
-            "a random activity under the bot."
+            "Restarts/Refreshes the loop that displays a random activity under the bot."
         ),
     )
     @commands.is_owner()
@@ -140,12 +137,9 @@ class Activity(commands.Cog):
 
     @commands.command(
         aliases=["activitystart", "astart"],
-        brief=("(Bot owner only) Starts displaying a random " "activity."),
+        brief=("(Bot owner only) Starts displaying a random activity."),
         description=(
-            "Starts the loop that displays a random "
-            "activity under the bot. A random interval "
-            "between 30 to 180 minutes is chosen each "
-            "time it loops itself."
+            "Starts the loop that displays a random activity under the bot. A random interval between 30 to 180 minutes is chosen each time it loops itself."
         ),
     )
     @commands.is_owner()
