@@ -722,13 +722,19 @@ class Entanglements(commands.Cog):
 
     # command splitter for easier reading and navigating
 
-    @commands.group(brief="(Bot owner only) Git commands.", description="Git commands.")
+    @commands.group(
+        brief="(Bot owner only) Git commands.",
+        description="Command group for Git commands.",
+    )
     @commands.is_owner()
     async def git(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.reply("Invalid git command passed...", silent=True)
 
-    @git.command()
+    @git.command(
+        brief="(Bot owner only) Pulls the latest changes from the repository.",
+        description="Pulls the latest changes from the repository.",
+    )
     async def pull(self, ctx: commands.Context):
         process = await create_subprocess_shell(
             "git pull", stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -740,7 +746,10 @@ class Entanglements(commands.Cog):
         else:
             await ctx.reply(stdout.decode(), silent=True)
 
-    @git.command()
+    @git.command(
+        brief="(Bot owner only) Shows the status of the current branch.",
+        description="Shows the status of the current branch.",
+    )
     async def status(self, ctx: commands.Context):
         process = await create_subprocess_shell(
             "git status", stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -752,7 +761,10 @@ class Entanglements(commands.Cog):
         else:
             await ctx.reply(stdout.decode(), silent=True)
 
-    @git.command()
+    @git.command(
+        brief="(Bot owner only) Swaps to a different branch. Requires a branch name.",
+        description="Swaps to a different branch. Requires a branch name.",
+    )
     async def checkout(self, ctx: commands.Context, branch: str = ""):
         if not branch:
             await ctx.reply("You must specify a branch name!", silent=True)
@@ -771,7 +783,10 @@ class Entanglements(commands.Cog):
         else:
             await ctx.reply(stdout.decode(), silent=True)
 
-    @git.command()
+    @git.command(
+        brief="(Bot owner only) A minimalistic git-branch command. Requires an option.",
+        description="A minimalistic git-branch command. Has two options: 'delete' and 'list'. 'delete' requires a branch name.",
+    )
     async def branch(self, ctx: commands.Context, option: str = "", branch: str = ""):
         if not option:
             await ctx.reply("You must specify an option!", silent=True)
