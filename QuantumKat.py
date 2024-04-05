@@ -157,7 +157,9 @@ async def on_ready():
         # Order: message ID, channel ID, guild ID
         IDs = IDs.split("\n")
         try:
-            channel = await bot.fetch_channel(int(IDs[1]))
+            channel = await bot.get_channel(int(IDs[1]))
+            if channel is None:
+                channel = await bot.fetch_channel(int(IDs[1]))
             message = await channel.fetch_message(int(IDs[0]))
         except Exception:
             logger.error("Error fetching message to edit", exc_info=True)
