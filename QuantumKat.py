@@ -65,6 +65,8 @@ bot = commands.Bot(
     owner_ids=[int(OWNER_ID)],
 )
 
+bot.reboot_scheduled = False
+
 bot.db_conn = sqlite3.connect("quantumkat.db")
 bot.db_helper = DBHelper(bot.db_conn, logger)
 bot.log_helper = log_helper
@@ -137,6 +139,16 @@ async def is_authenticated(ctx: commands.Context) -> bool:
     return True
 
 
+async def is_reboot_scheduled(ctx: commands.Context) -> bool:
+    if bot.reboot_scheduled:
+        await ctx.reply(
+            "A reboot has been scheduled. Commands are disabled until the reboot is complete.",
+            silent=True,
+        )
+        return False
+    return True
+
+
 @bot.event
 async def on_ready():
     if Path("rebooted").exists():
@@ -145,7 +157,8 @@ async def on_ready():
         # Order: message ID, channel ID, guild ID
         IDs = IDs.split("\n")
         try:
-            message = await bot.get_channel(int(IDs[1])).fetch_message(int(IDs[0]))
+            channel = await bot.fetch_channel(int(IDs[1]))
+            message = await channel.fetch_message(int(IDs[0]))
         except Exception:
             logger.error("Error fetching message to edit", exc_info=True)
         if message:
@@ -175,6 +188,7 @@ Discord.py version: {__version__}
     print(message)
 
     bot.add_check(is_authenticated)
+    bot.add_check(is_reboot_scheduled)
 
 
 run(setup(bot))

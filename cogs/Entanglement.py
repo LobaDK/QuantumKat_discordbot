@@ -1007,7 +1007,9 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     )
     @commands.is_owner()
     async def reboot(self, ctx: commands.Context):
+        self.bot.reboot_scheduled = True
         msg = await ctx.send("Shutting down extensions and rebooting...")
+        await asyncsleep(10)
         with open("rebooted", "w") as f:
             if self.bot.discord_helper.is_dm(ctx):
                 f.write(f"{msg.id}\n{msg.channel.id}\nNone")
@@ -1020,6 +1022,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                 except commands.ExtensionNotLoaded:
                     continue
 
+        # Note: This doesn't really work on Windows.
         execl(executable, executable, *argv)
 
     # command splitter for easier reading and navigating
