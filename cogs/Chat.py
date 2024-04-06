@@ -33,6 +33,7 @@ class Chat(commands.Cog):
                                  You are quite sarcastic. You are allowed to have opinions on things.
                                  Many people interact with you, and it's over the chat program called Discord, so you should never exceed 1950 characters in a response.
                                  Currently, {user} is talking to you.
+                                 You are currently running on version {version}.
                                  Avoid repeating yourself."""
         # Attempt to get the OpenAI API key from the environment variables
         if os.environ.get("OPENAI_API_KEY"):
@@ -282,7 +283,12 @@ class Chat(commands.Cog):
                                 {
                                     "role": "system",
                                     "content": self.system_message.format(
-                                        user=ctx.author.name
+                                        user=ctx.author.name,
+                                        version=".".join(
+                                            str(
+                                                self.bot.misc_helper.get_git_commit_count()
+                                            )
+                                        ),
                                     ),
                                 },
                                 *conversation_history,

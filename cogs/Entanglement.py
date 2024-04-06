@@ -1202,6 +1202,13 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                 "You need to be replying to a message to use this command!", silent=True
             )
 
+    @commands.command()
+    async def version(self, ctx: commands.Context):
+        version = self.bot.misc_helper.get_git_commit_count()
+        # Turn the version number into a dot-separated string to make it look a little fancier.
+        version = ".".join(str(version))
+        await ctx.reply(f"Current version: {version}", silent=True)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Entanglements(bot))

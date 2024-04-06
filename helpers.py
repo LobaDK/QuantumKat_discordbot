@@ -415,3 +415,12 @@ class MiscHelper:
         """
         minutes, seconds = divmod(seconds, 60)
         return f"{int(minutes):02d}:{int(seconds):02d}"
+
+    def get_git_commit_count(self) -> int:
+        """
+        Gets the number of commits in the git repository.
+
+        Returns:
+            int: The number of commits in the git repository.
+        """
+        return int(os.popen("git rev-list --count HEAD").read().strip())
