@@ -12,6 +12,8 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from num2words import num2words
 from os import mkdir
+from threading import Thread
+import pubapi
 
 
 try:
@@ -191,6 +193,8 @@ Discord.py version: {__version__}
 
     bot.add_check(is_authenticated)
     bot.add_check(is_reboot_scheduled)
+
+    Thread(target=pubapi.start_api).start()
 
 
 run(setup(bot))
