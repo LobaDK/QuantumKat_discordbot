@@ -7,6 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from pydantic import BaseModel
 from glob import glob
+from pathlib import Path
+
+ABSOLUTE_PATH = "/var/www/aaaa/"
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(root_path="/api/public")
@@ -48,6 +51,11 @@ class SearchResponse(BaseModel):
     files: list[str]
     count: int
 
+class AppendSearch(Search):
+    pass
+
+class AppendSearchResponse(BaseModel):
+    file: str
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
@@ -61,8 +69,12 @@ async def http_exception_handler(request, exc):
 @limiter.limit("10/minute")
 async def aaaasearch(request: Request, search: Search = Depends(Search)):
     try:
-        files = glob("/var/www/aaaa/*")
-        files = [file for file in files if search.search in file]
+        files = glob(f"{ABSOLUTE_PATH}*")
+        files = [str(Path(file).name) for file in files if search.search in file]
+        if len(files) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No files found"
+            )
         return {
             "files": files,
             "count": len(files),
@@ -72,6 +84,28 @@ async def aaaasearch(request: Request, search: Search = Depends(Search)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
 
+@app.get("/a/", response_model=AppendSearchResponse)
+@limiter.limit("10/minute")
+async def a(request: Request, search: AppendSearch = Depends(AppendSearch)):
+    try:
+        files = glob(f"{ABSOLUTE_PATH}*")
+        files = [str(Path(file).name) for file in files if search.search in file]
+        if len(files) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="No files found"
+            )
+        if len(files) > 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Too many files found"
+            )
+        return {
+            "file": files[0],
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+            
 
 def start_api():
     uvicorn.run(app, host="127.0.0.1", port=8000)
