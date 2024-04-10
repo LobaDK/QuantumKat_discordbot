@@ -15,6 +15,16 @@ from os import mkdir
 from threading import Thread
 import pubapi
 
+from sql import models
+from sql.database import engine
+
+
+async def init_models():
+    async with engine.begin() as conn:
+        await conn.run_sync(models.Base.metadata.create_all)
+
+
+run(init_models())
 
 try:
     mkdir("logs")
@@ -29,7 +39,7 @@ logger = log_helper.create_logger("QuantumKat", "logs/QuantumKat.log")
 
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
-ignoreMissingExe = False
+ignoreMissingExe = True
 
 # List of required executables
 executables = ["ffmpeg", "ffprobe", "youtube-dl"]

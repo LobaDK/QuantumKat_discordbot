@@ -1,5 +1,10 @@
 from discord.ext import commands
 import asyncio
+import sys
+from sql import database
+from sql import crud, schemas
+
+sys.path.append(".")
 
 
 class Auth(commands.Cog):
@@ -24,12 +29,10 @@ class Auth(commands.Cog):
         if self.bot.discord_helper.is_dm(ctx):
             await ctx.send("This command must be used in a server.")
             return
-        authenticated_servers = self.bot.db_helper.read_table(
-            "authenticated_servers", ("server_id",), "is_authenticated = 1"
+        authenticated_servers = await crud.get_authenticated_servers(
+            database.AsyncSessionLocal
         )
-        denied_servers = self.bot.db_helper.read_table(
-            "authenticated_servers", ("server_id",), "is_authenticated = 0"
-        )
+        denied_servers = await crud.get_denied_servers(database.AsyncSessionLocal)
         authenticated_server_ids = [server[0] for server in authenticated_servers]
         denied_server_ids = [server[0] for server in denied_servers]
         if ctx.guild.id in authenticated_server_ids:
@@ -87,28 +90,26 @@ class Auth(commands.Cog):
                 await server_msg.edit(
                     content=f"{server_msg.content}\nRequest denied. If you believe this is a mistake, please contact the bot owner."
                 )
-                self.bot.db_helper.insert_into_table(
-                    "authenticated_servers",
-                    (
-                        "server_id",
-                        "server_name",
-                        "authenticated_by_id",
-                        "authenticated_by_name",
-                        "is_authenticated",
+                await crud.deny_authenticated_server(
+                    database.AsyncSessionLocal,
+                    schemas.AuthenticatedServerDeny(
+                        server_id=ctx.guild.id,
+                        server_name=ctx.guild.name,
+                        authenticated_by_id=response.author.id,
+                        requested_by_id=ctx.author.id,
+                        is_authenticated=False,
                     ),
-                    (ctx.guild.id, ctx.guild.name, ctx.author.id, ctx.author.name, 0),
                 )
                 return
-            self.bot.db_helper.insert_into_table(
-                "authenticated_servers",
-                (
-                    "server_id",
-                    "server_name",
-                    "authenticated_by_id",
-                    "authenticated_by_name",
-                    "is_authenticated",
+            await crud.add_authenticated_server(
+                database.AsyncSessionLocal,
+                schemas.AuthenticatedServerAdd(
+                    server_id=ctx.guild.id,
+                    server_name=ctx.guild.name,
+                    authenticated_by_id=response.author.id,
+                    requested_by_id=ctx.author.id,
+                    is_authenticated=True,
                 ),
-                (ctx.guild.id, ctx.guild.name, ctx.author.id, ctx.author.name, 1),
             )
             await server_msg.edit(
                 content=f"{server_msg.content}\nRequest approved. This server is now authenticated. You may need to wait a few seconds for the changes to take effect."
