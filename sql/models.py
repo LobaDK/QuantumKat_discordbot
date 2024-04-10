@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-
+from sqlalchemy.orm import relationship
 from .database import Base
 
 
@@ -9,12 +9,9 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, unique=True, index=True)
 
-
-class Server(Base):
-    __tablename__ = "servers"
-
-    id = Column(Integer, primary_key=True, index=True)
-    server_id = Column(Integer, unique=True, index=True)
+    # Relationships
+    chats = relationship("Chat", back_populates="user")
+    authenticated_servers = relationship("AuthenticatedServer", back_populates="user")
 
 
 class Chat(Base):
@@ -27,12 +24,16 @@ class Chat(Base):
     assistant_message = Column(String)
     shared_chat = Column(Integer)
 
+    # Relationships
+    user = relationship("User", back_populates="chats")
+
 
 class AuthenticatedServer(Base):
     __tablename__ = "authenticated_servers"
 
     id = Column(Integer, primary_key=True, index=True)
     server_id = Column(Integer, ForeignKey("servers.server_id"))
-    authenticated_by_id = Column(Integer, ForeignKey("users.user_id"))
-    requested_by_id = Column(Integer, ForeignKey("users.user_id"))
-    is_authenticated = Column(Integer)
+    user_id = Column(Integer, ForeignKey("users.user_id"))
+
+    # Relationships
+    user = relationship("User", back_populates="authenticated_servers")
