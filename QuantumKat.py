@@ -6,7 +6,7 @@ from sys import exit
 
 from helpers import LogHelper, MiscHelper, DiscordHelper
 from pathlib import Path
-from discord import Intents, __version__
+from discord import Intents, Interaction, __version__, ui, ButtonStyle
 from discord.ext import commands
 from dotenv import load_dotenv
 from num2words import num2words
@@ -17,6 +17,19 @@ import pubapi
 from sql import models, schemas
 from sql.database import engine, AsyncSessionLocal
 from sql import crud
+
+
+class ViewTest(ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+
+    @ui.button(label="Test", style=ButtonStyle.green)
+    async def test(self, button: ui.Button, interaction: Interaction):
+        await interaction.response.send_message("Test1")
+
+    @ui.button(label="Test2", style=ButtonStyle.red)
+    async def test2(self, button: ui.Button, interaction: Interaction):
+        await interaction.response.send_message("Test2")
 
 
 async def init_models():
@@ -140,6 +153,7 @@ async def is_reboot_scheduled(ctx: commands.Context) -> bool:
 #   Should the command remove the user from the database or just set a flag?
 async def ensure_user_in_db(ctx: commands.Context) -> None:
     if not await crud.check_user_exists(AsyncSessionLocal, ctx.author.id):
+        await ctx.reply("test", view=ViewTest())
         try:
             await crud.add_user(
                 AsyncSessionLocal,
