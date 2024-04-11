@@ -213,9 +213,9 @@ Discord.py version: {__version__}
     logger.info(message)
     print(message)
 
-    bot.add_check(is_authenticated)
     bot.add_check(is_reboot_scheduled)
     bot.add_check(ensure_user_in_db)
+    bot.add_check(is_authenticated)
 
     Thread(target=pubapi.start_api).start()
 
