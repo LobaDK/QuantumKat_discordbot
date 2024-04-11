@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 
 from . import models, schemas
 
@@ -83,14 +83,12 @@ async def add_chat(db: AsyncSession, chat: schemas.ChatAdd):
     Returns:
     None
     """
-    if not await check_user_exists(db, chat.user_id):
-        await add_user(db, schemas.UserBase(user_id=chat.user_id))
     async with db() as db:
         db.add(models.Chat(**chat.model_dump()))
         await db.commit()
 
 
-async def get_n_chats_for_user(db: AsyncSession, user_id: int, server_id: int, n: int):
+async def get_n_chats_for_user(db: AsyncSession, chat: schemas.ChatGet):
     """
     Retrieve the latest `n` chats for a specific user in a specific server.
 
@@ -105,17 +103,17 @@ async def get_n_chats_for_user(db: AsyncSession, user_id: int, server_id: int, n
     """
     async with db() as db:
         result = await db.execute(
-            select(models.Chat)
-            .where(models.Chat.user_id == user_id)
-            .where(models.Chat.server_id == server_id)
-            .where(models.Chat.shared_chat is False)
+            select(models.Chat.user_message, models.Chat.assistant_message)
+            .where(models.Chat.user_id == chat.user_id)
+            .where(models.Chat.server_id == chat.server_id)
+            .where(models.Chat.shared_chat == 0)
             .order_by(models.Chat.id.desc())
-            .limit(n)
+            .limit(chat.n)
         )
         return result.all()
 
 
-async def get_n_shared_chats_for_server(db: AsyncSession, server_id: int, n: int):
+async def get_n_shared_chats_for_server(db: AsyncSession, chat: schemas.ChatGet):
     """
     Retrieve the n most recent shared chats for a given server.
 
@@ -129,11 +127,11 @@ async def get_n_shared_chats_for_server(db: AsyncSession, server_id: int, n: int
     """
     async with db() as db:
         result = await db.execute(
-            select(models.Chat)
-            .where(models.Chat.server_id == server_id)
-            .where(models.Chat.shared_chat is True)
+            select(models.Chat.user_message, models.Chat.assistant_message)
+            .where(models.Chat.server_id == chat.server_id)
+            .where(models.Chat.shared_chat == 1)
             .order_by(models.Chat.id.desc())
-            .limit(n)
+            .limit(chat.n)
         )
         return result.all()
 
@@ -158,13 +156,12 @@ async def delete_n_chats_for_user(
             select(models.Chat)
             .where(models.Chat.user_id == user_id)
             .where(models.Chat.server_id == server_id)
-            .where(models.Chat.shared_chat is False)
+            .where(models.Chat.shared_chat == 0)
             .order_by(models.Chat.id.desc())
             .limit(n)
         )
         for c in chat:
-            db.delete(c)
-        await db.commit()
+            await db.delete(c)
 
 
 async def delete_n_shared_chats_for_server(db: AsyncSession, server_id: int, n: int):
@@ -183,13 +180,12 @@ async def delete_n_shared_chats_for_server(db: AsyncSession, server_id: int, n: 
         chat = await db.execute(
             select(models.Chat)
             .where(models.Chat.server_id == server_id)
-            .where(models.Chat.shared_chat is True)
+            .where(models.Chat.shared_chat == 1)
             .order_by(models.Chat.id.desc())
             .limit(n)
         )
         for c in chat:
-            db.delete(c)
-        await db.commit()
+            await db.delete(c)
 
 
 async def delete_all_chats_for_user(db: AsyncSession, user_id: int, server_id: int):
@@ -209,11 +205,10 @@ async def delete_all_chats_for_user(db: AsyncSession, user_id: int, server_id: i
             select(models.Chat)
             .where(models.Chat.user_id == user_id)
             .where(models.Chat.server_id == server_id)
-            .where(models.Chat.shared_chat is False)
+            .where(models.Chat.shared_chat == 0)
         )
         for c in chat:
-            db.delete(c)
-        await db.commit()
+            await db.delete(c)
 
 
 async def delete_all_shared_chats_for_server(db: AsyncSession, server_id: int):
@@ -231,11 +226,10 @@ async def delete_all_shared_chats_for_server(db: AsyncSession, server_id: int):
         chat = await db.execute(
             select(models.Chat)
             .where(models.Chat.server_id == server_id)
-            .where(models.Chat.shared_chat is True)
+            .where(models.Chat.shared_chat == 1)
         )
         for c in chat:
-            db.delete(c)
-        await db.commit()
+            await db.delete(c)
 
 
 async def get_authenticated_servers(db: AsyncSession):
@@ -250,11 +244,38 @@ async def get_authenticated_servers(db: AsyncSession):
     """
     async with db() as db:
         result = await db.execute(
-            select(models.AuthenticatedServer).where(
-                models.AuthenticatedServer.is_authenticated is True
+            select(models.AuthenticatedServer.server_id).where(
+                models.AuthenticatedServer.is_authenticated == 1
             )
         )
         return result.all()
+
+
+async def get_authenticated_server_by_id_or_name(
+    db: AsyncSession, server_id_or_name: int | str
+):
+    """
+    Retrieves an authenticated server from the database by ID or name.
+
+    Args:
+        db (AsyncSession): The database session.
+        server_id_or_name (int | str): The ID or name of the server.
+
+    Returns:
+        models.AuthenticatedServer: The authenticated server.
+    """
+    async with db() as db:
+        result = await db.execute(
+            select(models.AuthenticatedServer).where(
+                or_(
+                    models.AuthenticatedServer.server_id == server_id_or_name,
+                    models.AuthenticatedServer.server_name.like(
+                        f"%{server_id_or_name}%"
+                    ),
+                )
+            )
+        )
+        return result.scalar_one_or_none()
 
 
 async def get_denied_servers(db: AsyncSession):
@@ -269,8 +290,8 @@ async def get_denied_servers(db: AsyncSession):
     """
     async with db() as db:
         result = await db.execute(
-            select(models.AuthenticatedServer).where(
-                models.AuthenticatedServer.is_authenticated is False
+            select(models.AuthenticatedServer.server_id).where(
+                models.AuthenticatedServer.is_authenticated == 0
             )
         )
         return result.all()
@@ -289,10 +310,6 @@ async def add_authenticated_server(
     Returns:
     None
     """
-    if not await check_server_exists(db, server.server_id):
-        await add_server(db, schemas.ServerBase(server_id=server.server_id))
-    if not await check_user_exists(db, server.authenticated_by_id):
-        await add_user(db, schemas.UserBase(user_id=server.authenticated_by_id))
     async with db() as db:
         db.add(models.AuthenticatedServer(**server.model_dump()))
         await db.commit()
@@ -311,12 +328,9 @@ async def deny_authenticated_server(
     Returns:
         None
     """
-    if not await check_server_exists(db, server.server_id):
-        await add_server(db, schemas.ServerBase(server_id=server.server_id))
-    if not await check_user_exists(db, server.server_id):
-        await add_user(db, schemas.UserBase(user_id=server.server_id))
     async with db() as db:
         db.add(models.AuthenticatedServer(**server.model_dump()))
+        await db.commit()
 
 
 async def remove_authenticated_server(db: AsyncSession, server_id: int):
@@ -331,10 +345,10 @@ async def remove_authenticated_server(db: AsyncSession, server_id: int):
         None
     """
     async with db() as db:
-        server = await db.execute(
+        result = await db.execute(
             select(models.AuthenticatedServer).where(
                 models.AuthenticatedServer.server_id == server_id
             )
         )
-        db.delete(server)
-        await db.commit()
+        server = result.scalar_one_or_none()
+        await db.delete(server)

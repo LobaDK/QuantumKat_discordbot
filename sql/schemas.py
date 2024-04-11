@@ -10,11 +10,19 @@ class ServerBase(BaseModel):
 
 
 class ChatBase(ServerBase, UserBase):
-    shared_chat: bool
+    pass
+
+
+class UserAdd(UserBase):
+    username: str
+
+
+class ServerAdd(ServerBase):
+    server_name: str
 
 
 class ChatGet(ChatBase):
-    pass
+    n: int
 
     class Config:
         from_attributes = True
@@ -23,6 +31,7 @@ class ChatGet(ChatBase):
 class ChatAdd(ChatBase):
     user_message: str
     assistant_message: str
+    shared_chat: int
 
 
 class AuthenticatedServerGet(ServerBase):

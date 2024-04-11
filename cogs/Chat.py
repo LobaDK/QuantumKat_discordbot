@@ -1,19 +1,22 @@
 from openai import AsyncOpenAI as OpenAI, OpenAIError
 import tiktoken
 import os
-import sqlite3
 import requests
 import datetime
 import calendar
+import sys
 
 from discord.ext import commands
+
+from sql import database
+from sql import crud, schemas
+
+sys.path.append(".")
 
 
 class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
-        self.db_conn = bot.db_conn
 
         self.logger = bot.log_helper.create_logger("Chat", "logs/Chat.log")
 
@@ -88,30 +91,25 @@ class Chat(commands.Cog):
         Returns:
         None
         """
-        user_id = ctx.author.id
-        user_name = ctx.author.name
         server_id, server_name = await self.get_server_id_and_name(ctx)
-        sql = "INSERT INTO chat (user_id, user_name, server_id, server_name, user_message, assistant_message, shared_chat) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        params = (
-            user_id,
-            user_name,
-            server_id,
-            server_name,
-            user_message,
-            assistant_message,
-            shared_chat,
+        # Check if the server ID is in the database. Since we're already adding server ID's
+        #   to the database when the bot joins a server or starts up, this can only be a DM.
+        if await crud.check_server_exists(database.AsyncSessionLocal, server_id):
+            await crud.add_server(
+                database.AsyncSessionLocal,
+                schemas.ServerAdd(server_id=server_id, server_name=server_name),
+            )
+
+        await crud.add_chat(
+            database.AsyncSessionLocal,
+            schemas.ChatAdd(
+                user_id=ctx.author.id,
+                server_id=server_id,
+                user_message=user_message,
+                assistant_message=assistant_message,
+                shared_chat=shared_chat,
+            ),
         )
-        try:
-            self.db_conn.execute(sql, params)
-            self.db_conn.commit()
-        except sqlite3.Error as e:
-            self.logger.error(
-                f"An error occurred while adding a chat message to the database: {e}"
-            )
-            await ctx.reply(
-                "An error occurred while adding the chat message to the database.",
-                silent=True,
-            )
 
     async def database_read(self, ctx: commands.Context, shared_chat: bool) -> list:
         """
@@ -125,27 +123,19 @@ class Chat(commands.Cog):
             list: A list of dictionaries containing the user and assistant messages.
 
         """
-        user_id = ctx.author.id
         server_id, _ = await self.get_server_id_and_name(ctx)
         if shared_chat:
-            sql = "SELECT user_message, assistant_message FROM chat WHERE server_id = ? AND shared_chat = 1 ORDER BY id DESC LIMIT 10"
-            params = (server_id,)
+            result = await crud.get_n_shared_chats_for_server(
+                database.AsyncSessionLocal,
+                schemas.ChatGet(server_id=server_id, user_id=ctx.author.id, n=10),
+            )
         else:
-            sql = "SELECT user_message, assistant_message FROM chat WHERE user_id = ? AND server_id = ? AND shared_chat = 0 ORDER BY id DESC LIMIT 10"
-            params = (user_id, server_id)
-        try:
-            rows = self.db_conn.execute(sql, params).fetchall()
-        except sqlite3.Error as e:
-            self.logger.error(
-                f"An error occurred while reading chat messages from the database: {e}"
+            result = await crud.get_n_chats_for_user(
+                database.AsyncSessionLocal,
+                schemas.ChatGet(server_id=server_id, user_id=ctx.author.id, n=10),
             )
-            await ctx.reply(
-                "An error occurred while reading chat messages from the database.",
-                silent=True,
-            )
-            return []
         messages = []
-        for user_message, assistant_message in rows:
+        for user_message, assistant_message in result:
             messages.append({"role": "assistant", "content": assistant_message})
             messages.append({"role": "user", "content": user_message})
         messages.reverse()
@@ -162,24 +152,14 @@ class Chat(commands.Cog):
         Returns:
             None
         """
-        user_id = ctx.author.id
-        server_id, _ = await self.get_server_id_and_name(ctx)
+        server_id, server_name = await self.get_server_id_and_name(ctx)
         if shared_chat:
-            sql = "DELETE FROM chat WHERE server_id = ? AND shared_chat = 1"
-            params = (server_id,)
-        else:
-            sql = "DELETE FROM chat WHERE user_id = ? AND server_id = ? AND shared_chat = 0"
-            params = (user_id, server_id)
-        try:
-            self.db_conn.execute(sql, params)
-            self.db_conn.commit()
-        except sqlite3.Error as e:
-            self.logger.error(
-                f"An error occurred while removing chat messages from the database: {e}"
+            await crud.delete_all_shared_chats_for_server(
+                database.AsyncSessionLocal, server_id
             )
-            await ctx.reply(
-                "An error occurred while removing chat messages from the database.",
-                silent=True,
+        else:
+            await crud.delete_all_chats_for_user(
+                database.AsyncSessionLocal, server_id, ctx.author.id
             )
 
     async def get_usage(self) -> dict:
@@ -215,7 +195,7 @@ class Chat(commands.Cog):
             server_name = ctx.guild.name
         else:
             server_id = ctx.channel.id
-            server_name = "DM or Group Chat"
+            server_name = "DM"
         return server_id, server_name
 
     async def split_message_by_sentence(self, message: str) -> list:
@@ -307,37 +287,16 @@ class Chat(commands.Cog):
                             )
                             chat_response = response.choices[0].message.content
 
-                            try:
-                                self.bot.db_helper.insert_into_table(
-                                    "chat",
-                                    (
-                                        "user_id",
-                                        "user_name",
-                                        "server_id",
-                                        "server_name",
-                                        "user_message",
-                                        "assistant_message",
-                                        "shared_chat",
-                                    ),
-                                    (
-                                        ctx.author.id,
-                                        ctx.author.name,
-                                        ctx.guild.id,
-                                        ctx.guild.name,
-                                        user_message,
-                                        chat_response,
-                                        shared_chat,
-                                    ),
-                                )
-                            except sqlite3.Error:
-                                self.logger.error(
-                                    "An error occurred while adding a chat message to the database.",
-                                    exc_info=True,
-                                )
-                                await ctx.reply(
-                                    "An error occurred while adding the chat message to the database.",
-                                    silent=True,
-                                )
+                            await crud.add_chat(
+                                database.AsyncSessionLocal,
+                                schemas.ChatAdd(
+                                    user_id=ctx.author.id,
+                                    server_id=ctx.guild.id,
+                                    user_message=user_message,
+                                    assistant_message=chat_response,
+                                    shared_chat=shared_chat,
+                                ),
+                            )
 
                             messages = []
                             for message in conversation_history:

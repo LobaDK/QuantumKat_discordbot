@@ -12,7 +12,6 @@ class Auth(commands.Cog):
         self.bot = bot
 
         self.logger = bot.log_helper.create_logger("Auth", "logs/Auth.log")
-        self.db_conn = bot.db_conn
 
     @commands.command(aliases=["requestauth", "auth"])
     @commands.cooldown(1, 300, commands.BucketType.guild)
@@ -94,7 +93,6 @@ class Auth(commands.Cog):
                     database.AsyncSessionLocal,
                     schemas.AuthenticatedServerDeny(
                         server_id=ctx.guild.id,
-                        server_name=ctx.guild.name,
                         authenticated_by_id=response.author.id,
                         requested_by_id=ctx.author.id,
                         is_authenticated=False,
@@ -105,7 +103,6 @@ class Auth(commands.Cog):
                 database.AsyncSessionLocal,
                 schemas.AuthenticatedServerAdd(
                     server_id=ctx.guild.id,
-                    server_name=ctx.guild.name,
                     authenticated_by_id=response.author.id,
                     requested_by_id=ctx.author.id,
                     is_authenticated=True,
@@ -137,30 +134,25 @@ class Auth(commands.Cog):
             if not self.bot.discord_helper.is_bot_owner(ctx):
                 await ctx.send("You must be the bot owner to deauthenticate a server.")
                 return
-            server = self.db_conn.execute(
-                "SELECT * FROM authenticated_servers WHERE server_id = ? OR server_name = ?",
-                (server_id_or_name, server_id_or_name),
-            ).fetchone()
+            server = crud.get_authenticated_server_by_id_or_name(
+                database.AsyncSessionLocal, server_id_or_name
+            )
             if server is None:
                 await ctx.send("Server not found.")
                 return
-            self.db_conn.execute(
-                "DELETE FROM authenticated_servers WHERE server_id = ? OR server_name = ?",
-                (server_id_or_name, server_id_or_name),
+            await crud.remove_authenticated_server(
+                database.AsyncSessionLocal, server[0]
             )
-            self.db_conn.commit()
             await ctx.send(
-                f"Deauthenticated server `{server[2]}` with ID `{server[1]}`."
+                f"Deauthenticated server `{server[1]}` with ID `{server[0]}`."
             )
         elif self.bot.discord_helper.is_dm(ctx):
             await ctx.send("This command must be used in a server.")
             return
         elif self.bot.discord_helper.is_privileged_user(ctx):
-            self.db_conn.execute(
-                "DELETE FROM authenticated_servers WHERE server_id = ?",
-                (ctx.guild.id,),
+            await crud.remove_authenticated_server(
+                database.AsyncSessionLocal, ctx.guild.id
             )
-            self.db_conn.commit()
             await ctx.send("This server has been deauthenticated.")
         else:
             await ctx.send(
