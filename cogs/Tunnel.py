@@ -3,13 +3,18 @@ from datetime import datetime
 
 from discord.ext import commands
 from discord import Client
+from helpers import LogHelper
 
 
 class Tunnel(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger("Tunnel", "logs/Tunnel.log")
+        self.logger = bot.log_helper.create_logger(
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="Tunnel", log_file="logs/tunnel/Tunnel.log"
+            )
+        )
 
     @commands.Cog.listener()
     async def on_command_error(

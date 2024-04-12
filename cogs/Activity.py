@@ -2,6 +2,7 @@ from random import randint, choice
 from discord import Game
 from discord.ext import commands, tasks
 from num2words import num2words
+from helpers import LogHelper
 
 
 class Activity(commands.Cog):
@@ -9,7 +10,11 @@ class Activity(commands.Cog):
 
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger("Activity", "logs/Activity.log")
+        self.logger = bot.log_helper.create_logger(
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="Activity", log_file="logs/activity/Activity.log"
+            )
+        )
 
         self.hissList = ["Hissing", "Hissed"]
 

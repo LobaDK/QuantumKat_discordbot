@@ -47,15 +47,19 @@ extensions = (
 class Search(BaseModel):
     search: str
 
+
 class SearchResponse(BaseModel):
     files: list[str]
     count: int
 
+
 class AppendSearch(Search):
     pass
 
+
 class AppendSearchResponse(BaseModel):
     file: str
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
@@ -84,6 +88,7 @@ async def aaaasearch(request: Request, search: Search = Depends(Search)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
 
+
 @app.get("/a/", response_model=AppendSearchResponse)
 @limiter.limit("10/minute")
 async def a(request: Request, search: AppendSearch = Depends(AppendSearch)):
@@ -105,7 +110,7 @@ async def a(request: Request, search: AppendSearch = Depends(AppendSearch)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
-            
+
 
 def start_api():
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -18,6 +18,7 @@ import discord
 from discord.ext import commands
 from num2words import num2words
 from psutil import cpu_percent, disk_usage, virtual_memory
+from helpers import LogHelper
 
 
 class Entanglements(commands.Cog):
@@ -25,7 +26,10 @@ class Entanglements(commands.Cog):
         self.bot = bot
 
         self.logger = bot.log_helper.create_logger(
-            "Entanglements", "logs/Entanglements.log"
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="Entanglements",
+                log_file="logs/entanglements/Entanglements.log",
+            )
         )
 
     initial_extensions = []

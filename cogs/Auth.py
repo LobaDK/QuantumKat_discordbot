@@ -3,6 +3,7 @@ import asyncio
 import sys
 from sql import database
 from sql import crud, schemas
+from helpers import LogHelper
 
 sys.path.append(".")
 
@@ -11,7 +12,7 @@ class Auth(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger("Auth", "logs/Auth.log")
+        self.logger = bot.log_helper.create_logger(LogHelper.TimedRotatingFileAndStreamHandler(logger_name="Auth", log_file="logs/auth/Auth.log"))
 
     @commands.command(aliases=["requestauth", "auth"])
     @commands.cooldown(1, 300, commands.BucketType.guild)

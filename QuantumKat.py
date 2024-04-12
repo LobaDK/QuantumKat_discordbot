@@ -90,7 +90,11 @@ log_helper = LogHelper()
 misc_helper = MiscHelper()
 discord_helper = DiscordHelper()
 
-logger = log_helper.create_logger("QuantumKat", "logs/QuantumKat.log")
+logger = log_helper.create_logger(
+    log_helper.TimedRotatingFileAndStreamHandler(
+        logger_name="QuantumKat", log_file="logs/quantumkat/QuantumKat.log"
+    )
+)
 
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
@@ -197,7 +201,8 @@ async def ensure_user_in_db(ctx: commands.Context) -> None:
         view.message = await ctx.send(
             textwrap.dedent(
                 """\
-            Hello! Looks like this is your first time interacting with me. In order to for certain commands to work properly, I need to store your Discord username and user ID in my database. Alongside this, I also log all errors and my commands for debugging purposes.
+            Hello! Looks like this is your first time interacting with me. In order for certain commands to work properly, I need to store your Discord username and user ID in my database. Alongside this, I also log all errors and my commands for debugging purposes.
+            Logs are stored for approximately 1-7 days before being deleted.
             The following commands store additional information in the database:
 
             - `?chat` and `?sharedchat` stores the chat history between you and me.
@@ -281,7 +286,7 @@ Application owner IDs: {bot.owner_ids}
 Latency to Discord: {int(bot.latency * 1000)}ms.
 Discord.py version: {discord.__version__}
 \nStarted at {datetime.now()}\n
-{bot.user} has appeared from the {num2words(randint(1,1000),
+{bot.user} has appeared from the {num2words(randint(1, 1000),
     to="ordinal_num")} {choice(quantum)}!"""
     logger.info(message)
     print(message)

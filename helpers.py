@@ -1,9 +1,12 @@
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import sqlite3
 import os
 import shutil
 import discord
 from discord.ext import commands
+from pydantic import BaseModel
+from typing import Optional
 
 """
 This module contains helper classes for logging, database operations, Discord-related operations, and miscellaneous utility functions.
@@ -25,6 +28,18 @@ class LogHelper:
         create_logger(logger_name, log_file, file_log_level, stream_log_level): Creates a logger with the given name and log file.
     """
 
+    class HandlerBase(BaseModel):
+        logger_name: str
+        log_file: str
+
+    class FileAndStreamHandler(HandlerBase):
+        file_log_level: Optional[int] = logging.INFO
+        stream_log_level: Optional[int] = logging.ERROR
+
+    class TimedRotatingFileAndStreamHandler(FileAndStreamHandler):
+        interval: Optional[str] = "midnight"
+        backup_count: Optional[int] = 7
+
     def logger_exists(self, logger_name: str) -> bool:
         """
         Checks if a logger with the given name exists.
@@ -38,11 +53,7 @@ class LogHelper:
         return logger_name in logging.Logger.manager.loggerDict
 
     def create_logger(
-        self,
-        logger_name: str,
-        log_file: str,
-        file_log_level=logging.INFO,
-        stream_log_level=logging.ERROR,
+        self, log: FileAndStreamHandler | TimedRotatingFileAndStreamHandler
     ) -> logging.Logger:
         """
         Creates a logger with the given name and log file.
@@ -52,24 +63,31 @@ class LogHelper:
         If the logger already exists, it will be returned without any changes.
 
         Args:
-            logger_name (str): The name of the logger to create.
-            log_file (str): The path to the log file to use.
-            file_log_level (int, optional): The log level for the file handler. Defaults to logging.INFO.
-            stream_log_level (int, optional): The log level for the stream handler. Defaults to logging.ERROR.
+            log (FileAndStreamHandler | TimedRotatingFileAndStreamHandler): The log object containing the logger name and log file.
 
         Returns:
             logging.Logger: The created logger.
         """
-        if self.logger_exists(logger_name):
-            return logging.getLogger(logger_name)
+        if self.logger_exists(log.logger_name):
+            return logging.getLogger(log.logger_name)
 
-        logger = logging.getLogger(logger_name)
+        logger = logging.getLogger(log.logger_name)
         logger.setLevel(logging.DEBUG)
-        file_handler = self._create_file_handler(log_file, file_log_level)
-        logger.addHandler(file_handler)
 
-        stream_handler = self._create_stream_handler(stream_log_level)
+        stream_handler = self._create_stream_handler(log.stream_log_level)
         logger.addHandler(stream_handler)
+
+        if isinstance(log, self.FileAndStreamHandler):
+            file_handler = self._create_file_handler(log.log_file, log.file_log_level)
+            logger.addHandler(file_handler)
+        elif isinstance(log, self.TimedRotatingFileAndStreamHandler):
+            timed_rotating_file_handler = self._create_timed_rotating_file_handler(
+                log.log_file,
+                log.file_log_level,
+                log.interval,
+                log.backup_count,
+            )
+            logger.addHandler(timed_rotating_file_handler)
 
         return logger
 
@@ -118,6 +136,37 @@ class LogHelper:
         handler.setLevel(level)
         return handler
 
+    def _create_timed_rotating_file_handler(
+        self, log_file: str, level: int, interval: str, backup_count: int
+    ) -> TimedRotatingFileHandler:
+        """
+        Creates a logging TimedRotatingFileHandler with the specified log file, level, interval, and backup count.
+
+        Args:
+            log_file (str): The path and name of the log file to create.
+            level (int): The log level for the file handler.
+            interval (str): The interval at which log files should be rotated (e.g., 'midnight', 'daily', 'weekly', 'monthly').
+            backup_count (int): The number of backup log files to keep.
+
+        Returns:
+            logging.handlers.TimedRotatingFileHandler: The created TimedRotatingFileHandler object.
+        """
+        handler = TimedRotatingFileHandler(
+            filename=log_file,
+            when=interval,
+            backupCount=backup_count,
+            encoding="utf-8",
+        )
+        date_format = "%Y-%m-%d %H:%M:%S"
+        formatter = logging.Formatter(
+            "[{asctime}] [{levelname:<8}] {name}: {message}",
+            datefmt=date_format,
+            style="{",
+        )
+        handler.setFormatter(formatter)
+        handler.setLevel(level)
+        return handler
+
 
 class DBHelper:
     """
@@ -140,7 +189,11 @@ class DBHelper:
     def __init__(
         self,
         conn: sqlite3.Connection,
-        logger=LogHelper().create_logger("DBHelper", "logs/db.log"),
+        logger=LogHelper().create_logger(
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="DBHelper", log_file="logs/db.log"
+            )
+        ),
     ):
         """
         DBHelper constructor.

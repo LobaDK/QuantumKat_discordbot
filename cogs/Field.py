@@ -11,13 +11,18 @@ from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
 from re import compile
+from helpers import LogHelper
 
 
 class Fields(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger("Fields", "logs/Fields.log")
+        self.logger = bot.log_helper.create_logger(
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="Fields", log_file="logs/fields/Fields.log"
+            )
+        )
 
         self.aURL = "https://aaaa.lobadk.com/"
         self.a_folder = "/var/www/aaaa/"

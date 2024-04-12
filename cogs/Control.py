@@ -2,6 +2,7 @@ from random import choice
 import discord
 
 from discord.ext import commands
+from helpers import LogHelper
 
 
 class Control(commands.Cog):
@@ -9,7 +10,11 @@ class Control(commands.Cog):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
-        self.logger = bot.log_helper.create_logger("Control", "logs/Control.log")
+        self.logger = bot.log_helper.create_logger(
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="Control", log_file="logs/control/Control.log"
+            )
+        )
 
     async def get_permissions(self, guild: discord.Guild) -> list[str]:
         permissions = []

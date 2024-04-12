@@ -10,6 +10,7 @@ from discord.ext import commands
 
 from sql import database
 from sql import crud, schemas
+from helpers import LogHelper
 
 sys.path.append(".")
 
@@ -18,7 +19,7 @@ class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger("Chat", "logs/Chat.log")
+        self.logger = bot.log_helper.create_logger(LogHelper.TimedRotatingFileAndStreamHandler(logger_name="Chat", log_file="logs/chat/Chat.log"))
 
         self.historylogger = bot.log_helper.create_logger(
             "ChatHistory", "logs/ChatHistory.log"
