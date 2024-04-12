@@ -6,30 +6,70 @@ from sys import exit
 
 from helpers import LogHelper, MiscHelper, DiscordHelper
 from pathlib import Path
-from discord import Intents, Interaction, __version__, ui, ButtonStyle
+import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from num2words import num2words
 from os import mkdir
 from threading import Thread
 import pubapi
+import textwrap
 
 from sql import models, schemas
 from sql.database import engine, AsyncSessionLocal
 from sql import crud
 
+TIMEOUT_IN_SECONDS = 60
 
-class ViewTest(ui.View):
-    def __init__(self):
-        super().__init__(timeout=60)
 
-    @ui.button(label="Test", style=ButtonStyle.green)
-    async def test(self, button: ui.Button, interaction: Interaction):
-        await interaction.response.send_message("Test1")
+class ViewTest(discord.ui.View):
+    def __init__(self, ctx: commands.Context):
+        super().__init__(timeout=TIMEOUT_IN_SECONDS)
+        self.value = None
+        self.ctx = ctx
 
-    @ui.button(label="Test2", style=ButtonStyle.red)
-    async def test2(self, button: ui.Button, interaction: Interaction):
-        await interaction.response.send_message("Test2")
+    async def disable_buttons(self):
+        for item in self.children:
+            item.disabled = True
+
+    async def interaction_check(
+        self, interaction: discord.Interaction[discord.Client]
+    ) -> bool:
+        if interaction.user.id != self.ctx.author.id:
+            await interaction.response.send_message(
+                "You can't interact with this message.", ephemeral=True
+            )
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        await self.disable_buttons()
+        await self.message.edit(view=self)
+        await self.message.edit(
+            content=f"{self.message.content}\n\nTimed out waiting for response. Please try again.",
+        )
+        self.value = False
+        self.stop()
+
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
+    async def confirm(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.disable_buttons()
+        await self.message.edit(view=self)
+        await interaction.response.defer()
+        self.value = True
+        self.stop()
+
+    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
+    async def declined(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.disable_buttons()
+        await self.message.edit(view=self)
+        await interaction.response.defer()
+        self.value = False
+        self.stop()
 
 
 async def init_models():
@@ -78,7 +118,7 @@ if TOKEN is None or TOKEN == "":
 
 # Gives the bot default access as well as access
 # to contents of messages and managing members
-intents = Intents.default()
+intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
@@ -153,18 +193,37 @@ async def is_reboot_scheduled(ctx: commands.Context) -> bool:
 #   Should the command remove the user from the database or just set a flag?
 async def ensure_user_in_db(ctx: commands.Context) -> None:
     if not await crud.check_user_exists(AsyncSessionLocal, ctx.author.id):
-        await ctx.reply("test", view=ViewTest())
-        try:
-            await crud.add_user(
-                AsyncSessionLocal,
-                schemas.UserAdd(user_id=ctx.author.id, username=ctx.author.name),
-            )
-        except Exception:
-            logger.error("Error adding user to database", exc_info=True)
-            await ctx.reply(
-                "An error occurred. Please try again later and contact the bot owner if it continues.",
-                silent=True,
-            )
+        view = ViewTest(ctx)
+        view.message = await ctx.send(
+            textwrap.dedent(
+                """\
+            Hello! Looks like this is your first time interacting with me. In order to for certain commands to work properly, I need to store your Discord username and user ID in my database. Alongside this, I also log all errors and my commands for debugging purposes.
+            The following commands store additional information in the database:
+
+            - `?chat` and `?sharedchat` stores the chat history between you and me.
+
+            I do not store or log normal chat messages.
+            Do you agree to this?
+            """,
+            ),
+            view=view,
+            ephemeral=True,
+        )
+        await view.wait()
+        if view.value:
+            try:
+                await crud.add_user(
+                    AsyncSessionLocal,
+                    schemas.UserAdd(user_id=ctx.author.id, username=ctx.author.name),
+                )
+            except Exception:
+                logger.error("Error adding user to database", exc_info=True)
+                await ctx.reply(
+                    "An error occurred. Please try again later and contact the bot owner if it continues.",
+                    silent=True,
+                )
+                return False
+        else:
             return False
     return True
 
@@ -220,7 +279,7 @@ Application name: {bot.appinfo.name}
 Application owner: {bot.appinfo.owner}
 Application owner IDs: {bot.owner_ids}
 Latency to Discord: {int(bot.latency * 1000)}ms.
-Discord.py version: {__version__}
+Discord.py version: {discord.__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1,1000),
     to="ordinal_num")} {choice(quantum)}!"""
