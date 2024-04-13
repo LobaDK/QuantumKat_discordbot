@@ -19,10 +19,16 @@ class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(LogHelper.TimedRotatingFileAndStreamHandler(logger_name="Chat", log_file="logs/chat/Chat.log"))
+        self.logger = bot.log_helper.create_logger(
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="Chat", log_file="logs/chat/Chat.log"
+            )
+        )
 
         self.historylogger = bot.log_helper.create_logger(
-            "ChatHistory", "logs/ChatHistory.log"
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="ChatHistory", log_file="logs/chat/ChatHistory.log"
+            )
         )
 
         # Set the model encoding for tiktoken
