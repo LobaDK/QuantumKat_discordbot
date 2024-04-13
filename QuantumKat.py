@@ -10,7 +10,6 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from num2words import num2words
-from os import mkdir
 from threading import Thread
 import pubapi
 import textwrap
@@ -46,7 +45,7 @@ class ViewTest(discord.ui.View):
         await self.disable_buttons()
         await self.message.edit(view=self)
         await self.message.edit(
-            content=f"{self.message.content}\n\nTimed out waiting for response. Please try again.",
+            content=f"{self.message.content}\n\nTimed out waiting for user response. Please try again.",
         )
         self.value = False
         self.stop()
@@ -80,11 +79,6 @@ async def init_models():
 
 
 run(init_models())
-
-try:
-    mkdir("logs")
-except FileExistsError:
-    pass
 
 log_helper = LogHelper()
 misc_helper = MiscHelper()
@@ -201,8 +195,8 @@ async def ensure_user_in_db(ctx: commands.Context) -> None:
         view.message = await ctx.send(
             textwrap.dedent(
                 """\
-            Hello! Looks like this is your first time interacting with me. In order for certain commands to work properly, I need to store your Discord username and user ID in my database. Alongside this, I also log all errors and my commands for debugging purposes.
-            Logs are stored for approximately 1-7 days before being deleted.
+            Hello! Looks like this is your first time interacting with me. In order for certain commands to work properly, I need to store your Discord username and ID in my database. Alongside this, I also log all errors and my commands for debugging purposes.
+            Logs are stored for approximately 7 days before being deleted.
             The following commands store additional information in the database:
 
             - `?chat` and `?sharedchat` stores the chat history between you and me.
