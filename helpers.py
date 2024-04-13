@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from pydantic import BaseModel
 from typing import Optional
+from pathlib import Path
 
 """
 This module contains helper classes for logging, database operations, Discord-related operations, and miscellaneous utility functions.
@@ -68,6 +69,9 @@ class LogHelper:
         Returns:
             logging.Logger: The created logger.
         """
+        if not Path(log.log_file).parent.exists():
+            self.create_log_dir(str(Path(log.log_file).parent))
+
         if self.logger_exists(log.logger_name):
             return logging.getLogger(log.logger_name)
 
@@ -167,124 +171,15 @@ class LogHelper:
         handler.setLevel(level)
         return handler
 
-
-class DBHelper:
-    """
-    A helper class for SQLite database operations.
-
-    This class provides methods to create tables, read data, insert data, update data, and delete data in an SQLite database.
-
-    Attributes:
-        conn (sqlite3.Connection): The SQLite database connection object.
-        logger (logging.Logger): The logger object for logging database operations.
-
-    Methods:
-        create_table(table_name, columns): Create a table with the given name and columns.
-        read_table(table_name, columns, condition): Read data from the table with the given name and columns.
-        insert_into_table(table_name, values): Insert values into the table with the given name.
-        update_rows(table_name, values, condition): Update rows in the table with the given values and condition.
-        delete_rows(table_name, condition): Delete rows from the table with the given condition.
-    """
-
-    def __init__(
-        self,
-        conn: sqlite3.Connection,
-        logger=LogHelper().create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
-                logger_name="DBHelper", log_file="logs/db.log"
-            )
-        ),
-    ):
+    def create_log_dir(self, log_dir: str):
         """
-        DBHelper constructor.
+        Creates a log directory if it does not exist.
 
         Args:
-            conn (sqlite3.Connection): The SQLite database connection object.
-            logger (logging.Logger, optional): The logger object for logging database operations. Defaults to a new logger.
-        """
-        self.conn = conn
-        self.logger = logger
+            log_dir (str): The path to the log directory.
 
-    def create_table(self, table_name: str, columns: tuple):
         """
-        Create a table with the given name and columns if it does not already exist.
-
-        Args:
-            table_name (str): The name of the table to create.
-            columns (tuple): The columns of the table in the format (column1, column2, ...).
-        """
-        columns_str = ", ".join(columns)
-        query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns_str})"
-        self.logger.info(f"Creating table {table_name} with columns {columns}")
-        self.conn.execute(query)
-        self.conn.commit()
-
-    def read_table(self, table_name: str, columns: tuple, condition: str = "") -> list:
-        """
-        Read data from the table with the given name and columns.
-
-        Args:
-            table_name (str): The name of the table to read from.
-            columns (tuple): The columns to read from the table.
-            condition (str, optional): The condition to filter the rows. Defaults to "".
-
-        Returns:
-            list: A list of rows that match the condition.
-        """
-        columns_str = ", ".join(columns)
-        query = f"SELECT {columns_str} FROM {table_name}"
-        if condition:
-            query += f" WHERE {condition}"
-        self.logger.info(f"Reading data from table {table_name} with columns {columns}")
-        cursor = self.conn.execute(query)
-        rows = cursor.fetchall()
-        return rows
-
-    def insert_into_table(self, table_name: str, columns: tuple, values: tuple):
-        """
-        Insert values into the table with the given name.
-
-        Args:
-            table_name (str): The name of the table to insert into.
-            columns (tuple): The columns to insert the values into.
-            values (tuple): The values to insert into the table.
-        """
-        placeholders = ", ".join(["?" for _ in values])
-        columns = ", ".join(columns)
-        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-        self.logger.info(f"Inserting values into table {table_name}: {values}")
-        self.conn.execute(query, values)
-        self.conn.commit()
-
-    def update_rows(self, table_name: str, values: dict, condition: str):
-        """
-        Update rows in the table with the given values and condition.
-
-        Args:
-            table_name (str): The name of the table to update.
-            values (dict): A dictionary of column-value pairs to update.
-            condition (str): The condition to filter the rows to update.
-        """
-        set_values = ", ".join([f"{key} = ?" for key in values.keys()])
-        query = f"UPDATE {table_name} SET {set_values} WHERE {condition}"
-        self.logger.info(
-            f"Updating table {table_name} with values {values} where {condition}"
-        )
-        self.conn.execute(query, list(values.values()))
-        self.conn.commit()
-
-    def delete_rows(self, table_name: str, condition: str):
-        """
-        Delete rows from the table with the given condition.
-
-        Args:
-            table_name (str): The name of the table to delete from.
-            condition (str): The condition to filter the rows to delete.
-        """
-        query = f"DELETE FROM {table_name} WHERE {condition}"
-        self.logger.info(f"Deleting rows from table {table_name} where {condition}")
-        self.conn.execute(query)
-        self.conn.commit()
+        os.makedirs(log_dir, exist_ok=True)
 
 
 class DiscordHelper:
