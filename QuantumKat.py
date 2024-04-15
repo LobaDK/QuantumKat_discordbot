@@ -186,6 +186,7 @@ async def on_ready():
         # Order: message ID, channel ID, guild ID
         IDs = IDs.split("\n")
         try:
+            # Try and get the message from cache first
             channel = bot.get_channel(int(IDs[1]))
             if channel is None:
                 channel = await bot.fetch_channel(int(IDs[1]))
