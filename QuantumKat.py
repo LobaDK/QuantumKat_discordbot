@@ -12,63 +12,10 @@ from dotenv import load_dotenv
 from num2words import num2words
 from threading import Thread
 import pubapi
-import textwrap
 
 from sql import models, schemas
 from sql.database import engine, AsyncSessionLocal
 from sql import crud
-
-TIMEOUT_IN_SECONDS = 60
-
-
-class ViewTest(discord.ui.View):
-    def __init__(self, ctx: commands.Context):
-        super().__init__(timeout=TIMEOUT_IN_SECONDS)
-        self.value = None
-        self.ctx = ctx
-
-    async def disable_buttons(self):
-        for item in self.children:
-            item.disabled = True
-
-    async def interaction_check(
-        self, interaction: discord.Interaction[discord.Client]
-    ) -> bool:
-        if interaction.user.id != self.ctx.author.id:
-            await interaction.response.send_message(
-                "You can't interact with this message.", ephemeral=True
-            )
-            return False
-        return True
-
-    async def on_timeout(self) -> None:
-        await self.disable_buttons()
-        await self.message.edit(view=self)
-        await self.message.edit(
-            content=f"{self.message.content}\n\nTimed out waiting for user response. Please try again.",
-        )
-        self.value = False
-        self.stop()
-
-    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
-    async def confirm(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        await self.disable_buttons()
-        await self.message.edit(view=self)
-        await interaction.response.defer()
-        self.value = True
-        self.stop()
-
-    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
-    async def declined(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        await self.disable_buttons()
-        await self.message.edit(view=self)
-        await interaction.response.defer()
-        self.value = False
-        self.stop()
 
 
 async def init_models():
@@ -149,7 +96,7 @@ async def setup(bot: commands.Bot):
 
 
 async def is_authenticated(ctx: commands.Context) -> bool:
-    if not ctx.message.content.startswith(f"{bot.command_prefix}auth"):
+    if not ctx.command.name == "auth" and not ctx.command.name == "tos":
         authenticated_server_ids = await crud.get_authenticated_servers(
             AsyncSessionLocal
         )
@@ -191,39 +138,25 @@ async def is_reboot_scheduled(ctx: commands.Context) -> bool:
 #   Should the command remove the user from the database or just set a flag?
 async def ensure_user_in_db(ctx: commands.Context) -> None:
     if not await crud.check_user_exists(AsyncSessionLocal, ctx.author.id):
-        view = ViewTest(ctx)
-        view.message = await ctx.send(
-            textwrap.dedent(
-                """\
-            Hello! Looks like this is your first time interacting with me. In order for certain commands to work properly, I need to store your Discord username and ID in my database. Alongside this, I also log all errors and my commands for debugging purposes.
-            Logs are stored for approximately 7 days before being deleted.
-            The following commands store additional information in the database:
+        await ctx.invoke(bot.get_command("tos"))
+        return False
+    return True
 
-            - `?chat` and `?sharedchat` stores the chat history between you and me.
 
-            I do not store or log normal chat messages.
-            Do you agree to this?
-            """,
-            ),
-            view=view,
-            ephemeral=True,
+async def check_tos_and_ban(ctx: commands.Context) -> bool:
+    user = await crud.get_user(AsyncSessionLocal, ctx.author.id)
+    if user.is_banned:
+        await ctx.reply(
+            "You have been banned from using the bot. Please contact the bot owner for more information.",
+            silent=True,
         )
-        await view.wait()
-        if view.value:
-            try:
-                await crud.add_user(
-                    AsyncSessionLocal,
-                    schemas.UserAdd(user_id=ctx.author.id, username=ctx.author.name),
-                )
-            except Exception:
-                logger.error("Error adding user to database", exc_info=True)
-                await ctx.reply(
-                    "An error occurred. Please try again later and contact the bot owner if it continues.",
-                    silent=True,
-                )
-                return False
-        else:
-            return False
+        return False
+    if not user.agreed_to_tos and not ctx.command.name == "tos":
+        await ctx.reply(
+            "You must agree to the terms of service before using the bot. Please run the `?tos` command to view the terms of service.",
+            silent=True,
+        )
+        return False
     return True
 
 
@@ -287,6 +220,7 @@ Discord.py version: {discord.__version__}
 
     bot.add_check(is_reboot_scheduled)
     bot.add_check(ensure_user_in_db)
+    bot.add_check(check_tos_and_ban)
     bot.add_check(is_authenticated)
 
     Thread(target=pubapi.start_api).start()

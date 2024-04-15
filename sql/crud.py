@@ -40,7 +40,7 @@ async def check_server_exists(db: AsyncSession, server_id: int):
         return result.scalar_one_or_none() is not None
 
 
-async def add_user(db: AsyncSession, user: schemas.UserBase):
+async def add_user(db: AsyncSession, user: schemas.UserAdd):
     """
     Adds a user to the database.
 
@@ -54,6 +54,24 @@ async def add_user(db: AsyncSession, user: schemas.UserBase):
     async with db() as db:
         db.add(models.User(**user.model_dump()))
         await db.commit()
+
+
+async def get_user(db: AsyncSession, user_id: int):
+    """
+    Retrieve a user from the database.
+
+    Args:
+        db (AsyncSession): The database session.
+        user_id (int): The ID of the user.
+
+    Returns:
+        models.User: The user object.
+    """
+    async with db() as db:
+        result = await db.execute(
+            select(models.User).where(models.User.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
 
 
 async def add_server(db: AsyncSession, server: schemas.ServerBase):

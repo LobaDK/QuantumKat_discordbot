@@ -8,6 +8,8 @@ class User(Base):
 
     user_id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False)
+    agreed_to_tos = Column(Integer, nullable=False, default=0)
+    is_banned = Column(Integer, nullable=False, default=0)
 
     # Relationships
     chats = relationship("Chat", back_populates="user")

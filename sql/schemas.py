@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class UserBase(BaseModel):
@@ -15,6 +16,8 @@ class ChatBase(ServerBase, UserBase):
 
 class UserAdd(UserBase):
     username: str
+    agreed_to_tos: Optional[int] = 0
+    is_banned: Optional[int] = 0
 
 
 class ServerAdd(ServerBase):
