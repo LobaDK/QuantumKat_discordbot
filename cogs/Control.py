@@ -256,7 +256,7 @@ class Control(commands.Cog):
                         ),
                     )
                 else:
-                    await crud.set_user_tos(AsyncSessionLocal, ctx.author.id, 1)
+                    await crud.edit_user_tos(AsyncSessionLocal, ctx.author.id, 1)
             except Exception:
                 self.logger.error("Error adding user to database", exc_info=True)
                 await ctx.reply(
