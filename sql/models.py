@@ -13,16 +13,6 @@ class User(Base):
 
     # Relationships
     chats = relationship("Chat", back_populates="user")
-    authenticated_servers = relationship(
-        "AuthenticatedServer",
-        back_populates="auth_user",
-        foreign_keys="AuthenticatedServer.authenticated_by_id",
-    )
-    requested_servers = relationship(
-        "AuthenticatedServer",
-        back_populates="req_user",
-        foreign_keys="AuthenticatedServer.requested_by_id",
-    )
 
 
 class Server(Base):
@@ -30,10 +20,10 @@ class Server(Base):
 
     server_id = Column(Integer, primary_key=True, index=True)
     server_name = Column(String, nullable=False)
+    is_authorized = Column(Integer, nullable=False, default=0)
 
     # Relationships
     chats = relationship("Chat", back_populates="server")
-    authenticated_servers = relationship("AuthenticatedServer", back_populates="server")
 
 
 class Chat(Base):
@@ -49,24 +39,3 @@ class Chat(Base):
     # Relationships
     user = relationship("User", back_populates="chats")
     server = relationship("Server", back_populates="chats")
-
-
-class AuthenticatedServer(Base):
-    __tablename__ = "authenticated_servers"
-
-    id = Column(Integer, primary_key=True, index=True)
-    server_id = Column(Integer, ForeignKey("servers.server_id"))
-    authenticated_by_id = Column(Integer, ForeignKey("users.user_id"))
-    requested_by_id = Column(Integer, ForeignKey("users.user_id"))
-    is_authenticated = Column(Integer, nullable=False, default=0)
-
-    # Relationships
-    auth_user = relationship(
-        "User",
-        back_populates="authenticated_servers",
-        foreign_keys=[authenticated_by_id],
-    )
-    req_user = relationship(
-        "User", back_populates="requested_servers", foreign_keys=[requested_by_id]
-    )
-    server = relationship("Server", back_populates="authenticated_servers")

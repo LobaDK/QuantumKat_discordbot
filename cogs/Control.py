@@ -249,7 +249,7 @@ class Control(commands.Cog):
                 if not await crud.check_user_exists(AsyncSessionLocal, ctx.author.id):
                     await crud.add_user(
                         AsyncSessionLocal,
-                        schemas.UserAdd(
+                        schemas.User.UserAdd(
                             user_id=ctx.author.id,
                             username=ctx.author.name,
                             agreed_to_tos=1,
@@ -258,7 +258,7 @@ class Control(commands.Cog):
                 else:
                     await crud.edit_user_tos(
                         AsyncSessionLocal,
-                        schemas.SetUserTos(user_id=ctx.author.id, agreed_to_tos=1),
+                        schemas.User.UserSetTos(user_id=ctx.author.id, agreed_to_tos=1),
                     )
             except Exception:
                 self.logger.error("Error adding user to database", exc_info=True)

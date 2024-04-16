@@ -96,7 +96,7 @@ async def setup(bot: commands.Bot):
 
 
 async def is_authenticated(ctx: commands.Context) -> bool:
-    if not ctx.command.name == "auth" and not ctx.command.name == "tos":
+    if not ctx.command.name == "auth":
         authenticated_server_ids = await crud.get_authenticated_servers(
             AsyncSessionLocal
         )
@@ -143,23 +143,6 @@ async def ensure_user_in_db(ctx: commands.Context) -> None:
     return True
 
 
-async def check_tos_and_ban(ctx: commands.Context) -> bool:
-    user = await crud.get_user(AsyncSessionLocal, ctx.author.id)
-    if user.is_banned:
-        await ctx.reply(
-            "You have been banned from using the bot. Please contact the bot owner for more information.",
-            silent=True,
-        )
-        return False
-    if not user.agreed_to_tos and not ctx.command.name == "tos":
-        await ctx.reply(
-            "You must agree to the terms of service before using the bot. Please run the `?tos` command to view the terms of service.",
-            silent=True,
-        )
-        return False
-    return True
-
-
 # Triggered whenever the bot joins a server. We use this to add the server to the database.
 @bot.event
 async def on_guild_join(guild):
@@ -179,7 +162,8 @@ async def on_ready():
                 schemas.ServerAdd(server_id=guild.id, server_name=guild.name),
             )
     # Check if the bot was rebooted and edit the message to indicate it was successful
-    # TODO: Use the database instead? Also, it edits the message even if the bot was not rebooted
+    # TODO: Use the database instead? Also, it edits the message even if the bot was not rebooted.
+    #   Maybe add a timestamp to the database and check if the bot was rebooted within the last x minutes?
     if Path("rebooted").exists():
         with open("rebooted", "r") as f:
             IDs = f.read()
@@ -221,7 +205,6 @@ Discord.py version: {discord.__version__}
 
     bot.add_check(is_reboot_scheduled)
     bot.add_check(ensure_user_in_db)
-    bot.add_check(check_tos_and_ban)
     bot.add_check(is_authenticated)
 
     Thread(target=pubapi.start_api).start()

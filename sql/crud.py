@@ -1,46 +1,47 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, or_
 
 from . import models, schemas
 
 
-async def check_user_exists(db: AsyncSession, user_id: int):
+async def check_user_exists(db: AsyncSession, user: schemas.User.UserGet):
     """
     Check if a user exists in the database.
 
     Args:
         db (AsyncSession): The database session.
-        user_id (int): The ID of the user to check.
+        user (schemas.User.UserGet): The user object to check.
 
     Returns:
         bool: True if the user exists, False otherwise.
     """
     async with db() as db:
         result = await db.execute(
-            select(models.User).where(models.User.user_id == user_id)
+            select(models.User).where(models.User.user_id == user.user_id)
         )
         return result.scalar_one_or_none() is not None
 
 
-async def check_server_exists(db: AsyncSession, server_id: int):
+async def check_server_exists(db: AsyncSession, server: schemas.Server.ServerGet):
     """
     Check if a server exists in the database.
 
     Args:
         db (AsyncSession): The database session.
-        server_id (int): The ID of the server to check.
+        server (schemas.Server.ServerGet): The server object to check.
 
     Returns:
         bool: True if the server exists, False otherwise.
     """
     async with db() as db:
         result = await db.execute(
-            select(models.Server).where(models.Server.server_id == server_id)
+            select(models.Server).where(models.Server.server_id == server.server_id)
         )
         return result.scalar_one_or_none() is not None
 
 
-async def add_user(db: AsyncSession, user: schemas.UserAdd):
+async def add_user(db: AsyncSession, user: schemas.User.UserAdd):
     """
     Adds a user to the database.
 
@@ -56,7 +57,7 @@ async def add_user(db: AsyncSession, user: schemas.UserAdd):
         await db.commit()
 
 
-async def edit_user_tos(db: AsyncSession, user: schemas.SetUserTos):
+async def edit_user_tos(db: AsyncSession, user: schemas.User.UserSetTos):
     """
     Edit the terms of service agreement for a user.
 
@@ -71,12 +72,36 @@ async def edit_user_tos(db: AsyncSession, user: schemas.SetUserTos):
         result = await db.execute(
             select(models.User).where(models.User.user_id == user.user_id)
         )
-        user = result.scalar_one_or_none()
-        user.agreed_to_tos = user.agreed_to_tos
+        result = result.scalar_one_or_none()
+        result.agreed_to_tos = user.agreed_to_tos
         await db.commit()
 
 
-async def get_user(db: AsyncSession, user_id: int):
+async def edit_user_ban(db: AsyncSession, user: schemas.User.UserSetBan):
+    """
+    Edit the ban status for a user.
+
+    Args:
+        db (AsyncSession): The database session.
+        user (schemas.User.UserSetBan): The user object with the new ban status.
+
+    Returns:
+        None
+    """
+    async with db() as db:
+        result = await db.execute(
+            select(models.User).where(models.User.user_id == user.user_id)
+        )
+        result = result.scalar_one_or_none()
+        if result.is_banned == user.is_banned:
+            raise IntegrityError(
+                "User is already banned" if user.is_banned else "User is not banned"
+            )
+        result.is_banned = user.is_banned
+        await db.commit()
+
+
+async def get_user(db: AsyncSession, user: schemas.User.UserGet):
     """
     Retrieve a user from the database.
 
@@ -89,7 +114,7 @@ async def get_user(db: AsyncSession, user_id: int):
     """
     async with db() as db:
         result = await db.execute(
-            select(models.User).where(models.User.user_id == user_id)
+            select(models.User).where(models.User.user_id == user.user_id)
         )
         return result.scalar_one_or_none()
 
