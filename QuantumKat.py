@@ -21,7 +21,7 @@ from sql import crud
 async def init_models():
     async with engine.begin() as conn:
         # For testing purposes, drop all tables
-        await conn.run_sync(models.Base.metadata.drop_all)
+        # await conn.run_sync(models.Base.metadata.drop_all)
         await conn.run_sync(models.Base.metadata.create_all)
 
 
