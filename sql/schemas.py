@@ -15,9 +15,13 @@ class ChatBase(ServerBase, UserBase):
 
 
 class UserAdd(UserBase):
-    username: str
+    username: Optional[str] = None
     agreed_to_tos: Optional[int] = 0
     is_banned: Optional[int] = 0
+
+
+class SetUserTos(UserBase):
+    agreed_to_tos: int
 
 
 class ServerAdd(ServerBase):

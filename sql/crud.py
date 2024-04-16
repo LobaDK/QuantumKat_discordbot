@@ -56,6 +56,26 @@ async def add_user(db: AsyncSession, user: schemas.UserAdd):
         await db.commit()
 
 
+async def edit_user_tos(db: AsyncSession, user: schemas.SetUserTos):
+    """
+    Edit the terms of service agreement for a user.
+
+    Args:
+        db (AsyncSession): The database session.
+        user (schemas.SetUserTos): The user object with the new terms of service agreement.
+
+    Returns:
+        None
+    """
+    async with db() as db:
+        result = await db.execute(
+            select(models.User).where(models.User.user_id == user.user_id)
+        )
+        user = result.scalar_one_or_none()
+        user.agreed_to_tos = user.agreed_to_tos
+        await db.commit()
+
+
 async def get_user(db: AsyncSession, user_id: int):
     """
     Retrieve a user from the database.
