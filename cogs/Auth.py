@@ -12,7 +12,11 @@ class Auth(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(LogHelper.TimedRotatingFileAndStreamHandler(logger_name="Auth", log_file="logs/auth/Auth.log"))
+        self.logger = bot.log_helper.create_logger(
+            LogHelper.TimedRotatingFileAndStreamHandler(
+                logger_name="Auth", log_file="logs/auth/Auth.log"
+            )
+        )
 
     @commands.command(aliases=["requestauth", "auth"])
     @commands.cooldown(1, 300, commands.BucketType.guild)
@@ -32,15 +36,15 @@ class Auth(commands.Cog):
         authenticated_servers = await crud.get_authenticated_servers(
             database.AsyncSessionLocal
         )
-        denied_servers = await crud.get_denied_servers(database.AsyncSessionLocal)
+        banned_server_ids = await crud.get_banned_servers(database.AsyncSessionLocal)
         authenticated_server_ids = [server[0] for server in authenticated_servers]
-        denied_server_ids = [server[0] for server in denied_servers]
+        banned_server_ids = [server[0] for server in banned_server_ids]
         if ctx.guild.id in authenticated_server_ids:
             await ctx.send("This server is already authenticated.")
             return
-        if ctx.guild.id in denied_server_ids:
+        if ctx.guild.id in banned_server_ids:
             await ctx.send(
-                "This server has been denied authentication. Please contact the bot owner for more information."
+                "This server has been banned from using the bot. Please contact the bot owner for more information."
             )
             return
         if not self.bot.discord_helper.is_privileged_user(ctx):
@@ -90,23 +94,17 @@ class Auth(commands.Cog):
                 await server_msg.edit(
                     content=f"{server_msg.content}\nRequest denied. If you believe this is a mistake, please contact the bot owner."
                 )
-                await crud.deny_authenticated_server(
+                await crud.set_server_is_authorized(
                     database.AsyncSessionLocal,
-                    schemas.AuthenticatedServerDeny(
-                        server_id=ctx.guild.id,
-                        authenticated_by_id=response.author.id,
-                        requested_by_id=ctx.author.id,
-                        is_authenticated=False,
+                    schemas.Server.SetIsAuthorized(
+                        server_id=ctx.guild.id, is_authorized=False
                     ),
                 )
                 return
-            await crud.add_authenticated_server(
+            await crud.set_server_is_authorized(
                 database.AsyncSessionLocal,
-                schemas.AuthenticatedServerAdd(
-                    server_id=ctx.guild.id,
-                    authenticated_by_id=response.author.id,
-                    requested_by_id=ctx.author.id,
-                    is_authenticated=True,
+                schemas.Server.SetIsAuthorized(
+                    server_id=ctx.guild.id, is_authorized=True
                 ),
             )
             await server_msg.edit(
@@ -136,13 +134,17 @@ class Auth(commands.Cog):
                 await ctx.send("You must be the bot owner to deauthenticate a server.")
                 return
             server = crud.get_authenticated_server_by_id_or_name(
-                database.AsyncSessionLocal, server_id_or_name
+                database.AsyncSessionLocal,
+                schemas.Server.GetByIdOrName(server_id_or_name),
             )
             if server is None:
                 await ctx.send("Server not found.")
                 return
-            await crud.remove_authenticated_server(
-                database.AsyncSessionLocal, server[0]
+            await crud.set_server_is_authorized(
+                database.AsyncSessionLocal,
+                schemas.Server.SetIsAuthorized(
+                    server_id=server[0], is_authorized=False
+                ),
             )
             await ctx.send(
                 f"Deauthenticated server `{server[1]}` with ID `{server[0]}`."
@@ -151,8 +153,11 @@ class Auth(commands.Cog):
             await ctx.send("This command must be used in a server.")
             return
         elif self.bot.discord_helper.is_privileged_user(ctx):
-            await crud.remove_authenticated_server(
-                database.AsyncSessionLocal, ctx.guild.id
+            await crud.set_server_is_authorized(
+                database.AsyncSessionLocal,
+                schemas.Server.SetIsAuthorized(
+                    server_id=ctx.guild.id, is_authorized=False
+                ),
             )
             await ctx.send("This server has been deauthenticated.")
         else:

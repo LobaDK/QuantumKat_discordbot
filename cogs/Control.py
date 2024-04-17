@@ -7,6 +7,7 @@ from helpers import LogHelper
 
 from sql import schemas, crud
 from sql.database import AsyncSessionLocal
+from decorators import requires_tos_acceptance
 
 TIMEOUT_IN_SECONDS = 60
 
@@ -221,7 +222,9 @@ class Control(commands.Cog):
 
     @commands.command()
     async def tos(self, ctx: commands.Context):
-        user = await crud.get_user(AsyncSessionLocal, ctx.author.id)
+        user = await crud.get_user(
+            AsyncSessionLocal, schemas.User.Get(user_id=ctx.author.id)
+        )
         if user is not None and user.agreed_to_tos:
             await ctx.send("You have already agreed to the ToS!")
             return
@@ -246,19 +249,21 @@ class Control(commands.Cog):
         await view.wait()
         if view.value is True:
             try:
-                if not await crud.check_user_exists(AsyncSessionLocal, ctx.author.id):
+                if not await crud.check_user_exists(
+                    AsyncSessionLocal, schemas.User.Get(user_id=ctx.author.id)
+                ):
                     await crud.add_user(
                         AsyncSessionLocal,
-                        schemas.User.UserAdd(
+                        schemas.User.Add(
                             user_id=ctx.author.id,
                             username=ctx.author.name,
-                            agreed_to_tos=1,
+                            agreed_to_tos=True,
                         ),
                     )
                 else:
                     await crud.edit_user_tos(
                         AsyncSessionLocal,
-                        schemas.User.UserSetTos(user_id=ctx.author.id, agreed_to_tos=1),
+                        schemas.User.SetTos(user_id=ctx.author.id, agreed_to_tos=True),
                     )
             except Exception:
                 self.logger.error("Error adding user to database", exc_info=True)
@@ -273,6 +278,7 @@ class Control(commands.Cog):
             )
 
     @commands.command()
+    @requires_tos_acceptance
     async def test(self, ctx: commands.Context):
         await ctx.send("*Meows*")
 

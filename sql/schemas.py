@@ -1,65 +1,72 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
 class User:
 
-    class UserBase(BaseModel):
+    class _Base(BaseModel):
         user_id: int
 
-    class UserGet(UserBase):
+    class Get(_Base):
         pass
 
-    class UserDelete(UserBase):
+    class Delete(_Base):
         pass
 
-    class UserSetTos(UserBase):
-        agreed_to_tos: int
+    class SetTos(_Base):
+        agreed_to_tos: bool
 
-    class UserSetBan(UserBase):
+    class SetBan(_Base):
         is_banned: int
 
-    class UserSetUsername(UserBase):
+    class SetUsername(_Base):
         username: str
 
-    class UserAdd(UserBase):
+    class Add(_Base):
         username: str
-        agreed_to_tos: Optional[int] = 0
-        is_banned: Optional[int] = 0
+        agreed_to_tos: Optional[bool] = False
+        is_banned: Optional[bool] = False
 
 
 class Server:
 
-    class ServerBase(BaseModel):
+    class _Base(BaseModel):
         server_id: int
 
-    class ServerAdd(ServerBase):
+    class Add(_Base):
         server_name: str
-        is_authorized: Optional[int] = 0
+        is_authorized: Optional[bool] = False
+        is_banned: Optional[bool] = False
 
-    class ServerGet(ServerBase):
+    class Get(_Base):
         pass
 
-    class ServerDelete(ServerBase):
+    class GetByIdOrName(BaseModel):
+        server_id_or_name: int | str
+
+    class Delete(_Base):
         pass
 
-    class ServerSetIsAuthorized(ServerBase):
-        is_authorized: int
+    class SetIsAuthorized(_Base):
+        is_authorized: bool
+
+    class SetBan(_Base):
+        is_banned: int
 
 
 class Chat:
-    class ChatBase(Server.ServerBase, User.UserBase):
-        shared_chat: Optional[int] = 0
+    class _Base(Server._Base, User._Base):
+        shared_chat: Optional[bool] = False
 
-    class ChatGet(ChatBase):
-        n: Optional[int] = None
+    class Get(_Base):
+        n: Optional[int] = Field(None, ge=1, le=10)
 
         class Config:
             from_attributes = True
 
-    class ChatAdd(ChatBase):
+    class Add(_Base):
         user_message: str
         assistant_message: str
 
-    class ChatDelete(ChatGet):
+    class Delete(Get):
         pass

@@ -1,6 +1,5 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
-import sqlite3
 import os
 import shutil
 import discord
@@ -8,6 +7,7 @@ from discord.ext import commands
 from pydantic import BaseModel
 from typing import Optional
 from pathlib import Path
+
 
 """
 This module contains helper classes for logging, database operations, Discord-related operations, and miscellaneous utility functions.

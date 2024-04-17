@@ -37,6 +37,7 @@ logger = log_helper.create_logger(
     )
 )
 
+
 # If False, will exit if a required program is missing
 # Can be set to True for debugging without needing them installed
 ignoreMissingExe = True
@@ -96,7 +97,7 @@ async def setup(bot: commands.Bot):
 
 
 async def is_authenticated(ctx: commands.Context) -> bool:
-    if not ctx.command.name == "auth":
+    if not ctx.command.name.casefold() == "request_auth":
         authenticated_server_ids = await crud.get_authenticated_servers(
             AsyncSessionLocal
         )
@@ -131,24 +132,12 @@ async def is_reboot_scheduled(ctx: commands.Context) -> bool:
     return True
 
 
-# Check before any command to ensure the user is in the database.
-# A little excessive to check on each command, but for privacy reasons
-#   I wanna give the user the option to opt out of the database by not using the bot.
-# TODO: Ask the user if they agree to be in the database. Maybe also add a command to opt out?
-#   Should the command remove the user from the database or just set a flag?
-async def ensure_user_in_db(ctx: commands.Context) -> None:
-    if not await crud.check_user_exists(AsyncSessionLocal, ctx.author.id):
-        await ctx.invoke(bot.get_command("tos"))
-        return False
-    return True
-
-
 # Triggered whenever the bot joins a server. We use this to add the server to the database.
 @bot.event
 async def on_guild_join(guild):
     await crud.add_server(
         AsyncSessionLocal,
-        schemas.ServerAdd(server_id=guild.id, server_name=guild.name),
+        schemas.Server.Add(server_id=guild.id, server_name=guild.name),
     )
 
 
@@ -156,11 +145,16 @@ async def on_guild_join(guild):
 async def on_ready():
     # Add all servers the bot is in to the database on startup in case the bot was added while offline
     for guild in bot.guilds:
-        if not await crud.check_server_exists(AsyncSessionLocal, guild.id):
-            await crud.add_server(
-                AsyncSessionLocal,
-                schemas.ServerAdd(server_id=guild.id, server_name=guild.name),
-            )
+        try:
+            if not await crud.check_server_exists(
+                AsyncSessionLocal, schemas.Server.Get(server_id=guild.id)
+            ):
+                await crud.add_server(
+                    AsyncSessionLocal,
+                    schemas.Server.Add(server_id=guild.id, server_name=guild.name),
+                )
+        except Exception as e:
+            print(e)
     # Check if the bot was rebooted and edit the message to indicate it was successful
     # TODO: Use the database instead? Also, it edits the message even if the bot was not rebooted.
     #   Maybe add a timestamp to the database and check if the bot was rebooted within the last x minutes?
@@ -204,7 +198,6 @@ Discord.py version: {discord.__version__}
     print(message)
 
     bot.add_check(is_reboot_scheduled)
-    bot.add_check(ensure_user_in_db)
     bot.add_check(is_authenticated)
 
     Thread(target=pubapi.start_api).start()

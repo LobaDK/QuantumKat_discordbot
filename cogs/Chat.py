@@ -99,17 +99,18 @@ class Chat(commands.Cog):
         None
         """
         server_id, server_name = await self.get_server_id_and_name(ctx)
-        # Check if the server ID is in the database. Since we're already adding server ID's
-        #   to the database when the bot joins a server or starts up, this can only be a DM.
-        if await crud.check_server_exists(database.AsyncSessionLocal, server_id):
-            await crud.add_server(
-                database.AsyncSessionLocal,
-                schemas.ServerAdd(server_id=server_id, server_name=server_name),
-            )
+        if server_name == "DM":
+            if not await crud.check_server_exists(
+                database.AsyncSessionLocal, schemas.Server.Get(server_id=server_id)
+            ):
+                await crud.add_server(
+                    database.AsyncSessionLocal,
+                    schemas.Server.Add(server_id=server_id, server_name=server_name),
+                )
 
         await crud.add_chat(
             database.AsyncSessionLocal,
-            schemas.ChatAdd(
+            schemas.Chat.Add(
                 user_id=ctx.author.id,
                 server_id=server_id,
                 user_message=user_message,
@@ -132,14 +133,14 @@ class Chat(commands.Cog):
         """
         server_id, _ = await self.get_server_id_and_name(ctx)
         if shared_chat:
-            result = await crud.get_n_shared_chats_for_server(
+            result = await crud.get_shared_chats_for_server(
                 database.AsyncSessionLocal,
-                schemas.ChatGet(server_id=server_id, user_id=ctx.author.id, n=10),
+                schemas.Chat.Get(server_id=server_id, n=10, shared_chat=True),
             )
         else:
-            result = await crud.get_n_chats_for_user(
+            result = await crud.get_chats_for_user(
                 database.AsyncSessionLocal,
-                schemas.ChatGet(server_id=server_id, user_id=ctx.author.id, n=10),
+                schemas.Chat.Get(server_id=server_id, user_id=ctx.author.id, n=10),
             )
         messages = []
         for user_message, assistant_message in result:
@@ -161,12 +162,13 @@ class Chat(commands.Cog):
         """
         server_id, server_name = await self.get_server_id_and_name(ctx)
         if shared_chat:
-            await crud.delete_all_shared_chats_for_server(
-                database.AsyncSessionLocal, server_id
+            await crud.delete_shared_chat(
+                database.AsyncSessionLocal, schemas.Chat.Delete(server_id=server_id)
             )
         else:
-            await crud.delete_all_chats_for_user(
-                database.AsyncSessionLocal, server_id, ctx.author.id
+            await crud.delete_chat(
+                database.AsyncSessionLocal,
+                schemas.Chat.Delete(server_id=server_id, user_id=ctx.author.id),
             )
 
     async def get_usage(self) -> dict:
@@ -296,7 +298,7 @@ class Chat(commands.Cog):
 
                             await crud.add_chat(
                                 database.AsyncSessionLocal,
-                                schemas.ChatAdd(
+                                schemas.Chat.Add(
                                     user_id=ctx.author.id,
                                     server_id=ctx.guild.id,
                                     user_message=user_message,

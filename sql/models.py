@@ -21,6 +21,7 @@ class Server(Base):
     server_id = Column(Integer, primary_key=True, index=True)
     server_name = Column(String, nullable=False)
     is_authorized = Column(Integer, nullable=False, default=0)
+    is_banned = Column(Integer, nullable=False, default=0)
 
     # Relationships
     chats = relationship("Chat", back_populates="server")
