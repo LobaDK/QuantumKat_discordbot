@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, delete
 
 from . import models, schemas
 from decorators import timeit
@@ -124,6 +124,24 @@ async def get_user(db: AsyncSession, user: schemas.User.Get):
             select(models.User).where(models.User.user_id == user.user_id)
         )
         return result.scalar_one_or_none()
+
+
+@timeit
+async def delete_all_user_data(db: AsyncSession, user: schemas.User.Delete):
+    """
+    Delete all data for a user from the database.
+
+    Args:
+        db (AsyncSession): The database session.
+        user (schemas.User.Delete): The user object to delete.
+
+    Returns:
+        None
+    """
+    async with db() as db:
+        await db.execute(delete(models.Chat).where(models.Chat.user_id == user.user_id))
+        await db.execute(delete(models.User).where(models.User.user_id == user.user_id))
+        await db.commit()
 
 
 @timeit

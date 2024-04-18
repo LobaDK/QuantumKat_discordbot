@@ -1,12 +1,9 @@
 from random import choice
 import discord
-from textwrap import dedent
 
 from discord.ext import commands
 from helpers import LogHelper
 
-from sql import schemas, crud
-from sql.database import AsyncSessionLocal
 from decorators import requires_tos_acceptance
 
 TIMEOUT_IN_SECONDS = 60
@@ -221,61 +218,9 @@ class Control(commands.Cog):
         )
 
     @commands.command()
+    @requires_tos_acceptance
     async def tos(self, ctx: commands.Context):
-        user = await crud.get_user(
-            AsyncSessionLocal, schemas.User.Get(user_id=ctx.author.id)
-        )
-        if user is not None and user.agreed_to_tos:
-            await ctx.send("You have already agreed to the ToS!")
-            return
-        view = ViewTest(ctx)
-        view.message = await ctx.send(
-            dedent(
-                """\
-            Hello! In order for certain commands to work properly, I need to store your Discord username and ID in my database. Alongside this, I also log all errors and my commands for debugging purposes.
-            Logs are stored for approximately 7 days before being deleted.
-            The following commands store additional information in the database:
-
-            - `?chat` and `?sharedchat` stores the chat history between you and me. This can be viewed with `?chatview`, and cleared with `?chatclear`.
-
-            I do not store or log normal chat messages.
-
-            Abuse of the bot and its commands will result in a ban from using it.
-            Do you agree to this?
-            """,
-            ),
-            view=view,
-        )
-        await view.wait()
-        if view.value is True:
-            try:
-                if not await crud.check_user_exists(
-                    AsyncSessionLocal, schemas.User.Get(user_id=ctx.author.id)
-                ):
-                    await crud.add_user(
-                        AsyncSessionLocal,
-                        schemas.User.Add(
-                            user_id=ctx.author.id,
-                            username=ctx.author.name,
-                            agreed_to_tos=True,
-                        ),
-                    )
-                else:
-                    await crud.edit_user_tos(
-                        AsyncSessionLocal,
-                        schemas.User.SetTos(user_id=ctx.author.id, agreed_to_tos=True),
-                    )
-            except Exception:
-                self.logger.error("Error adding user to database", exc_info=True)
-                await ctx.reply(
-                    "An error occurred. Please try again later and contact the bot owner if it continues.",
-                    silent=True,
-                )
-                return
-        elif view.value is False:
-            await ctx.reply(
-                "You must agree to the terms of service to use the bot.", silent=True
-            )
+        return
 
     @commands.command()
     @requires_tos_acceptance
