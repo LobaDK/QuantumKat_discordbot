@@ -19,16 +19,50 @@ class ToSAgreementView(discord.ui.View):
         self.ctx: commands.Context = ctx
         self.message: discord.Message = None
 
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.green, label="Yes", custom_id="confirm"
+    async def interaction_check(
+        self, interaction: discord.Interaction[discord.Client]
+    ) -> bool:
+        if interaction.user.id != self.ctx.author.id:
+            await interaction.response.send_message(
+                "You can't interact with this message.", ephemeral=True
             )
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        await self.message.delete()
+        await self.ctx.reply(
+            "You took too long to respond. Please run the command again.",
+            silent=True,
         )
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.red, label="No", custom_id="declined"
-            )
-        )
+        self.value = False
+        self.stop()
+
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
+    async def confirm(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await interaction.response.defer()
+        await self.message.delete()
+        self.value = True
+        self.stop()
+
+    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
+    async def declined(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await interaction.response.defer()
+        await self.message.delete()
+        self.value = False
+        self.stop()
+
+
+class ToSChangeView(discord.ui.View):
+    def __init__(self, ctx: commands.Context):
+        super().__init__(timeout=TIMEOUT_IN_SECONDS)
+        self.value = 0
+        self.ctx: commands.Context = ctx
+        self.message: discord.Message = None
 
     async def interaction_check(
         self, interaction: discord.Interaction[discord.Client]
@@ -49,55 +83,16 @@ class ToSAgreementView(discord.ui.View):
         self.value = False
         self.stop()
 
-    @discord.ui.button(custom_id="confirm")
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.grey)
     async def confirm(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.defer()
         await self.message.delete()
-        self.value = True
+        self.value = 1
         self.stop()
 
-    @discord.ui.button(custom_id="declined")
-    async def declined(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        await interaction.response.defer()
-        await self.message.delete()
-        self.value = False
-        self.stop()
-
-
-class ToSChangeView(ToSAgreementView):
-    def __init__(self, ctx: commands.Context):
-        super().__init__(ctx)
-        self.clear_items()
-
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.red, label="Yes", custom_id="confirm"
-            )
-        )
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.danger,
-                label="Yes, and delete all my data",
-                custom_id="delete_data",
-            )
-        )
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.green, label="No", custom_id="declined"
-            )
-        )
-
-    @discord.ui.button(custom_id="confirm")
-    async def confirm(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
-        await super().confirm(interaction, button)
-
-    @discord.ui.button(custom_id="delete_data")
+    @discord.ui.button(label="Yes, and delete my data", style=discord.ButtonStyle.red)
     async def delete_data(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -106,11 +101,14 @@ class ToSChangeView(ToSAgreementView):
         self.value = 2
         self.stop()
 
-    @discord.ui.button(custom_id="declined")
+    @discord.ui.button(label="No", style=discord.ButtonStyle.green)
     async def declined(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await super().declined(interaction, button)
+        await interaction.response.defer()
+        await self.message.delete()
+        self.value = 0
+        self.stop()
 
 
 logger = LogHelper().create_logger(
@@ -182,7 +180,7 @@ def requires_tos_acceptance(func):
                 view=view,
             )
             await view.wait()
-            if view.value is True:
+            if view.value == 1:
                 await crud.edit_user_tos(
                     database.AsyncSessionLocal,
                     schemas.User.SetTos(user_id=ctx.author.id, agreed_to_tos=False),
