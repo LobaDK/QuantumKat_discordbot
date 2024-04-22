@@ -1,10 +1,14 @@
 from random import choice
 import discord
 
+from textwrap import dedent
 from discord.ext import commands
 from helpers import LogHelper
+from sqlalchemy.exc import SQLAlchemyError
 
 from decorators import requires_tos_acceptance
+from sql import crud, schemas
+from sql.database import AsyncSessionLocal
 
 TIMEOUT_IN_SECONDS = 60
 
@@ -226,6 +230,92 @@ class Control(commands.Cog):
     @requires_tos_acceptance
     async def test(self, ctx: commands.Context):
         await ctx.send("*Meows*")
+
+    @commands.is_owner()
+    @commands.group()
+    async def user(self, ctx: commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid user command passed...")
+            return
+
+    @user.group()
+    async def bot(self, ctx: commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Invalid bot command passed...")
+            return
+
+    @bot.command()
+    async def ban(self, ctx: commands.Context, user: discord.User):
+        try:
+            if not await crud.check_user_exists(
+                AsyncSessionLocal, schemas.User.Get(user_id=user.id)
+            ):
+                await crud.add_user(
+                    AsyncSessionLocal,
+                    schemas.User.Add(
+                        user_id=user.id,
+                        username=user.display_name,
+                        is_banned=True,
+                    ),
+                )
+            else:
+                await crud.edit_user_ban(
+                    AsyncSessionLocal,
+                    schemas.User.SetBan(user_id=user.id, is_banned=True),
+                )
+            await ctx.reply(
+                f"{user.display_name} has been banned from using the bot.",
+                silent=True,
+            )
+        except SQLAlchemyError:
+            self.logger.error("Failed to add user to DB", exc_info=True)
+            await ctx.reply("Database error. Please try again later.", silent=True)
+            return
+
+    @bot.command()
+    async def unban(self, ctx: commands.Context, user: discord.User):
+        try:
+            if not await crud.check_user_exists(
+                AsyncSessionLocal, schemas.User.Get(user_id=user.id)
+            ):
+                await ctx.reply(
+                    f"{user.display_name} is not in the database and cannot be unbanned.",
+                    silent=True,
+                )
+                return
+            else:
+                await crud.edit_user_ban(
+                    AsyncSessionLocal,
+                    schemas.User.SetBan(user_id=user.id, is_banned=False),
+                )
+            await ctx.reply(
+                f"{user.display_name} has been unbanned from using the bot.",
+                silent=True,
+            )
+        except SQLAlchemyError:
+            self.logger.error("Failed to add user to DB", exc_info=True)
+            await ctx.reply("Database error. Please try again later.", silent=True)
+            return
+
+    @user.command()
+    async def whois(self, ctx: commands.Context, user: discord.User):
+        message = dedent(
+            f"""
+            User ID: {user.id}
+            Username: {user.display_name}
+            Is bot: {user.bot}
+            Created at: {user.created_at}
+            """
+        )
+        if not self.bot.discord_helper.is_dm(
+            ctx
+        ) and self.bot.discord_helper.user_in_guild(user, ctx.guild):
+            member = ctx.guild.get_member(user.id)
+            if member is None:
+                member = await ctx.guild.fetch_member(user.id)
+            message += f"Joined at: {member.joined_at}"
+
+        await ctx.send(message)
 
     print("Started Control!")
 
