@@ -1,5 +1,4 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, or_, delete
 
 from . import models, schemas
@@ -99,10 +98,6 @@ async def edit_user_ban(db: AsyncSession, user: schemas.User.SetBan):
             select(models.User).where(models.User.user_id == user.user_id)
         )
         result = result.scalar_one_or_none()
-        if result.is_banned == user.is_banned:
-            raise IntegrityError(
-                "User is already banned" if user.is_banned else "User is not banned"
-            )
         result.is_banned = user.is_banned
         await db.commit()
 
