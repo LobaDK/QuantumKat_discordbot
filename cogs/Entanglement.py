@@ -13,9 +13,9 @@ from inspect import Parameter
 import shlex
 
 from alembic import command
+from alembic.script import ScriptDirectory
 from alembic.config import Config
 from alembic.util.exc import CommandError
-from sqlalchemy.exc import OperationalError
 
 import mimetypes
 import magic
@@ -946,7 +946,7 @@ class Entanglements(commands.Cog):
                         self.alembic_cfg, "Automatic update", autogenerate=True
                     )
                     command.upgrade(self.alembic_cfg, "head")
-                except (CommandError, OperationalError):
+                except Exception:
                     self.logger.error(
                         "Database schema update/migration failed", exc_info=True
                     )
@@ -1253,43 +1253,128 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @commands.is_owner()
     @commands.group()
     async def db(self, ctx: commands.Context):
+        """
+        Command group used for database management.
+        """
         if ctx.invoked_subcommand is None:
             await ctx.reply("Invalid db command passed...", silent=True)
 
     @db.command()
     async def revision(self, ctx: commands.Context, message: str):
+        """
+        Create a database revision using Alembic.
+
+        Args:
+            ctx (commands.Context): The context of the command.
+            message (str): The message for the revision.
+
+        Raises:
+            Exception: If the database revision fails.
+
+        Returns:
+            None
+        """
         try:
             command.revision(self.alembic_cfg, message, autogenerate=True)
-        except CommandError:
+        except Exception:
             self.logger.error("Database revision failed", exc_info=True)
             await ctx.reply("Database revision failed!", silent=True)
         else:
             await ctx.reply("Revision created!", silent=True)
 
-    @db.command(alias=["update"])
-    async def upgrade(self, ctx: commands.Context):
+    @db.command(aliases=["update"])
+    async def upgrade(self, ctx: commands.Context, revision: str = "+1"):
+        """
+        Upgrade the database using Alembic.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation context of the command.
+        - revision (str): The revision to upgrade to. Defaults to "+1" which upgrades to the next revision.
+
+        Raises:
+        - CommandError: If the database upgrade fails.
+
+        Returns:
+        - None
+
+        """
         try:
-            command.upgrade(self.alembic_cfg, "head")
-        except OperationalError:
+            command.upgrade(self.alembic_cfg, revision)
+        except CommandError as e:
+            self.logger.error("Database upgrade failed", exc_info=True)
+            await ctx.reply(f"Database upgrade failed: {e}", silent=True)
+        except Exception:
             self.logger.error("Database upgrade failed", exc_info=True)
             await ctx.reply("Database upgrade failed!", silent=True)
         else:
             await ctx.reply("Database upgraded!", silent=True)
 
-    @db.command()
-    async def downgrade(self, ctx: commands.Context, revision: str):
+    @db.command(aliases=["revert"])
+    async def downgrade(self, ctx: commands.Context, revision: str = "-1"):
+        """
+        Downgrades the database to a specified revision or the previous revision.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - revision (str): The revision to downgrade to. Defaults to "-1" which represents the previous revision.
+
+        Raises:
+        - CommandError: If the database downgrade fails.
+
+        Returns:
+        - None
+        """
         try:
             command.downgrade(self.alembic_cfg, revision)
-        except OperationalError:
+        except CommandError as e:
+            self.logger.error("Database downgrade failed", exc_info=True)
+            await ctx.reply(f"Database downgrade failed: {e}", silent=True)
+        except Exception:
             self.logger.error("Database downgrade failed", exc_info=True)
             await ctx.reply("Database downgrade failed!", silent=True)
         else:
             await ctx.reply("Database downgraded!", silent=True)
 
     @db.command()
+    async def history(self, ctx: commands.Context):
+        """
+        Retrieves the migration history and sends it as a reply to the given context.
+
+        Parameters:
+        - ctx (commands.Context): The context object representing the invocation of the command.
+
+        Returns:
+        - None
+
+        Raises:
+        - Exception: If there is an error while retrieving the migration history.
+        """
+        try:
+            script_dir = ScriptDirectory.from_config(self.alembic_cfg)
+            revisions = script_dir.walk_revisions()
+            history = []
+            for revision in revisions:
+                history.append(f"{revision.revision} {revision.doc or 'No message'}")
+            await ctx.reply("\n".join(history), silent=True)
+        except Exception:
+            self.logger.error("Failed to get migration history", exc_info=True)
+            await ctx.reply("Failed to get migration history", silent=True)
+
+    @db.command()
     async def migrate(self, ctx: commands.Context, message: str):
+        """
+        Migrates the database using the provided message.
+
+        Parameters:
+        - ctx (commands.Context): The context of the command.
+        - message (str): The message to be passed to the migration command.
+
+        Returns:
+        - None
+
+        """
         await ctx.invoke(self.bot.get_command("db revision"), message)
-        await ctx.invoke(self.bot.get_command("db upgrade"))
+        await ctx.invoke(self.bot.get_command("db upgrade"), "head")
 
 
 async def setup(bot: commands.Bot):
