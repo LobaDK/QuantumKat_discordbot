@@ -17,7 +17,7 @@ class User:
         agreed_to_tos: bool
 
     class SetBan(_Base):
-        is_banned: int
+        is_banned: bool
 
     class SetUsername(_Base):
         username: str
@@ -51,7 +51,7 @@ class Server:
         is_authorized: bool
 
     class SetBan(_Base):
-        is_banned: int
+        is_banned: bool
 
 
 class Chat:
