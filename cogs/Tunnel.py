@@ -34,9 +34,20 @@ class Tunnel(commands.Cog):
             commands.UnexpectedQuoteError,
             commands.InvalidEndOfQuotedStringError,
             commands.CommandOnCooldown,
+            commands.MissingRequiredArgument,
+            commands.MemberNotFound,
+            commands.UserNotFound,
         )
 
         error = getattr(error, "original", error)
+
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(
+                f"Missing required argument: {error.param.name}. Please check your command and try again."
+            )
+
+        if isinstance(error, (commands.MemberNotFound, commands.UserNotFound)):
+            await ctx.send("User not found. Please check your command and try again.")
 
         if isinstance(error, (commands.NotOwner, commands.PrivateMessageOnly)):
             await ctx.send(
