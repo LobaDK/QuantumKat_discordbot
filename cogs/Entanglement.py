@@ -12,6 +12,11 @@ from requests import get
 from inspect import Parameter
 import shlex
 
+from alembic import command
+from alembic.config import Config
+from alembic.util.exc import CommandError
+from sqlalchemy.exc import OperationalError
+
 import mimetypes
 import magic
 import discord
@@ -31,6 +36,8 @@ class Entanglements(commands.Cog):
                 log_file="logs/entanglements/Entanglements.log",
             )
         )
+
+        self.alembic_cfg = Config("./alembic.ini")
 
     initial_extensions = []
     for cog in listdir("./cogs"):
@@ -921,15 +928,35 @@ class Entanglements(commands.Cog):
                         stderr=subprocess.PIPE,
                     )
                     await proc.wait()
-                    await ctx.message.add_reaction("👍")
+                    await msg.edit(content=f"{msg.content} Done!")
                     reboot = True
                 except Exception as e:
                     self.logger.error(f"{type(e).__name__}: {e}")
                     await msg.edit(
-                        content=f"{msg.content}\nError updating requirements.txt"
+                        content=f"{msg.content} Error updating from requirements.txt."
                     )
 
-            # Iterate through each listed file
+            if "sql/models.py" in output:
+                await msg.edit(
+                    content=f"{msg.content}\nDatabase schema changes detected. Updating..."
+                )
+
+                try:
+                    command.revision(
+                        self.alembic_cfg, "Automatic update", autogenerate=True
+                    )
+                    command.upgrade(self.alembic_cfg, "head")
+                except (CommandError, OperationalError):
+                    self.logger.error(
+                        "Database schema update/migration failed", exc_info=True
+                    )
+                    await msg.edit(
+                        content=f"{msg.content} Error updating database schema."
+                    )
+                else:
+                    await msg.edit(content=f"{msg.content} Database schema updated!")
+                    reboot = True
+
             if "QuantumKat.py" in output and not reboot:
                 msg = await msg.edit(
                     content=f"{msg.content}\nMain script updated, reboot?"
@@ -1212,6 +1239,47 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
         # Turn the version number into a dot-separated string to make it look a little fancier.
         version = ".".join(str(version))
         await ctx.reply(f"Current version: {version}", silent=True)
+
+    @commands.is_owner()
+    @commands.group()
+    async def db(self, ctx: commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.reply("Invalid db command passed...", silent=True)
+
+    @db.command()
+    async def revision(self, ctx: commands.Context, message: str):
+        try:
+            command.revision(self.alembic_cfg, message, autogenerate=True)
+        except CommandError:
+            self.logger.error("Database revision failed", exc_info=True)
+            await ctx.reply("Database revision failed!", silent=True)
+        else:
+            await ctx.reply("Revision created!", silent=True)
+
+    @db.command(alias=["update"])
+    async def upgrade(self, ctx: commands.Context):
+        try:
+            command.upgrade(self.alembic_cfg, "head")
+        except OperationalError:
+            self.logger.error("Database upgrade failed", exc_info=True)
+            await ctx.reply("Database upgrade failed!", silent=True)
+        else:
+            await ctx.reply("Database upgraded!", silent=True)
+
+    @db.command()
+    async def downgrade(self, ctx: commands.Context, revision: str):
+        try:
+            command.downgrade(self.alembic_cfg, revision)
+        except OperationalError:
+            self.logger.error("Database downgrade failed", exc_info=True)
+            await ctx.reply("Database downgrade failed!", silent=True)
+        else:
+            await ctx.reply("Database downgraded!", silent=True)
+
+    @db.command()
+    async def migrate(self, ctx: commands.Context, message: str):
+        await ctx.invoke(self.bot.get_command("db revision"), message)
+        await ctx.invoke(self.bot.get_command("db upgrade"))
 
 
 async def setup(bot: commands.Bot):

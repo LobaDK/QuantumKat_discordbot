@@ -25,7 +25,7 @@ async def init_models():
         await conn.run_sync(models.Base.metadata.create_all)
 
 
-run(init_models())
+# run(init_models())
 
 log_helper = LogHelper()
 misc_helper = MiscHelper()
