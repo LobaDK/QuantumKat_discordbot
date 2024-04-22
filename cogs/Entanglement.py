@@ -1156,12 +1156,22 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                     ) and not reply_message.content.startswith(
                         f"{self.bot.command_prefix}retry"
                     ):
-                        # Attempt to get the internal command object from the command name in the replied message
-                        command = self.bot.get_command(
-                            reply_message.content.split(" ")[0].replace(
-                                self.bot.command_prefix, ""
-                            )
-                        )
+                        words = reply_message.content.split(".")
+
+                        command_str = ""
+                        for i, word in enumerate(words):
+                            if " " in word:
+                                word = word.split(" ")[0]
+                            if i > 0:
+                                command_str += " "
+
+                            command_str += word
+                            command = self.bot.get_command(
+                                command_str[1:]
+                            )  # Remove the prefix
+
+                            if command is None:
+                                break
                         # Check if the command was found
                         if command is not None:
                             # Get a dictionary of the command's parameters
