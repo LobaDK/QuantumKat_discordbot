@@ -91,7 +91,7 @@ intents.members = True
 
 # Sets the bot's command prefix, help command, intents, and adds my ID to owner_ids
 bot = QuantumKat(
-    command_prefix="?",
+    command_prefix="?dev",
     help_command=commands.DefaultHelpCommand(
         sort_commands=False, show_parameter_descriptions=False, width=100
     ),
