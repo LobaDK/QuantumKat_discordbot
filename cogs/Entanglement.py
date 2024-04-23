@@ -1,16 +1,18 @@
 from asyncio import create_subprocess_shell, create_subprocess_exec, subprocess
 from json import loads
-from os import execl, listdir, remove, rename, stat
+from os import execl, listdir, remove, rename, stat, path
 from random import choice, randint
 from string import ascii_letters, digits
 from sys import argv, executable
 from asyncio import sleep as asyncsleep
 from shlex import quote
-from re import compile
+from re import compile, split
 from pathlib import Path
 from requests import get
 from inspect import Parameter
 import shlex
+import shutil
+from datetime import datetime
 
 from alembic import command
 from alembic.script import ScriptDirectory
@@ -20,10 +22,15 @@ from alembic.util.exc import CommandError
 import mimetypes
 import magic
 import discord
+import ast
+import astunparse
 from discord.ext import commands
 from num2words import num2words
 from psutil import cpu_percent, disk_usage, virtual_memory
 from helpers import LogHelper
+
+from sql.database import AsyncSessionLocal
+from sql import crud
 
 
 class Entanglements(commands.Cog):
@@ -50,6 +57,42 @@ class Entanglements(commands.Cog):
     possum_domain = "https://possum.lobadk.com/"
 
     characters = f"{ascii_letters}{digits}"
+
+    def database_backup(self):
+        date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        backup_file = f"backup_{date}.db"
+        if not Path("backups").exists():
+            Path("backups").mkdir()
+        files = [file for file in listdir("backups") if path.isfile(f"backups/{file}")]
+        if len(files) > 5:
+            # Remove the oldest backup
+            oldest_backup = Path(
+                min(Path("backups").glob("*.db"), key=lambda x: x.stat().st_birthtime)
+            )
+            oldest_backup.unlink()
+        shutil.copy("quantumkat.db", f"backups/{backup_file}")
+
+    def get_file_by_partial_name(self, directory: str, partial_name: str) -> str:
+        """
+        Returns the full file name from the given partial name.
+
+        Parameters:
+        - partial_name (str): The partial name of the file.
+
+        Returns:
+        - str: The full file name.
+        """
+        for file in listdir(directory):
+            if partial_name in file:
+                return file
+
+    def extract_function_code(self, filename, function_name):
+        with open(filename, "r") as source:
+            tree = ast.parse(source.read())
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == function_name:
+                return astunparse.unparse(node.body)
 
     async def get_mime_type(self, mime_type: str) -> str:
         """
@@ -241,7 +284,7 @@ class Entanglements(commands.Cog):
                                     f"Superposition irregularity "
                                     f"detected in Quantum {cog}! "
                                     f"Successfully entangled to the "
-                                    f'{(num2words(randint(1,1000),to="ordinal_num"))} {location}!'
+                                    f'{(num2words(randint(1, 1000), to="ordinal_num"))} {location}!'
                                 ),
                                 silent=True,
                             )
@@ -692,7 +735,7 @@ class Entanglements(commands.Cog):
             data_dir = self.aaaa_dir
 
             # allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
-            allowed = compile("^[\w]*(\.){1,}[\w]{1,}$")
+            allowed = compile(r"^[\w]*(\.){1,}[\w]{1,}$")
             if (
                 "/" not in current_filename
                 and allowed.match(current_filename)
@@ -942,10 +985,10 @@ class Entanglements(commands.Cog):
                 )
 
                 try:
-                    command.revision(
-                        self.alembic_cfg, "Automatic update", autogenerate=True
+                    await ctx.invoke(
+                        self.bot.get_command("db revision"), "Automatic update"
                     )
-                    command.upgrade(self.alembic_cfg, "head")
+                    await ctx.invoke(self.bot.get_command("db upgrade"), "head")
                 except Exception:
                     self.logger.error(
                         "Database schema update/migration failed", exc_info=True
@@ -1041,7 +1084,7 @@ class Entanglements(commands.Cog):
                 return
 
             # allow only alphanumeric, underscores, a single dot and at least one alphanumeric after the dot
-            allowed = compile("^[\w]*(\.){1,}[\w]{1,}$")
+            allowed = compile(r"^[\w]*(\.){1,}[\w]{1,}$")
             if allowed.match(filename):
 
                 try:
@@ -1120,6 +1163,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
     print("Started Entanglements!")
 
+    # TODO: Remove this command, as it's not really used, and causes way too many issues
     @commands.command(
         alias=["try"],
         brief="Retries a command.",
@@ -1156,8 +1200,9 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                     ) and not reply_message.content.startswith(
                         f"{self.bot.command_prefix}retry"
                     ):
-                        words = reply_message.content.split(".")
+                        words = split(r"\s|[.]", reply_message.content)
 
+                        command = None
                         command_str = ""
                         for i, word in enumerate(words):
                             if " " in word:
@@ -1166,18 +1211,29 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                                 command_str += " "
 
                             command_str += word
-                            command = self.bot.get_command(
-                                command_str[1:]
+                            new_command = self.bot.get_command(
+                                command_str.replace(self.bot.command_prefix, "")
                             )  # Remove the prefix
 
-                            if command is None:
+                            if new_command is None and i == 0:
+                                await ctx.reply(
+                                    "Failed to get command from replied message or command doesn't exist!",
+                                    silent=True,
+                                )
+                                return
+                            elif new_command is None:
                                 break
-                        # Check if the command was found
+                            else:
+                                command = new_command
                         if command is not None:
+                            # Check if the command was found
                             # Get a dictionary of the command's parameters
                             parameters = command.params
                             # Get the message content after the command name
-                            message = " ".join(reply_message.content.split(" ")[1:])
+                            count = command.qualified_name.count(" ")
+                            message = " ".join(
+                                reply_message.content.split(" ")[-count:]
+                            )
                             # Get the context of the replied message.
                             # This is used to invoke the command and provides the context needed
                             # for the command to properly run if it's context-sensitive
@@ -1257,7 +1313,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
         Command group used for database management.
         """
         if ctx.invoked_subcommand is None:
-            await ctx.reply("Invalid db command passed...", silent=True)
+            await ctx.send_help(ctx.command)
 
     @db.command()
     async def revision(self, ctx: commands.Context, message: str):
@@ -1265,17 +1321,13 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
         Create a database revision using Alembic.
 
         Args:
-            ctx (commands.Context): The context of the command.
             message (str): The message for the revision.
-
-        Raises:
-            Exception: If the database revision fails.
-
-        Returns:
-            None
         """
         try:
             command.revision(self.alembic_cfg, message, autogenerate=True)
+        except CommandError as e:
+            self.logger.error("Database revision failed", exc_info=True)
+            await ctx.reply(f"Database revision failed: {e}", silent=True)
         except Exception:
             self.logger.error("Database revision failed", exc_info=True)
             await ctx.reply("Database revision failed!", silent=True)
@@ -1285,19 +1337,12 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @db.command(aliases=["update"])
     async def upgrade(self, ctx: commands.Context, revision: str = "+1"):
         """
-        Upgrade the database using Alembic.
+        Upgrades the database using Alembic.
 
         Parameters:
-        - ctx (commands.Context): The context object representing the invocation context of the command.
         - revision (str): The revision to upgrade to. Defaults to "+1" which upgrades to the next revision.
-
-        Raises:
-        - CommandError: If the database upgrade fails.
-
-        Returns:
-        - None
-
         """
+        self.database_backup()
         try:
             command.upgrade(self.alembic_cfg, revision)
         except CommandError as e:
@@ -1312,18 +1357,12 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @db.command(aliases=["revert"])
     async def downgrade(self, ctx: commands.Context, revision: str = "-1"):
         """
-        Downgrades the database to a specified revision or the previous revision.
+        Downgrades the database using Alembic.
 
         Parameters:
-        - ctx (commands.Context): The context of the command.
         - revision (str): The revision to downgrade to. Defaults to "-1" which represents the previous revision.
-
-        Raises:
-        - CommandError: If the database downgrade fails.
-
-        Returns:
-        - None
         """
+        self.database_backup()
         try:
             command.downgrade(self.alembic_cfg, revision)
         except CommandError as e:
@@ -1338,23 +1377,17 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @db.command()
     async def history(self, ctx: commands.Context):
         """
-        Retrieves the migration history and sends it as a reply to the given context.
-
-        Parameters:
-        - ctx (commands.Context): The context object representing the invocation of the command.
-
-        Returns:
-        - None
-
-        Raises:
-        - Exception: If there is an error while retrieving the migration history.
+        Retrieves the migration history and displays it in the channel.
         """
+        current_revision = await crud.get_current_revision(AsyncSessionLocal)
         try:
             script_dir = ScriptDirectory.from_config(self.alembic_cfg)
             revisions = script_dir.walk_revisions()
             history = []
             for revision in revisions:
-                history.append(f"{revision.revision} {revision.doc or 'No message'}")
+                history.append(
+                    f"{revision.revision} {revision.doc or 'No message'} {'<- Current' if revision.revision == current_revision else ''}".strip()
+                )
             await ctx.reply("\n".join(history), silent=True)
         except Exception:
             self.logger.error("Failed to get migration history", exc_info=True)
@@ -1363,18 +1396,45 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
     @db.command()
     async def migrate(self, ctx: commands.Context, message: str):
         """
-        Migrates the database using the provided message.
+        Runs both the revision and upgrade commands in one go.
 
         Parameters:
-        - ctx (commands.Context): The context of the command.
         - message (str): The message to be passed to the migration command.
-
-        Returns:
-        - None
-
         """
         await ctx.invoke(self.bot.get_command("db revision"), message)
         await ctx.invoke(self.bot.get_command("db upgrade"), "head")
+
+    @db.command(aliases=["inspect"])
+    async def inspect_revision(self, ctx: commands.Context, revision_id: str):
+        """
+        Inspects a specific revision in the database.
+
+        Parameters:
+        - revision_id (str): The revision to inspect.
+        """
+        directory = "./alembic/versions"
+        filename = self.get_file_by_partial_name(directory, revision_id)
+        filename = Path(directory, filename)
+        upgrade_code = self.extract_function_code(filename, "upgrade")
+        downgrade_code = self.extract_function_code(filename, "downgrade")
+        try:
+            script_dir = ScriptDirectory.from_config(self.alembic_cfg)
+            revision = script_dir.get_revision(revision_id)
+            await ctx.reply(
+                f"Revision: {revision.revision}\nMessage: {revision.doc or 'No message'}\nUpgrade:\n```{upgrade_code}```\nDowngrade:\n```{downgrade_code}```",
+                silent=True,
+            )
+        except Exception:
+            self.logger.error("Failed to inspect revision", exc_info=True)
+            await ctx.reply("Failed to inspect revision", silent=True)
+
+    @db.command()
+    async def current(self, ctx: commands.Context):
+        """
+        Displays the current database revision.
+        """
+        current_revision = await crud.get_current_revision(AsyncSessionLocal)
+        await ctx.reply(f"Current database revision: {current_revision}", silent=True)
 
 
 async def setup(bot: commands.Bot):
