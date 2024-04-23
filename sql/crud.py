@@ -6,6 +6,22 @@ from decorators import timeit
 
 
 @timeit
+async def get_current_revision(db: AsyncSession):
+    """
+    Get the current revision of the database.
+
+    Args:
+        db (AsyncSession): The database session.
+
+    Returns:
+        str: The current revision of the database.
+    """
+    async with db() as db:
+        result = await db.execute(select(models.AlembicVersion.version_num))
+        return result.scalar_one_or_none()
+
+
+@timeit
 async def check_user_exists(db: AsyncSession, user: schemas.User.Get):
     """
     Check if a user exists in the database.
