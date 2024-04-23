@@ -24,6 +24,7 @@ class QuantumKat(commands.Bot):
 
     async def get_context(self, message: discord.Message, *, cls=None):
         words = message.content.split(".")
+        words = [word.split(" ")[0] for word in words]
 
         command_str = ""
         for i, word in enumerate(words):
@@ -31,7 +32,9 @@ class QuantumKat(commands.Bot):
                 command_str += " "
 
             command_str += word
-            command = self.get_command(command_str[1:])  # Remove the prefix
+            command = self.get_command(
+                command_str.replace(bot.command_prefix, "")
+            )  # Remove the prefix
 
             if command is not None:
                 message.content = message.content.replace(".", " ", i - 1)
@@ -91,7 +94,7 @@ intents.members = True
 
 # Sets the bot's command prefix, help command, intents, and adds my ID to owner_ids
 bot = QuantumKat(
-    command_prefix="?dev",
+    command_prefix="?",
     help_command=commands.DefaultHelpCommand(
         sort_commands=False, show_parameter_descriptions=False, width=100
     ),
@@ -214,7 +217,7 @@ Latency to Discord: {int(bot.latency * 1000)}ms.
 Discord.py version: {discord.__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1, 1000),
-    to="ordinal_num")} {choice(quantum)}!"""
+                                            to="ordinal_num")} {choice(quantum)}!"""
     logger.info(message)
     print(message)
 
