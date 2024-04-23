@@ -40,3 +40,9 @@ class Chat(Base):
     # Relationships
     user = relationship("User", back_populates="chats")
     server = relationship("Server", back_populates="chats")
+
+
+class AlembicVersion(Base):
+    __tablename__ = "alembic_version"
+
+    version_num = Column(String, primary_key=True)
