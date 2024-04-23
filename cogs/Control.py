@@ -227,7 +227,6 @@ class Control(commands.Cog):
         return
 
     @commands.command()
-    @requires_tos_acceptance
     async def test(self, ctx: commands.Context):
         await ctx.send("*Meows*")
 
