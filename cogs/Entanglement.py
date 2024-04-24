@@ -6,11 +6,10 @@ from string import ascii_letters, digits
 from sys import argv, executable
 from asyncio import sleep as asyncsleep
 from shlex import quote
-from re import compile, split
+from re import compile
 from pathlib import Path
 from requests import get
 from inspect import Parameter
-import shlex
 import shutil
 from datetime import datetime
 
