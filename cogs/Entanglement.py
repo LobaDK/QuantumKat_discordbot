@@ -1162,144 +1162,6 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
     # command splitter for easier reading and navigating
 
-    print("Started Entanglements!")
-
-    # TODO: Remove this command, as it's not really used, and causes way too many issues
-    @commands.command(
-        alias=["try"],
-        brief="Retries a command.",
-        description="Retries a command with the same parameters as the original command. Requires a command to be replied to.",
-    )
-    async def retry(self, ctx: commands.Context):
-        # Check if the user is replying to a message
-        if ctx.message.reference:
-            try:
-                # Attempt to get the message that was replied to
-                reply_message = await ctx.fetch_message(
-                    ctx.message.reference.message_id
-                )
-            except discord.NotFound:
-                message = "Failed to get reply or message doesn't exist!"
-                await ctx.reply(message, silent=True)
-                self.logger.error(message, exc_info=True)
-                return
-            except discord.Forbidden:
-                message = "I don't have permission to fetch the message!"
-                await ctx.reply(message, silent=True)
-                self.logger.error(message, exc_info=True)
-                return
-            except discord.HTTPException:
-                message = "Unknown error trying to fetch the message!"
-                await ctx.reply(message, silent=True)
-                self.logger.error(message, exc_info=True)
-                return
-            if ctx.author.id == reply_message.author.id:
-                if reply_message:
-                    # Check if the replied message is a command, and is not the retry command, to avoid infinite loops
-                    if reply_message.content.startswith(
-                        self.bot.command_prefix
-                    ) and not reply_message.content.startswith(
-                        f"{self.bot.command_prefix}retry"
-                    ):
-                        words = split(r"\s|[.]", reply_message.content)
-
-                        command = None
-                        command_str = ""
-                        for i, word in enumerate(words):
-                            if " " in word:
-                                word = word.split(" ")[0]
-                            if i > 0:
-                                command_str += " "
-
-                            command_str += word
-                            new_command = self.bot.get_command(
-                                command_str.replace(self.bot.command_prefix, "")
-                            )  # Remove the prefix
-
-                            if new_command is None and i == 0:
-                                await ctx.reply(
-                                    "Failed to get command from replied message or command doesn't exist!",
-                                    silent=True,
-                                )
-                                return
-                            elif new_command is None:
-                                break
-                            else:
-                                command = new_command
-                        if command is not None:
-                            # Check if the command was found
-                            # Get a dictionary of the command's parameters
-                            parameters = command.params
-                            # Get the message content after the command name
-                            count = command.qualified_name.count(" ")
-                            message = " ".join(
-                                reply_message.content.split(" ")[-count:]
-                            )
-                            # Get the context of the replied message.
-                            # This is used to invoke the command and provides the context needed
-                            # for the command to properly run if it's context-sensitive
-                            reply_ctx = await self.bot.get_context(reply_message)
-                            # If there are no parameters, just invoke the command
-                            if len(parameters) == 0:
-                                await ctx.reply(
-                                    f"Retrying command `{command}`... with no parameters. That's pretty lazy, don't you think?",
-                                )
-                                await reply_ctx.invoke(command)
-                            # check if it's positional or variable keyword, or keyword only
-                            elif len(parameters) == 1:
-                                parameter = list(parameters.values())[0]
-                                parameter_name = parameter.name
-                                parameter_kind = parameter.kind
-                                if (
-                                    parameter_kind == Parameter.POSITIONAL_OR_KEYWORD
-                                    or parameter_kind == Parameter.VAR_KEYWORD
-                                ):
-                                    await ctx.reply(
-                                        f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
-                                    )
-                                    await reply_ctx.invoke(
-                                        command, **{parameter_name: message}
-                                    )
-                                elif parameter_kind == Parameter.KEYWORD_ONLY:
-                                    await ctx.reply(
-                                        f"Retrying command `{self.bot.command_prefix}{command}`... with 1 parameter of type {await self.parameter_kind_to_string(parameter)}.",
-                                    )
-                                    await reply_ctx.invoke(
-                                        command, **{parameter_name: message}
-                                    )
-                            elif len(parameters) > 1:
-                                # Split the message into a list of parameters. This is done using shlex to allow for quoted strings
-                                message = shlex.split(message)
-                                if len(message) == len(parameters):
-                                    await ctx.reply(
-                                        f"Retrying command `{self.bot.command_prefix}{command}`... with {len(parameters)} parameters of types {', '.join([await self.parameter_kind_to_string(parameter) for parameter in parameters.values()])}.",
-                                    )
-                                    await reply_ctx.invoke(command, *message)
-                                else:
-                                    await ctx.reply(
-                                        f"Command `{self.bot.command_prefix}{command}` requires {len(parameters)} parameters, but {len(message)} were given.",
-                                    )
-                        else:
-                            await ctx.reply(
-                                "Failed to get command from replied message or command doesn't exist!",
-                                silent=True,
-                            )
-                    else:
-                        await ctx.reply(
-                            "A message with a valid command `?` needs to be replied to when this is used!",
-                            silent=True,
-                        )
-                else:
-                    await ctx.reply(
-                        "Failed to get reply or message is empty!", silent=True
-                    )
-            else:
-                await ctx.reply("You can only retry your own commands!", silent=True)
-        else:
-            await ctx.reply(
-                "You need to be replying to a message to use this command!", silent=True
-            )
-
     @commands.command()
     async def version(self, ctx: commands.Context):
         version = self.bot.misc_helper.get_git_commit_count()
@@ -1444,6 +1306,8 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
         """
         current_revision = await crud.get_current_revision(AsyncSessionLocal)
         await ctx.reply(f"Current database revision: {current_revision}", silent=True)
+
+    print("Started Entanglements!")
 
 
 async def setup(bot: commands.Bot):
