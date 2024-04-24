@@ -18,6 +18,7 @@ from alembic import command
 from alembic.script import ScriptDirectory
 from alembic.config import Config
 from alembic.util.exc import CommandError
+from sqlalchemy.exc import OperationalError
 
 import mimetypes
 import magic
@@ -1379,7 +1380,12 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
         """
         Retrieves the migration history and displays it in the channel.
         """
-        current_revision = await crud.get_current_revision(AsyncSessionLocal)
+        try:
+            current_revision = await crud.get_current_revision(AsyncSessionLocal)
+        except OperationalError as e:
+            self.logger.error("Failed to get current revision", exc_info=True)
+            await ctx.reply(f"Failed to get current revision: {e}", silent=True)
+            return
         try:
             script_dir = ScriptDirectory.from_config(self.alembic_cfg)
             revisions = script_dir.walk_revisions()
@@ -1424,6 +1430,9 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
                 f"Revision: {revision.revision}\nMessage: {revision.doc or 'No message'}\nUpgrade:\n```{upgrade_code}```\nDowngrade:\n```{downgrade_code}```",
                 silent=True,
             )
+        except CommandError as e:
+            self.logger.error("Failed to inspect revision", exc_info=True)
+            await ctx.reply(f"Failed to inspect revision: {e}", silent=True)
         except Exception:
             self.logger.error("Failed to inspect revision", exc_info=True)
             await ctx.reply("Failed to inspect revision", silent=True)
