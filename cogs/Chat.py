@@ -137,7 +137,9 @@ class Chat(commands.Cog):
         if shared_chat:
             result = await crud.get_shared_chats_for_server(
                 database.AsyncSessionLocal,
-                schemas.Chat.Get(server_id=server_id, n=10, shared_chat=True),
+                schemas.Chat.Get(
+                    server_id=server_id, user_id=ctx.author.id, n=10, shared_chat=True
+                ),
             )
         else:
             result = await crud.get_chats_for_user(
@@ -276,9 +278,7 @@ class Chat(commands.Cog):
                                     "content": self.system_message.format(
                                         user=ctx.author.name,
                                         version=".".join(
-                                            str(
-                                                misc_helper.get_git_commit_count()
-                                            )
+                                            str(misc_helper.get_git_commit_count())
                                         ),
                                     ),
                                 },
