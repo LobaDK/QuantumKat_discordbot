@@ -122,11 +122,11 @@ class Fields(commands.Cog):
             async def quantumpurr(self, ctx):
                 quantumspan = randint(0, 100)
                 await ctx.send(
-                    f'Quantum purrs across {quantumspan} {choices(["dimension","universe","reality","timeline","dimension, universe, reality and timeline"], weights=[100,100,100,100,1], k=1)[0] if quantumspan == 1 else choices(["dimensions","universes","realities","timelines","dimensions, universes, realities and timelines"], weights=[100,100,100,100,1], k=1)[0]}'
+                    f'Quantum purrs across {quantumspan} {choices(["dimension", "universe", "reality", "timeline", "dimension, universe, reality and timeline"], weights=[100, 100, 100, 100, 1], k=1)[0] if quantumspan == 1 else choices(["dimensions", "universes", "realities", "timelines", "dimensions, universes, realities and timelines"], weights=[100, 100, 100, 100, 1], k=1)[0]}'
                 )
 
             async def quantumfrequency(self, ctx):
-                await ctx.send(f"Quantum vibrates at {randint(1,100_000)}hz")
+                await ctx.send(f"Quantum vibrates at {randint(1, 100_000)}hz")
 
             async def quantumloop(self, ctx):
                 petloop = "".join(
@@ -174,11 +174,11 @@ class Fields(commands.Cog):
             quantummode = choice(["purr", "frequency"])
             if quantummode == "purr":
                 await ctx.send(
-                    f'Quantum purrs and entangles {ctx.author.mention} to the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension","universe","reality","timeline"])}'
+                    f'Quantum purrs and entangles {ctx.author.mention} to the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension", "universe", "reality", "timeline"])}'
                 )
             elif quantummode == "frequency":
                 await ctx.send(
-                    f'Quantum vibrates at {randint(1,100_000)}hz, teleporting {choice(["a chair","a table","a vase","a long-lost credit card","some strangers phone","a stranger","an error","a bucket","a bucket of milk","||redacted||","a cat","a quantum cat","an alien from the 7th dimension","a blackhole","a random star","a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension","universe","reality","timeline"])}'
+                    f'Quantum vibrates at {randint(1, 100_000)}hz, teleporting {choice(["a chair", "a table", "a vase", "a long-lost credit card", "some strangers phone", "a stranger", "an error", "a bucket", "a bucket of milk", "||redacted||", "a cat", "a quantum cat", "an alien from the 7th dimension", "a blackhole", "a random star", "a random planet"])} from the {num2words(quantumspan, to="ordinal_num")} {choice(["dimension", "universe", "reality", "timeline"])}'
                 )
         else:
             await ctx.send(
@@ -224,7 +224,7 @@ class Fields(commands.Cog):
                 )
             )
             await ctx.send(
-                f'{quantumpetloop}... Instability detected, successfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!'
+                f'{quantumpetloop}... Instability detected, successfully terminated the {choice(["dimension", "universe", "reality", "timeline", "chair", "table", "error", "object", "||redacted||", "corruptcorruptcorruptcorrupt", "corrupt", "future", "past", "presence", "instability", "stability", "..."])}!'
             )
         else:
             await ctx.send(
@@ -270,7 +270,7 @@ class Fields(commands.Cog):
                 )
             )
             await ctx.send(
-                f'{quantumhugloop}... Instability detected, successfully terminated the {choice(["dimension","universe","reality","timeline","chair","table","error","object","||redacted||","corruptcorruptcorruptcorrupt","corrupt","future","past","presence","instability","stability","..."])}!'
+                f'{quantumhugloop}... Instability detected, successfully terminated the {choice(["dimension", "universe", "reality", "timeline", "chair", "table", "error", "object", "||redacted||", "corruptcorruptcorruptcorrupt", "corrupt", "future", "past", "presence", "instability", "stability", "..."])}!'
             )
         else:
             await ctx.send(
