@@ -972,16 +972,16 @@ class Entanglements(commands.Cog):
                         stderr=subprocess.PIPE,
                     )
                     await proc.wait()
-                    await msg.edit(content=f"{msg.content} Done!")
+                    msg = await msg.edit(content=f"{msg.content} Done!")
                     reboot = True
                 except Exception as e:
                     self.logger.error(f"{type(e).__name__}: {e}")
-                    await msg.edit(
+                    msg = await msg.edit(
                         content=f"{msg.content} Error updating from requirements.txt."
                     )
 
             if "sql/models.py" in output:
-                await msg.edit(
+                msg = await msg.edit(
                     content=f"{msg.content}\nDatabase schema changes detected. Updating..."
                 )
 
@@ -994,11 +994,13 @@ class Entanglements(commands.Cog):
                     self.logger.error(
                         "Database schema update/migration failed", exc_info=True
                     )
-                    await msg.edit(
+                    msg = await msg.edit(
                         content=f"{msg.content} Error updating database schema."
                     )
                 else:
-                    await msg.edit(content=f"{msg.content} Database schema updated!")
+                    msg = await msg.edit(
+                        content=f"{msg.content} Database schema updated!"
+                    )
                     reboot = True
 
             if "QuantumKat.py" in output and not reboot:
@@ -1038,19 +1040,19 @@ class Entanglements(commands.Cog):
 
                     except commands.ExtensionNotLoaded as e:
                         self.logger.error(f"{type(e).__name__}: {e}")
-                        await msg.edit(
+                        msg = await msg.edit(
                             content=f"{msg.content}\n{extension[5:]} is not running, or could not be found"
                         )
 
                     except commands.ExtensionNotFound as e:
                         self.logger.error(f"{type(e).__name__}: {e}")
-                        await msg.edit(
+                        msg = await msg.edit(
                             content=f"{msg.content}\n{extension[5:]} could not be found!"
                         )
 
                     except commands.NoEntryPointError as e:
                         self.logger.error(f"{type(e).__name__}: {e}")
-                        await msg.edit(
+                        msg = await msg.edit(
                             content=f"{msg.content}\nsuccessfully loaded {extension[5:]}, but no setup was found!"
                         )
 
@@ -1150,7 +1152,11 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
             schemas.Bot.SetReboot(
                 is_reboot_scheduled=True,
                 reboot_time=datetime.now(),
-                message_location=(msg.id, msg.channel.id, msg.guild.id if msg.guild else 0),
+                message_location=(
+                    msg.id,
+                    msg.channel.id,
+                    msg.guild.id if msg.guild else 0,
+                ),
             ),
         )
         for cog in listdir("./cogs"):
