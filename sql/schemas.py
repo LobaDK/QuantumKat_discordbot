@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 
 
 class User:
@@ -70,3 +71,15 @@ class Chat:
 
     class Delete(Get):
         pass
+
+
+class Bot:
+    class _Base(BaseModel):
+        is_reboot_scheduled: bool
+        reboot_time: datetime
+
+    class unsetReboot(_Base):
+        pass
+
+    class SetReboot(unsetReboot):
+        message_location: tuple[int, int, int]

@@ -7,3 +7,4 @@ ff*
 *.log
 *.db
 rebooted
+alembic/versions/*

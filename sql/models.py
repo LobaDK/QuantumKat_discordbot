@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, PickleType
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -40,6 +40,14 @@ class Chat(Base):
     # Relationships
     user = relationship("User", back_populates="chats")
     server = relationship("Server", back_populates="chats")
+
+
+class Bot(Base):
+    __tablename__ = "bot"
+
+    is_reboot_scheduled = Column(Integer, primary_key=True, nullable=False, default=0)
+    reboot_time = Column(DateTime, nullable=False, default=0)
+    message_location = Column(PickleType, nullable=False, default=())
 
 
 class AlembicVersion(Base):
