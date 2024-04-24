@@ -3,7 +3,8 @@ import asyncio
 import sys
 from sql import database
 from sql import crud, schemas
-from helpers import LogHelper
+
+from QuantumKat import log_helper, discord_helper, misc_helper
 
 sys.path.append(".")
 
@@ -12,8 +13,8 @@ class Auth(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.logger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="Auth", log_file="logs/auth/Auth.log"
             )
         )
@@ -30,7 +31,7 @@ class Auth(commands.Cog):
         Returns:
         None
         """
-        if self.bot.discord_helper.is_dm(ctx):
+        if discord_helper.is_dm(ctx):
             await ctx.send("This command must be used in a server.")
             return
         authenticated_servers = await crud.get_authenticated_servers(
@@ -47,7 +48,7 @@ class Auth(commands.Cog):
                 "This server has been banned from using the bot. Please contact the bot owner for more information."
             )
             return
-        if not self.bot.discord_helper.is_privileged_user(ctx):
+        if not discord_helper.is_privileged_user(ctx):
             await ctx.send(
                 "You must be a server admin/moderator, owner or the bot owner to request authentication."
             )
@@ -72,7 +73,7 @@ class Auth(commands.Cog):
 
         async def update_server_msg():
             for remaining in range(300, 0, -10):
-                time = self.bot.misc_helper.remaining_time(remaining)
+                time = misc_helper.remaining_time(remaining)
                 await server_msg.edit(
                     content=f"{server_msg.content}\nTime remaining: {time}"
                 )
@@ -130,7 +131,7 @@ class Auth(commands.Cog):
         None
         """
         if server_id_or_name:
-            if not self.bot.discord_helper.is_bot_owner(ctx):
+            if not discord_helper.is_bot_owner(ctx):
                 await ctx.send("You must be the bot owner to deauthenticate a server.")
                 return
             server = crud.get_authenticated_server_by_id_or_name(
@@ -149,10 +150,10 @@ class Auth(commands.Cog):
             await ctx.send(
                 f"Deauthenticated server `{server[1]}` with ID `{server[0]}`."
             )
-        elif self.bot.discord_helper.is_dm(ctx):
+        elif discord_helper.is_dm(ctx):
             await ctx.send("This command must be used in a server.")
             return
-        elif self.bot.discord_helper.is_privileged_user(ctx):
+        elif discord_helper.is_privileged_user(ctx):
             await crud.set_server_is_authorized(
                 database.AsyncSessionLocal,
                 schemas.Server.SetIsAuthorized(

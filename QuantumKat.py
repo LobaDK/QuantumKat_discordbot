@@ -103,19 +103,15 @@ bot = QuantumKat(
 
 bot.reboot_scheduled = False
 
-bot.log_helper = log_helper
-bot.misc_helper = misc_helper
-bot.discord_helper = discord_helper
-
 
 async def setup(bot: commands.Bot):
     if not ignoreMissingExe:
         for executable in executables:
-            if not bot.misc_helper.is_installed(executable):
+            if not misc_helper.is_installed(executable):
                 logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
-    await bot.discord_helper.first_load_cogs(bot, "./cogs", logger)
+    await discord_helper.first_load_cogs(bot, "./cogs", logger)
     await bot.start(TOKEN, reconnect=True)
 
 
@@ -127,11 +123,11 @@ async def is_authenticated(ctx: commands.Context) -> bool:
             AsyncSessionLocal
         )
         authenticated_server_ids = [server[0] for server in authenticated_server_ids]
-        if bot.discord_helper.is_dm(ctx):
+        if discord_helper.is_dm(ctx):
             # If the command is run in a DM, check if the user is in an authenticated server
             for guild in bot.guilds:
                 if guild.id in authenticated_server_ids:
-                    if bot.discord_helper.user_in_guild(ctx.author, guild):
+                    if discord_helper.user_in_guild(ctx.author, guild):
                         return True
             await ctx.send(
                 "You need to be in an at least one authenticated server to interact with me in DMs."
@@ -244,4 +240,5 @@ Discord.py version: {discord.__version__}
     Thread(target=pubapi.start_api).start()
 
 
-run(setup(bot))
+if __name__ == "__main__":
+    run(setup(bot))

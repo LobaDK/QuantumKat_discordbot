@@ -27,18 +27,19 @@ import astunparse
 from discord.ext import commands
 from num2words import num2words
 from psutil import cpu_percent, disk_usage, virtual_memory
-from helpers import LogHelper
 
 from sql.database import AsyncSessionLocal
 from sql import crud, schemas
+
+from QuantumKat import log_helper, misc_helper
 
 
 class Entanglements(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.logger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="Entanglements",
                 log_file="logs/entanglements/Entanglements.log",
             )
@@ -1172,7 +1173,7 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
 
     @commands.command()
     async def version(self, ctx: commands.Context):
-        version = self.bot.misc_helper.get_git_commit_count()
+        version = misc_helper.get_git_commit_count()
         # Turn the version number into a dot-separated string to make it look a little fancier.
         version = ".".join(str(version))
         await ctx.reply(f"Current version: {version}", silent=True)

@@ -10,8 +10,9 @@ from discord.ext import commands
 
 from sql import database
 from sql import crud, schemas
-from helpers import LogHelper
 from decorators import requires_tos_acceptance
+
+from QuantumKat import log_helper, misc_helper, discord_helper
 
 sys.path.append(".")
 
@@ -20,14 +21,14 @@ class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.logger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="Chat", log_file="logs/chat/Chat.log"
             )
         )
 
-        self.historylogger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.historylogger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="ChatHistory", log_file="logs/chat/ChatHistory.log"
             )
         )
@@ -200,7 +201,7 @@ class Chat(commands.Cog):
         Returns:
             tuple: A tuple containing the server ID and name.
         """
-        if not self.bot.discord_helper.is_dm(ctx):
+        if not discord_helper.is_dm(ctx):
             server_id = ctx.guild.id
             server_name = ctx.guild.name
         else:
@@ -276,7 +277,7 @@ class Chat(commands.Cog):
                                         user=ctx.author.name,
                                         version=".".join(
                                             str(
-                                                self.bot.misc_helper.get_git_commit_count()
+                                                misc_helper.get_git_commit_count()
                                             )
                                         ),
                                     ),
@@ -470,7 +471,7 @@ class Chat(commands.Cog):
         Returns:
         None
         """
-        if self.bot.discord_helper.is_privileged_user(ctx):
+        if discord_helper.is_privileged_user(ctx):
             await self.initiatechatclear(ctx, True)
         else:
             await ctx.reply(

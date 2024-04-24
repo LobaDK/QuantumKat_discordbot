@@ -3,15 +3,16 @@ from datetime import datetime
 
 from discord.ext import commands
 from discord import Client
-from helpers import LogHelper
+
+from QuantumKat import log_helper
 
 
 class Tunnel(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.logger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="Tunnel", log_file="logs/tunnel/Tunnel.log"
             )
         )

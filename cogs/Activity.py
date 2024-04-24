@@ -2,7 +2,8 @@ from random import randint, choice
 from discord import Game
 from discord.ext import commands, tasks
 from num2words import num2words
-from helpers import LogHelper
+
+from QuantumKat import log_helper
 
 
 class Activity(commands.Cog):
@@ -10,8 +11,8 @@ class Activity(commands.Cog):
 
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.logger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="Activity", log_file="logs/activity/Activity.log"
             )
         )

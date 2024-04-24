@@ -3,12 +3,13 @@ import discord
 
 from textwrap import dedent
 from discord.ext import commands
-from helpers import LogHelper
 from sqlalchemy.exc import SQLAlchemyError
 
 from decorators import requires_tos_acceptance
 from sql import crud, schemas
 from sql.database import AsyncSessionLocal
+
+from QuantumKat import log_helper, discord_helper
 
 TIMEOUT_IN_SECONDS = 60
 
@@ -80,8 +81,8 @@ class Control(commands.Cog):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
-        self.logger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.logger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="Control", log_file="logs/control/Control.log"
             )
         )
@@ -171,8 +172,8 @@ class Control(commands.Cog):
         ),
     )
     async def Leave(self, ctx: commands.Context):
-        if not self.bot.discord_helper.is_dm(ctx):
-            if self.bot.discord_helper.is_privileged_user(ctx):
+        if not discord_helper.is_dm(ctx):
+            if discord_helper.is_privileged_user(ctx):
                 await ctx.send(f"*Poofs to another {choice(self.locations)}*")
                 await ctx.guild.leave()
             else:
@@ -195,7 +196,7 @@ class Control(commands.Cog):
     async def ListPermissions(self, ctx: commands.Context, Server_ID: str = ""):
         guild = None
         # If Server_ID is provided and the command was used in DM's
-        if Server_ID and self.bot.discord_helper.is_dm(ctx):
+        if Server_ID and discord_helper.is_dm(ctx):
             if Server_ID.isnumeric():
                 # Get a guild object of the server from it's ID
                 guild = self.bot.get_guild(int(Server_ID))
@@ -215,7 +216,7 @@ class Control(commands.Cog):
                 return
 
         # If Server_ID is not provided and the command was used in a server
-        elif not self.bot.discord_helper.is_dm(ctx) and not Server_ID:
+        elif not discord_helper.is_dm(ctx) and not Server_ID:
             guild = ctx.guild
         else:
             await ctx.send(
@@ -329,9 +330,9 @@ class Control(commands.Cog):
             Created at: {user.created_at}
             """
         )
-        if not self.bot.discord_helper.is_dm(
-            ctx
-        ) and self.bot.discord_helper.user_in_guild(user, ctx.guild):
+        if not discord_helper.is_dm(ctx) and discord_helper.user_in_guild(
+            user, ctx.guild
+        ):
             member = ctx.guild.get_member(user.id)
             if member is None:
                 member = await ctx.guild.fetch_member(user.id)

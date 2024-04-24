@@ -11,15 +11,16 @@ from discord.ext import commands
 from ntplib import NTPClient
 from num2words import num2words
 from re import compile
-from helpers import LogHelper
+
+from QuantumKat import log_helper
 
 
 class Fields(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = bot.log_helper.create_logger(
-            LogHelper.TimedRotatingFileAndStreamHandler(
+        self.logger = log_helper.create_logger(
+            log_helper.TimedRotatingFileAndStreamHandler(
                 logger_name="Fields", log_file="logs/fields/Fields.log"
             )
         )
