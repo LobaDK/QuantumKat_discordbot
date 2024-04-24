@@ -13,6 +13,18 @@ from sql.database import AsyncSessionLocal
 TIMEOUT_IN_SECONDS = 60
 
 
+class CustomGuildConverter(commands.Converter):
+    async def convert(self, ctx: commands.Context, argument: str):
+        if argument == "this":
+            argument = ctx.guild.name
+        guild = discord.utils.find(
+            lambda g: g.name.lower() == argument.lower(), ctx.bot.guilds
+        )
+        if guild is None:
+            raise commands.BadArgument(f"Guild {argument} not found.")
+        return guild
+
+
 class ViewTest(discord.ui.View):
     def __init__(self, ctx: commands.Context):
         super().__init__(timeout=TIMEOUT_IN_SECONDS)
@@ -232,19 +244,103 @@ class Control(commands.Cog):
 
     @commands.is_owner()
     @commands.group()
-    async def user(self, ctx: commands.Context):
-        if ctx.invoked_subcommand is None:
-            await ctx.send("Invalid user command passed...")
-            return
-
-    @user.group()
     async def bot(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
-            await ctx.send("Invalid bot command passed...")
+            await ctx.send_help(ctx.command)
             return
 
-    @bot.command()
-    async def ban(self, ctx: commands.Context, user: discord.User):
+    @bot.group()
+    async def server(self, ctx: commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+            return
+
+    @server.command(aliases=["ban"])
+    async def server_ban(self, ctx: commands.Context, server: CustomGuildConverter):
+        try:
+            if not await crud.check_server_exists(
+                AsyncSessionLocal, schemas.Server.Get(server_id=server.id)
+            ):
+                await crud.add_server(
+                    AsyncSessionLocal,
+                    schemas.Server.Add(
+                        server_id=server.id,
+                        server_name=server.name,
+                        is_banned=True,
+                    ),
+                )
+            else:
+                await crud.edit_server_ban(
+                    AsyncSessionLocal,
+                    schemas.Server.SetBan(server_id=server.id, is_banned=True),
+                )
+            await ctx.reply(
+                f"{server.name} has been banned from using the bot.",
+                silent=True,
+            )
+        except SQLAlchemyError:
+            self.logger.error("Failed to add server to DB", exc_info=True)
+            await ctx.reply("Database error. Please try again later.", silent=True)
+            return
+
+    @server.command(aliases=["unban"])
+    async def server_unban(self, ctx: commands.Context, server: CustomGuildConverter):
+        try:
+            if not await crud.check_server_exists(
+                AsyncSessionLocal, schemas.Server.Get(server_id=server.id)
+            ):
+                await ctx.reply(
+                    f"{server.name} is not in the database and cannot be unbanned.",
+                    silent=True,
+                )
+                return
+            else:
+                await crud.edit_server_ban(
+                    AsyncSessionLocal,
+                    schemas.Server.SetBan(server_id=server.id, is_banned=False),
+                )
+            await ctx.reply(
+                f"{server.name} has been unbanned from using the bot.",
+                silent=True,
+            )
+        except SQLAlchemyError:
+            self.logger.error("Failed to add server to DB", exc_info=True)
+            await ctx.reply("Database error. Please try again later.", silent=True)
+            return
+
+    @bot.group()
+    async def user(self, ctx: commands.Context):
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+            return
+
+    @user.command()
+    async def whois(self, ctx: commands.Context, user: discord.User):
+        db_user = await crud.get_user(
+            AsyncSessionLocal, schemas.User.Get(user_id=user.id)
+        )
+        message = dedent(
+            f"""
+            User ID: {user.id}
+            Username: {user.display_name}
+            Is bot: {user.bot}
+            In DB: {db_user is not None}
+            Banned from bot: {bool(getattr(db_user, "is_banned", False))}
+            Created at: {user.created_at}
+            """
+        )
+        if not self.bot.discord_helper.is_dm(
+            ctx
+        ) and self.bot.discord_helper.user_in_guild(user, ctx.guild):
+            member = ctx.guild.get_member(user.id)
+            if member is None:
+                member = await ctx.guild.fetch_member(user.id)
+            message += f"Joined at: {member.joined_at}"
+
+        await ctx.send(message)
+
+    @user.command(aliases=["ban"])
+    async def user_ban(self, ctx: commands.Context, user: discord.User):
         try:
             if not await crud.check_user_exists(
                 AsyncSessionLocal, schemas.User.Get(user_id=user.id)
@@ -271,8 +367,8 @@ class Control(commands.Cog):
             await ctx.reply("Database error. Please try again later.", silent=True)
             return
 
-    @bot.command()
-    async def unban(self, ctx: commands.Context, user: discord.User):
+    @user.command(aliases=["unban"])
+    async def user_unban(self, ctx: commands.Context, user: discord.User):
         try:
             if not await crud.check_user_exists(
                 AsyncSessionLocal, schemas.User.Get(user_id=user.id)
@@ -295,26 +391,6 @@ class Control(commands.Cog):
             self.logger.error("Failed to add user to DB", exc_info=True)
             await ctx.reply("Database error. Please try again later.", silent=True)
             return
-
-    @user.command()
-    async def whois(self, ctx: commands.Context, user: discord.User):
-        message = dedent(
-            f"""
-            User ID: {user.id}
-            Username: {user.display_name}
-            Is bot: {user.bot}
-            Created at: {user.created_at}
-            """
-        )
-        if not self.bot.discord_helper.is_dm(
-            ctx
-        ) and self.bot.discord_helper.user_in_guild(user, ctx.guild):
-            member = ctx.guild.get_member(user.id)
-            if member is None:
-                member = await ctx.guild.fetch_member(user.id)
-            message += f"Joined at: {member.joined_at}"
-
-        await ctx.send(message)
 
     print("Started Control!")
 
