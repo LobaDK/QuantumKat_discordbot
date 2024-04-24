@@ -37,6 +37,7 @@ class Tunnel(commands.Cog):
             commands.MissingRequiredArgument,
             commands.MemberNotFound,
             commands.UserNotFound,
+            commands.GuildNotFound,
         )
 
         error = getattr(error, "original", error)
@@ -48,6 +49,9 @@ class Tunnel(commands.Cog):
 
         if isinstance(error, (commands.MemberNotFound, commands.UserNotFound)):
             await ctx.send("User not found. Please check your command and try again.")
+
+        if isinstance(error, commands.GuildNotFound):
+            await ctx.send("Guild not found. Please check your command and try again.")
 
         if isinstance(error, (commands.NotOwner, commands.PrivateMessageOnly)):
             await ctx.send(
