@@ -432,3 +432,61 @@ async def edit_server_ban(db: AsyncSession, server: schemas.Server.SetBan):
         result = result.scalar_one_or_none()
         result.is_banned = server.is_banned
         await db.commit()
+
+
+@timeit
+async def set_reboot(db: AsyncSession, bot: schemas.Bot.SetReboot):
+    """
+    Set the reboot status for the bot.
+
+    Args:
+        db (AsyncSession): The database session.
+        bot (schemas.Bot.SetReboot): The bot object with the new reboot status.
+
+    Returns:
+        None
+    """
+    async with db() as db:
+        result = await db.execute(select(models.Bot))
+        result = result.scalar_one_or_none()
+        if result is None:
+            db.add(models.Bot(**bot.model_dump()))
+        else:
+            result.is_reboot_scheduled = bot.is_reboot_scheduled
+            result.reboot_time = bot.reboot_time
+            result.message_location = bot.message_location
+        await db.commit()
+
+
+@timeit
+async def unset_reboot(db: AsyncSession):
+    """
+    Unset the reboot status for the bot.
+
+    Args:
+        db (AsyncSession): The database session.
+
+    Returns:
+        None
+    """
+    async with db() as db:
+        result = await db.execute(select(models.Bot))
+        result = result.scalar_one_or_none()
+        await db.delete(result)
+        await db.commit()
+
+
+@timeit
+async def get_reboot_status(db: AsyncSession):
+    """
+    Get the reboot status for the bot.
+
+    Args:
+        db (AsyncSession): The database session.
+
+    Returns:
+        models.Bot: The bot object with the reboot status.
+    """
+    async with db() as db:
+        result = await db.execute(select(models.Bot))
+        return result.scalar_one_or_none()

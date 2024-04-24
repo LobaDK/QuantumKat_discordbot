@@ -1,11 +1,10 @@
 from asyncio import run
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import environ
 from random import choice, randint
 from sys import exit
 
 from helpers import LogHelper, MiscHelper, DiscordHelper
-from pathlib import Path
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -208,30 +207,19 @@ async def on_ready():
         except Exception as e:
             print(e)
     # Check if the bot was rebooted and edit the message to indicate it was successful
-    # TODO: Use the database instead? Also, it edits the message even if the bot was not rebooted.
-    #   Maybe add a timestamp to the database and check if the bot was rebooted within the last x minutes?
-    if Path("rebooted").exists():
-        with open("rebooted", "r") as f:
-            IDs = f.read()
-        # Order: message ID, channel ID, guild ID
-        IDs = IDs.split("\n")
-        try:
-            # Try and get the message from cache first
-            channel = bot.get_channel(int(IDs[1]))
-            if channel is None:
-                channel = await bot.fetch_channel(int(IDs[1]))
-            message = await channel.fetch_message(int(IDs[0]))
-        except Exception:
-            logger.error("Error fetching message to edit", exc_info=True)
-        if message:
-            try:
-                await message.edit(content=f"{message.content} Rebooted successfully!")
-            except Exception:
-                logger.error("Error editing message", exc_info=True)
+    reboot = await crud.get_reboot_status(AsyncSessionLocal)
+    if reboot and reboot.is_reboot_scheduled:
+        msg_id, channel_id, guild_id = reboot.message_location
+        channel = bot.get_channel(channel_id)
+        if channel is None:
+            channel = await bot.fetch_channel(channel_id)
+        message: discord.Message = await channel.fetch_message(msg_id)
+        # if reboot was more than 5 minutes ago, assume it was not successful
+        if reboot.reboot_time < datetime.now() - timedelta(minutes=5):
+            await message.edit(content=f"{message.content} Reboot was not successful.")
         else:
-            # if the message is not found, instead send a message to the bot owner
-            await bot.get_user(int(OWNER_ID)).send("Rebooted successfully!")
-        Path("rebooted").unlink()
+            await message.edit(content=f"{message.content} Rebooted successfully!")
+        await crud.unset_reboot(AsyncSessionLocal)
 
     bot.appinfo = await bot.application_info()
     quantum = ["reality", "universe", "dimension", "timeline"]

@@ -31,7 +31,7 @@ from psutil import cpu_percent, disk_usage, virtual_memory
 from helpers import LogHelper
 
 from sql.database import AsyncSessionLocal
-from sql import crud
+from sql import crud, schemas
 
 
 class Entanglements(commands.Cog):
@@ -1145,11 +1145,14 @@ Primary disk: {int(disk_usage('/').used / 1024 / 1024 / 1000)}GB / {int(disk_usa
         self.bot.reboot_scheduled = True
         msg = await ctx.send("Shutting down extensions and rebooting...")
         await asyncsleep(10)
-        with open("rebooted", "w") as f:
-            if self.bot.discord_helper.is_dm(ctx):
-                f.write(f"{msg.id}\n{msg.channel.id}\nNone")
-            else:
-                f.write(f"{msg.id}\n{msg.channel.id}\n{msg.guild.id}")
+        await crud.set_reboot(
+            AsyncSessionLocal,
+            schemas.Bot.SetReboot(
+                is_reboot_scheduled=True,
+                reboot_time=datetime.now(),
+                message_location=(msg.id, msg.channel.id, msg.guild.id if msg.guild else 0),
+            ),
+        )
         for cog in listdir("./cogs"):
             if cog.endswith(".py"):
                 try:
