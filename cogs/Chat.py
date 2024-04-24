@@ -11,6 +11,7 @@ from discord.ext import commands
 from sql import database
 from sql import crud, schemas
 from helpers import LogHelper
+from decorators import requires_tos_acceptance
 
 sys.path.append(".")
 
@@ -404,6 +405,7 @@ class Chat(commands.Cog):
         brief="Talk to QuantumKat in a shared chat.",
         description="Talk to QuantumKat in a chat shared with all users, using the OpenAI API/ChatGPT. Is not shared between servers.",
     )
+    @requires_tos_acceptance
     async def SharedChat(self, ctx: commands.Context, *, user_message=""):
         """
         Initiates a shared chat session with the bot.
@@ -422,6 +424,7 @@ class Chat(commands.Cog):
         brief="Talk to QuantumKat.",
         description="Talk to QuantumKat using the OpenAI API/ChatGPT. Each user has their own chat history. Is not shared between servers.",
     )
+    @requires_tos_acceptance
     async def Chat(self, ctx: commands.Context, *, user_message=""):
         """
         Initiates a user-separated chat session with the bot.
