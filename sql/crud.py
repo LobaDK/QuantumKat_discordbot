@@ -173,6 +173,25 @@ async def add_server(db: AsyncSession, server: schemas.Server.Add):
 
 
 @timeit
+async def get_server(db: AsyncSession, server: schemas.Server.Get):
+    """
+    Retrieve a server from the database.
+
+    Args:
+        db (AsyncSession): The database session.
+        server (schemas.Server.Get): The server object to retrieve.
+
+    Returns:
+        models.Server: The server object.
+    """
+    async with db() as db:
+        result = await db.execute(
+            select(models.Server).where(models.Server.server_id == server.server_id)
+        )
+        return result.scalar_one_or_none()
+
+
+@timeit
 async def add_chat(db: AsyncSession, chat: schemas.Chat.Add):
     """
     Adds a chat to the database.
@@ -391,4 +410,25 @@ async def set_server_is_authorized(
         )
         result = result.scalar_one_or_none()
         result.is_authorized = server.is_authorized
+        await db.commit()
+
+
+@timeit
+async def edit_server_ban(db: AsyncSession, server: schemas.Server.SetBan):
+    """
+    Edit the ban status for a server.
+
+    Args:
+        db (AsyncSession): The database session.
+        server (schemas.Server.SetBan): The server object with the new ban status.
+
+    Returns:
+        None
+    """
+    async with db() as db:
+        result = await db.execute(
+            select(models.Server).where(models.Server.server_id == server.server_id)
+        )
+        result = result.scalar_one_or_none()
+        result.is_banned = server.is_banned
         await db.commit()

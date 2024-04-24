@@ -121,6 +121,8 @@ async def setup(bot: commands.Bot):
 
 
 async def is_authenticated(ctx: commands.Context) -> bool:
+    if ctx.author.id == int(OWNER_ID):
+        return True
     if not ctx.command.name.casefold() == "request_auth":
         authenticated_server_ids = await crud.get_authenticated_servers(
             AsyncSessionLocal
@@ -147,9 +149,35 @@ async def is_authenticated(ctx: commands.Context) -> bool:
 
 
 async def is_reboot_scheduled(ctx: commands.Context) -> bool:
+    if ctx.author.id == int(OWNER_ID):
+        return True
     if bot.reboot_scheduled:
         await ctx.reply(
             "A reboot has been scheduled. Commands are disabled until the reboot is complete.",
+            silent=True,
+        )
+        return False
+    return True
+
+
+async def is_banned(ctx: commands.Context) -> bool:
+    if ctx.author.id == int(OWNER_ID):
+        return True
+    user = await crud.get_user(
+        AsyncSessionLocal, schemas.User.Get(user_id=ctx.author.id)
+    )
+    server = await crud.get_server(
+        AsyncSessionLocal, schemas.Server.Get(server_id=ctx.guild.id)
+    )
+    if user and user.is_banned:
+        await ctx.reply(
+            "You have been banned from using QuantumKat. Please contact the bot owner for more information.",
+            silent=True,
+        )
+        return False
+    if server and server.is_banned:
+        await ctx.reply(
+            "This server has been banned from using QuantumKat. Please contact the bot owner for more information.",
             silent=True,
         )
         return False
@@ -221,6 +249,7 @@ Discord.py version: {discord.__version__}
     logger.info(message)
     print(message)
 
+    bot.add_check(is_banned)
     bot.add_check(is_reboot_scheduled)
     bot.add_check(is_authenticated)
 
