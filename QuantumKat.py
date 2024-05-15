@@ -17,30 +17,6 @@ from sql.database import engine, AsyncSessionLocal
 from sql import crud
 
 
-class QuantumKat(commands.Bot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    async def get_context(self, message: discord.Message, *, cls=None):
-        words = message.content.split(".")
-        words = [word.split(" ")[0] for word in words]
-
-        command_str = ""
-        for i, word in enumerate(words):
-            if i > 0:
-                command_str += " "
-
-            command_str += word
-            command = self.get_command(
-                command_str.replace(bot.command_prefix, "")
-            )  # Remove the prefix
-
-            if command is not None:
-                message.content = message.content.replace(".", " ", i - 1)
-
-        return await super().get_context(message, cls=cls or commands.Context)
-
-
 async def init_models():
     async with engine.begin() as conn:
         # For testing purposes, drop all tables
@@ -92,7 +68,7 @@ intents.message_content = True
 intents.members = True
 
 # Sets the bot's command prefix, help command, intents, and adds my ID to owner_ids
-bot = QuantumKat(
+bot = commands.Bot(
     command_prefix="?",
     help_command=commands.DefaultHelpCommand(
         sort_commands=False, show_parameter_descriptions=False, width=100
