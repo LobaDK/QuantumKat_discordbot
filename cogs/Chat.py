@@ -539,6 +539,12 @@ class Chat(commands.Cog):
         if self.session_key:
             try:
                 usage = await self.get_usage()
+                if usage:
+                    messages.append(
+                        "OpenAI API key usage: {:.2f}$ of tokens used this month.".format(
+                            usage["total_usage"] / 100
+                        )
+                    )
             except requests.exceptions.RequestException:
                 self.logger.error(
                     "An error occurred while retrieving the usage statistics for the OpenAI API key",
@@ -546,12 +552,6 @@ class Chat(commands.Cog):
                 )
                 messages.append(
                     "An error occurred while retrieving the usage statistics for the OpenAI API key."
-                )
-            if usage:
-                messages.append(
-                    "OpenAI API key usage: {:.2f}$ of tokens used this month.".format(
-                        usage["total_usage"] / 100
-                    )
                 )
         else:
             messages.append("OpenAI API key usage: Session key not found.")
