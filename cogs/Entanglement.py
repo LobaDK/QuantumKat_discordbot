@@ -19,8 +19,6 @@ from alembic.config import Config
 from alembic.util.exc import CommandError
 from sqlalchemy.exc import OperationalError
 
-import mimetypes
-import magic
 import discord
 import ast
 import astunparse
@@ -30,6 +28,7 @@ from psutil import cpu_percent, disk_usage, virtual_memory
 
 from sql.database import AsyncSessionLocal
 from sql import crud, schemas
+from cogs.utils.utils import get_file_type
 
 from QuantumKat import log_helper, misc_helper
 
@@ -94,39 +93,6 @@ class Entanglements(commands.Cog):
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef) and node.name == function_name:
                 return astunparse.unparse(node.body)
-
-    async def get_mime_type(self, mime_type: str) -> str:
-        """
-        Returns the file extension corresponding to the given MIME type.
-
-        Parameters:
-        - mime_type (str): The MIME type for which to determine the file extension.
-
-        Returns:
-        - str: The file extension corresponding to the given MIME type.
-        """
-        return mimetypes.guess_extension(mime_type)
-
-    async def get_file_type(self, ctx: commands.Context, filename: str) -> str:
-        """
-        Retrieves the file type of a given filename.
-
-        Parameters:
-        - ctx (commands.Context): The context of the command.
-        - filename (str): The name of the file.
-
-        Returns:
-        - str: The file extension of the given file.
-        """
-        mime = magic.Magic(mime=True)
-        try:
-            mime_type = mime.from_file(filename)
-        except OSError as e:
-            await ctx.reply(f"Error getting file type: {e}", silent=True)
-            self.logger.error("Error getting file type", exc_info=True)
-            return None
-        file_extension = await self.get_mime_type(mime_type)
-        return file_extension
 
     async def parameter_kind_to_string(self, parameter: Parameter) -> str:
         """
@@ -499,7 +465,7 @@ class Entanglements(commands.Cog):
                         quantizer.write(block)
 
                 if not Path(filename).suffix:
-                    file_extension = await self.get_file_type(
+                    file_extension = get_file_type(
                         ctx, str(Path(data_dir, filename))
                     )
                     if not file_extension:
