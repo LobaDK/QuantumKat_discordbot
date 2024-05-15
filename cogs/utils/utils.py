@@ -1,7 +1,7 @@
 from re import findall
 from datetime import datetime
 from calendar import monthrange
-from requests import get
+from requests import get, head
 from discord.ext import commands
 from tiktoken import encoding_for_model
 from mimetypes import guess_extension
@@ -64,16 +64,18 @@ def get_image_as_base64(url: str) -> list[str]:
     Raises:
         UnsupportedImageFormat: If the image format is not supported.
     """
+    file_size = get_header_content_length(url.strip(">"))
+    if not verify_content_size_is_under_limit(file_size, 20, "MB"):
+        raise FileSizeLimitError(
+            f"The image from the URL <{url}> is {round(file_size / 1024**2, 2)} MB, which exceeds the 20 MB limit."
+        )
+
     request = get(url)
     request.raise_for_status()
 
     if not verify_stream_is_supported_image(request.content):
         raise UnsupportedImageFormatError(
             f"The image from the URL <{url}> has {get_file_type(request.content)} format, but only {', '.join(SUPPORTED_IMAGE_FORMATS)} is supported."
-        )
-    if not verify_stream_is_under_limit(request.content, 20, "MB"):
-        raise FileSizeLimitError(
-            f"The image from the URL <{url}> is {round(len(request.content) / 1024**2, 2)} MB, which exceeds the 20 MB limit."
         )
     if is_animated_gif(request.content):
         return get_base64_encoded_frames_from_gif(request.content)
@@ -105,6 +107,21 @@ def get_base64_encoded_frames_from_gif(byte_stream: bytes) -> list:
         pass  # end of sequence
 
     return base64_frames
+
+
+def get_header_content_length(url: str) -> int:
+    """
+    Retrieves the content length of a file from the header of a given URL.
+
+    Args:
+        url (str): The URL of the file.
+
+    Returns:
+        int: The content length of the file in bytes.
+    """
+    header = head(url)
+    file_size = int(header.headers.get("Content-Length", 0))
+    return file_size
 
 
 def get_file_size(file_path: str) -> int:
@@ -150,14 +167,14 @@ def is_animated_gif(image: bytes) -> bool:
         return False
 
 
-def verify_stream_is_under_limit(
-    file_path_or_stream: str | bytes, limit: int, unit: str
+def verify_content_size_is_under_limit(
+    file_path_or_stream_or_int: str | bytes | int, limit: int, unit: str
 ) -> bool:
     """
     Checks if a file or byte stream is over a certain size limit.
 
     Parameters:
-    - file_path_or_stream (str | bytes): The file path or byte stream to check the size of.
+    - file_path_or_stream_or_int (str | bytes | int): The file path, byte stream, or integer to check the size of.
     - limit (int): The size limit.
     - unit (str): The unit of the size limit ('B', 'KB', 'MB', 'GB').
 
@@ -171,10 +188,12 @@ def verify_stream_is_under_limit(
         raise ValueError("Invalid unit. Choose from 'B', 'KB', 'MB', 'GB'.")
 
     limit_in_bytes = limit * units[unit]
-    if isinstance(file_path_or_stream, str):
-        file_size = get_file_size(file_path_or_stream)
-    else:
-        file_size = len(file_path_or_stream)
+    if isinstance(file_path_or_stream_or_int, str):
+        file_size = get_file_size(file_path_or_stream_or_int)
+    if isinstance(file_path_or_stream_or_int, bytes):
+        file_size = len(file_path_or_stream_or_int)
+    if isinstance(file_path_or_stream_or_int, int):
+        file_size = file_path_or_stream_or_int
 
     return file_size <= limit_in_bytes
 
