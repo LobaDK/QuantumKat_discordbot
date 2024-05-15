@@ -1,12 +1,9 @@
 from discord.ext import commands
 import asyncio
-import sys
 from sql import database
 from sql import crud, schemas
 
 from QuantumKat import log_helper, discord_helper, misc_helper
-
-sys.path.append(".")
 
 
 class Auth(commands.Cog):
