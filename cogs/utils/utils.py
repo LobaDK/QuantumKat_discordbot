@@ -23,7 +23,7 @@ SUPPORTED_IMAGE_FORMATS = [
 ]
 
 
-class FileSizeLimitError(Exception):
+class FileSizeError(Exception):
     """
     Raised when a file or byte stream exceeds a certain size limit.
 
@@ -47,6 +47,19 @@ class UnsupportedImageFormatError(Exception):
 encoding = encoding_for_model("gpt-4o")
 
 
+def strip_embed_disabler(url: str) -> str:
+    """
+    Strips the greater-than and less-than symbols from a given URL.
+
+    Args:
+        url (str): The URL to strip them from.
+
+    Returns:
+        str: The URL with the greater-than and less-than symbols removed.
+    """
+    return url.replace("<", "").replace(">", "")
+
+
 def get_image_as_base64(url: str) -> list[str]:
     """
     Retrieves an image from a given URL and returns it as a base64 encoded string.
@@ -62,18 +75,23 @@ def get_image_as_base64(url: str) -> list[str]:
         Refer to `utils.SUPPORTED_IMAGE_FORMATS` for the supported image formats.
 
     Raises:
+        FileSizeError: If the image exceeds the 20 MB limit, or if the size of the image could not be retrieved.
         UnsupportedImageFormat: If the image format is not supported.
     """
-    file_size = get_header_content_length(url.strip(">"))
-    if not verify_content_size_is_under_limit(file_size, 20, "MB"):
-        raise FileSizeLimitError(
+    file_size = get_header_content_length(url)
+    if file_size == 0:
+        raise FileSizeError(
+            f"Could not retrieve the size of the image from the URL <{url}>."
+        )
+    if not content_size_is_under_limit(file_size, 20, "MB"):
+        raise FileSizeError(
             f"The image from the URL <{url}> is {round(file_size / 1024**2, 2)} MB, which exceeds the 20 MB limit."
         )
 
     request = get(url)
     request.raise_for_status()
 
-    if not verify_stream_is_supported_image(request.content):
+    if not stream_is_supported_image(request.content):
         raise UnsupportedImageFormatError(
             f"The image from the URL <{url}> has {get_file_type(request.content)} format, but only {', '.join(SUPPORTED_IMAGE_FORMATS)} is supported."
         )
@@ -167,7 +185,7 @@ def is_animated_gif(image: bytes) -> bool:
         return False
 
 
-def verify_content_size_is_under_limit(
+def content_size_is_under_limit(
     file_path_or_stream_or_int: str | bytes | int, limit: int, unit: str
 ) -> bool:
     """
@@ -198,7 +216,7 @@ def verify_content_size_is_under_limit(
     return file_size <= limit_in_bytes
 
 
-def verify_stream_is_supported_image(data: bytes) -> bool:
+def stream_is_supported_image(data: bytes) -> bool:
     """
     Verifies that the given stream is a supported image format.
 

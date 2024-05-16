@@ -14,8 +14,9 @@ from cogs.utils.utils import (
     split_message_by_sentence,
     get_server_id_and_name,
     get_image_as_base64,
+    strip_embed_disabler,
     UnsupportedImageFormatError,
-    FileSizeLimitError,
+    FileSizeError,
     SUPPORTED_IMAGE_FORMATS,
 )
 
@@ -192,11 +193,12 @@ class Chat(commands.Cog):
                     if urls:
                         base64_images = []
                         for url in urls:
+                            url = strip_embed_disabler(url)
                             try:
                                 base64_images.extend(get_image_as_base64(url))
                             except (
                                 UnsupportedImageFormatError,
-                                FileSizeLimitError,
+                                FileSizeError,
                             ) as e:
                                 await ctx.reply(
                                     str(e),
