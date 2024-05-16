@@ -247,11 +247,13 @@ class Chat(commands.Cog):
                             )
                             chat_response = response.choices[0].message.content
 
+                            server_id, _ = get_server_id_and_name(ctx)
+
                             await crud.add_chat(
                                 database.AsyncSessionLocal,
                                 schemas.Chat.Add(
                                     user_id=ctx.author.id,
-                                    server_id=ctx.guild.id or ctx.channel.id,
+                                    server_id=ctx.guild.id,
                                     user_message=user_message,
                                     assistant_message=chat_response,
                                     shared_chat=shared_chat,
