@@ -251,7 +251,7 @@ class Chat(commands.Cog):
                                 database.AsyncSessionLocal,
                                 schemas.Chat.Add(
                                     user_id=ctx.author.id,
-                                    server_id=ctx.guild.id,
+                                    server_id=ctx.guild.id or ctx.channel.id,
                                     user_message=user_message,
                                     assistant_message=chat_response,
                                     shared_chat=shared_chat,
