@@ -207,7 +207,7 @@ class Chat(commands.Cog):
                         for attachment in ctx.message.attachments:
                             try:
                                 base64_images.extend(
-                                    get_image_as_base64(attachment.url)
+                                    get_image_as_base64(await attachment.read())
                                 )
                             except (
                                 UnsupportedImageFormatError,
