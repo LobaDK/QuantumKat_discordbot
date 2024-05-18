@@ -21,6 +21,7 @@ from cogs.utils.utils import (
 
 from QuantumKat import log_helper, misc_helper, discord_helper
 
+TOKEN_LIMIT = 1024*2
 
 class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -178,8 +179,11 @@ class Chat(commands.Cog):
         """
         if self.FOUND_API_KEY is True:
             if user_message:
-                tokens = calculate_tokens(user_message, self.system_message)
-                if not tokens > 1024:
+                system_message = self.system_message
+                if ctx.message.reference:
+                    system_message += f"The user has included this message in their response, which was written by {ctx.message.reference.resolved.author.display_name}: `{ctx.message.reference.resolved.content}`. Use it as context for the response."
+                tokens = calculate_tokens(user_message, system_message)
+                if not tokens > TOKEN_LIMIT:
                     command = ctx.invoked_with
                     user_message = ctx.message.content.split(
                         f"{self.bot.command_prefix}{command}", 1
@@ -239,7 +243,7 @@ class Chat(commands.Cog):
                             messages = [
                                 {
                                     "role": "system",
-                                    "content": self.system_message.format(
+                                    "content": system_message.format(
                                         user=ctx.author.id,
                                         version=".".join(
                                             str(misc_helper.get_git_commit_count())
@@ -304,7 +308,7 @@ class Chat(commands.Cog):
                             )
                 else:
                     await ctx.reply(
-                        f"Message is too long! Your message is {tokens} tokens long, but the maximum is 1024 tokens.",
+                        f"Message is too long! Your message is {tokens} tokens long, but the maximum is {TOKEN_LIMIT} tokens.",
                         silent=True,
                     )
             else:
