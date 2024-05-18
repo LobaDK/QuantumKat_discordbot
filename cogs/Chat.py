@@ -189,13 +189,30 @@ class Chat(commands.Cog):
                             member.mention, member.display_name
                         )
                     urls = get_urls_in_message(user_message)
-                    if urls:
+                    if urls or ctx.message.attachments:
                         base64_images = []
                         for url in urls:
                             try:
                                 base64_images.extend(get_image_as_base64(url))
                             except (
                                 UnsupportedImageFormatError,
+                                FileSizeLimitError,
+                                ValueError,
+                            ) as e:
+                                await ctx.reply(
+                                    str(e),
+                                    silent=True,
+                                )
+                                return
+                        for attachment in ctx.message.attachments:
+                            try:
+                                base64_images.extend(
+                                    get_image_as_base64(attachment.url)
+                                )
+                            except (
+                                UnsupportedImageFormatError,
+                                FileSizeLimitError,
+                                ValueError,
                                 FileSizeLimitError,
                             ) as e:
                                 await ctx.reply(

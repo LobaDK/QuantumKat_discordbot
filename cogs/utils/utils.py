@@ -2,6 +2,7 @@ from re import findall
 from datetime import datetime
 from calendar import monthrange
 from requests import get, head
+from requests.exceptions import RequestException
 from discord.ext import commands
 from tiktoken import encoding_for_model
 from mimetypes import guess_extension
@@ -18,9 +19,82 @@ SUPPORTED_IMAGE_FORMATS = [
     ".jpeg",
     ".jpg",
     ".webp",
-    # only static gifs are supported
     ".gif",
 ]
+
+UNITS = {"B": 1, "KB": 1024, "MB": 1024**2, "GB": 1024**3}
+
+OPENAI_IMAGE_SIZE_LIMIT_MB = 20
+
+
+class FileInfoFromURL:
+    def __init__(self, url: str):
+        """
+        Initialize a new instance of the class.
+
+        Args:
+            url (str): The URL of the file.
+
+        Raises:
+            ValueError: If the file cannot be accessed.
+
+        """
+        self.url = url
+        try:
+            header = head(url)
+            header.raise_for_status()
+        except RequestException:
+            try:
+                # If the header request fails, try using a streamed GET request to get the header
+                header = get(url, stream=True)
+                header.raise_for_status()
+                header.close()
+            except (
+                RequestException
+            ) as e:  # If this fails too, assume the file cannot be accessed
+                raise ValueError(f"Could not access the file at {url}.") from e
+        self.header = header.headers
+
+    @property
+    def header_file_size(self) -> int:
+        """
+        Returns the size of the file from the 'Content-Length' header.
+
+        If the 'Content-Length' header is not present, returns None.
+
+        Returns:
+            int: The size of the file from the 'Content-Length' header, or None if not present.
+        """
+        try:
+            return int(self.header["Content-Length"])
+        except KeyError:
+            return None
+
+    @property
+    def header_mime_type(self) -> str:
+        """
+        Returns the MIME type from the 'Content-Type' header.
+
+        If the 'Content-Type' header is not present, returns None.
+
+        Returns:
+            str: The MIME type from the 'Content-Type' header, or None if not present.
+        """
+        try:
+            return self.header["Content-Type"]
+        except KeyError:
+            return None
+
+    @property
+    def get_header_mime_type(self) -> str:
+        """
+        Attempts to download the first 1 KB of the file and determine the MIME type.
+
+        Returns:
+            str: The MIME type of the header.
+        """
+        file = download_file(self.url, amount_or_limit=1, unit="KB")
+        return get_file_type(file)
 
 
 class FileSizeLimitError(Exception):
@@ -47,40 +121,130 @@ class UnsupportedImageFormatError(Exception):
 encoding = encoding_for_model("gpt-4o")
 
 
-def get_image_as_base64(url: str) -> list[str]:
+def download_file(
+    url: str,
+    amount_or_limit: int = None,
+    unit: str = None,
+    raise_exception: bool = False,
+) -> bytes:
     """
-    Retrieves an image from a given URL and returns it as a base64 encoded string.
+    Downloads a file from the specified URL.
 
     Args:
-        url (str): The URL of the image to retrieve.
+        url (str): The URL of the file to download.
+        amount_or_limit (int, optional): The maximum amount of data to download, specified in the given unit. Defaults to None.
+        unit (str, optional): The unit of the amount to download. Must be one of 'B', 'KB', 'MB', 'GB'. Defaults to None.
+        raise_exception (bool, optional): Whether to raise an exception if the downloaded file exceeds the specified limit. Defaults to False.
 
     Returns:
-        list[str]: A list containing the base64 encoded string of the image. If the image is an animated GIF, the list
-        will contain the base64 encoded frames of the GIF.
-
-    Note:
-        Refer to `utils.SUPPORTED_IMAGE_FORMATS` for the supported image formats.
+        bytes: The downloaded file.
 
     Raises:
-        UnsupportedImageFormat: If the image format is not supported.
+        ValueError: If the unit is invalid or if the unit is provided without specifying the amount.
+        FileSizeError: If the downloaded file exceeds the specified limit and raise_exception is True.
+        ValueError: If the file at the specified URL cannot be accessed.
     """
-    file_size = get_header_content_length(url.strip(">"))
-    if not verify_content_size_is_under_limit(file_size, 20, "MB"):
-        raise FileSizeLimitError(
-            f"The image from the URL <{url}> is {round(file_size / 1024**2, 2)} MB, which exceeds the 20 MB limit."
+    if amount_or_limit and unit not in ["B", "KB", "MB", "GB"]:
+        if unit:
+            raise ValueError("Invalid unit. Choose from 'B', 'KB', 'MB', 'GB'.")
+        else:
+            raise ValueError("Unit must be specified if amount is provided.")
+    if unit and not amount_or_limit:
+        raise ValueError("Amount must be specified if unit is provided.")
+
+    original_amount_or_limit = amount_or_limit
+
+    if amount_or_limit and unit:
+        amount_or_limit = amount_or_limit * UNITS[unit]
+
+    try:
+        with get(url, stream=True) as response:
+            response.raise_for_status()
+            if amount_or_limit:
+                data = b""
+                for chunk in response.iter_content(chunk_size=1024):
+                    data += chunk
+                    if len(data) >= amount_or_limit:
+                        if raise_exception:
+                            raise FileSizeLimitError(
+                                f"The image from {url} exceeds the specified limit of {original_amount_or_limit} {unit}."
+                            )
+            else:
+                data = response.content
+    except RequestException as e:
+        raise ValueError(f"Could not access the file at {url}.") from e
+    return data
+
+
+def strip_embed_disabler(url: str) -> str:
+    """
+    Strips the greater-than and less-than symbols from a given URL.
+
+    Args:
+        url (str): The URL to strip them from.
+
+    Returns:
+        str: The URL with the greater-than and less-than symbols removed.
+    """
+    return url.replace("<", "").replace(">", "")
+
+
+# TODO: It shouldn't necessarily be added here, but add a function to detect and get files attached to a ctx object (ctx.message.attachments)
+# TODO: While we're at it with the above, add the ability (unsure if function is necessary) for the bot to include the message a user is replying to i.e. they initiated the chat command while replying to a message
+# TODO: Improve file type detection and minimize the amount of data being fetched before the checks (check the Content-Type header of the response)
+# TODO: Add some fallbacks where we may still download the file if the Content-Type header is not available, but only the first 1 KB or so
+def get_image_as_base64(url_or_byte_stream: str | bytes) -> list[str]:
+    """
+    Converts an image from a URL or byte stream into a base64 encoded string.
+
+    Args:
+        url_or_byte_stream (str | bytes): The URL or byte stream of the image.
+
+    Returns:
+        list[str]: A list containing the base64 encoded string of the image.
+
+    Raises:
+        UnsupportedImageFormatError: If the image format is not supported.
+        FileSizeError: If the image size exceeds the limit.
+
+    """
+    byte_stream = None
+
+    if isinstance(url_or_byte_stream, bytes):
+        stream_is_supported, file_type = stream_is_supported_image(
+            url_or_byte_stream, return_file_type=True
+        )
+        if not stream_is_supported:
+            raise UnsupportedImageFormatError(
+                f"File type {file_type} is not supported. Supported image formats are {', '.join(SUPPORTED_IMAGE_FORMATS)}."
+            )
+        if content_size_is_over_limit(
+            url_or_byte_stream, OPENAI_IMAGE_SIZE_LIMIT_MB, "MB"
+        ):
+            raise FileSizeLimitError(
+                f"The image exceeds the size limit of {OPENAI_IMAGE_SIZE_LIMIT_MB} MB."
+            )
+        byte_stream = url_or_byte_stream
+
+    if isinstance(url_or_byte_stream, str):
+        file_info = FileInfoFromURL(url_or_byte_stream)
+        file_size = file_info.header_file_size
+        file_type = get_mime_type(
+            file_info.header_mime_type or file_info.get_header_mime_type
+        )
+        if file_type not in SUPPORTED_IMAGE_FORMATS:
+            raise UnsupportedImageFormatError(
+                f"The image from the URL {url_or_byte_stream} has {file_type} format, but only {', '.join(SUPPORTED_IMAGE_FORMATS)} is supported."
+            )
+        if content_size_is_over_limit(file_size, OPENAI_IMAGE_SIZE_LIMIT_MB, "MB"):
+            raise FileSizeLimitError(
+                f"The image from the URL {url_or_byte_stream} exceeds the size limit of {OPENAI_IMAGE_SIZE_LIMIT_MB} MB."
+            )
+        byte_stream = download_file(
+            url_or_byte_stream, amount_or_limit=20, unit="MB", raise_exception=True
         )
 
-    request = get(url)
-    request.raise_for_status()
-
-    if not verify_stream_is_supported_image(request.content):
-        raise UnsupportedImageFormatError(
-            f"The image from the URL <{url}> has {get_file_type(request.content)} format, but only {', '.join(SUPPORTED_IMAGE_FORMATS)} is supported."
-        )
-    if is_animated_gif(request.content):
-        return get_base64_encoded_frames_from_gif(request.content)
-
-    return [encode_byte_stream_to_base64(request.content)]
+    return encode_byte_stream_to_base64(byte_stream)
 
 
 def get_base64_encoded_frames_from_gif(byte_stream: bytes) -> list:
@@ -109,21 +273,6 @@ def get_base64_encoded_frames_from_gif(byte_stream: bytes) -> list:
     return base64_frames
 
 
-def get_header_content_length(url: str) -> int:
-    """
-    Retrieves the content length of a file from the header of a given URL.
-
-    Args:
-        url (str): The URL of the file.
-
-    Returns:
-        int: The content length of the file in bytes.
-    """
-    header = head(url)
-    file_size = int(header.headers.get("Content-Length", 0))
-    return file_size
-
-
 def get_file_size(file_path: str) -> int:
     """
     Retrieves the size of a file.
@@ -137,17 +286,22 @@ def get_file_size(file_path: str) -> int:
     return Path(file_path).stat().st_size
 
 
-def encode_byte_stream_to_base64(byte_stream: bytes) -> str:
+def encode_byte_stream_to_base64(byte_stream: bytes) -> list[str]:
     """
-    Encodes a given byte stream to a base64 string.
+    Encodes a byte stream to base64 format.
 
-    Parameters:
-    - byte_stream (bytes): The byte stream to encode.
+    If the byte stream is an animated GIF, the function retrieves the frames from the GIF and encodes them into a list of base64 formatted strings.
+
+    Args:
+        byte_stream (bytes): The byte stream to be encoded.
 
     Returns:
-    - str: The base64 encoded string.
+        list[str]: A list of base64 encoded strings.
+
     """
-    return b64encode(byte_stream).decode("utf-8")
+    if is_animated_gif(byte_stream):
+        return get_base64_encoded_frames_from_gif(byte_stream)
+    return [b64encode(byte_stream).decode()]
 
 
 def is_animated_gif(image: bytes) -> bool:
@@ -167,7 +321,7 @@ def is_animated_gif(image: bytes) -> bool:
         return False
 
 
-def verify_content_size_is_under_limit(
+def content_size_is_over_limit(
     file_path_or_stream_or_int: str | bytes | int, limit: int, unit: str
 ) -> bool:
     """
@@ -179,15 +333,14 @@ def verify_content_size_is_under_limit(
     - unit (str): The unit of the size limit ('B', 'KB', 'MB', 'GB').
 
     Returns:
-    - bool: True if the file or byte stream is over the limit, False otherwise.
+    - bool: True if the file or byte stream is over the size limit, False otherwise.
     """
     unit = unit.upper()
-    units = {"B": 1, "KB": 1024, "MB": 1024**2, "GB": 1024**3}
 
-    if unit not in units:
-        raise ValueError("Invalid unit. Choose from 'B', 'KB', 'MB', 'GB'.")
+    if unit not in UNITS:
+        raise ValueError(f"Invalid unit. Choose from {', '.join(UNITS.keys())}.")
 
-    limit_in_bytes = limit * units[unit]
+    limit_in_bytes = limit * UNITS[unit]
     if isinstance(file_path_or_stream_or_int, str):
         file_size = get_file_size(file_path_or_stream_or_int)
     if isinstance(file_path_or_stream_or_int, bytes):
@@ -195,20 +348,26 @@ def verify_content_size_is_under_limit(
     if isinstance(file_path_or_stream_or_int, int):
         file_size = file_path_or_stream_or_int
 
-    return file_size <= limit_in_bytes
+    return file_size > limit_in_bytes
 
 
-def verify_stream_is_supported_image(data: bytes) -> bool:
+def stream_is_supported_image(
+    data: bytes, return_file_type: bool = False
+) -> bool | tuple[bool, str]:
     """
     Verifies that the given stream is a supported image format.
 
     Parameters:
     - data (bytes): The stream to verify.
+    - return_file_type (bool): Whether to also return the file type of the stream.
 
     Returns:
-    - bool: True if the stream is a supported image format, False otherwise.
+    - bool: True if the stream is a supported image format, False otherwise. Returned if `return_file_type` is False.
+    - tuple: A tuple containing a boolean indicating if the stream is a supported image format and the file type of the stream. Returned if `return_file_type` is True.
     """
     file_type = get_file_type(data)
+    if return_file_type:
+        return file_type in SUPPORTED_IMAGE_FORMATS, file_type
     return file_type in SUPPORTED_IMAGE_FORMATS
 
 
