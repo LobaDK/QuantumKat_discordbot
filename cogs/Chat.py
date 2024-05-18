@@ -22,7 +22,8 @@ from cogs.utils.utils import (
 
 from QuantumKat import log_helper, misc_helper, discord_helper
 
-TOKEN_LIMIT = 1024*2
+TOKEN_LIMIT = 1024 * 2
+
 
 class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -377,7 +378,13 @@ class Chat(commands.Cog):
     @commands.command(
         aliases=["sharedchat", "sharedtalk", "schat", "sc"],
         brief="Talk to QuantumKat in a shared chat.",
-        description=f"Talk to QuantumKat in a chat shared with all users, using the OpenAI API/ChatGPT. Is not shared between servers. URLs of images and gifs are supported and will be analyzed by the AI. File size limit is 20MB and only {', '.join(SUPPORTED_IMAGE_FORMATS)} are supported",
+        description=f"""Talk to QuantumKat in a chat shared with all users, using the OpenAI API/ChatGPT.
+        It is not shared between servers.
+
+        *NEW*
+        URLs AND attached files of images and gifs are supported and will be analyzed by the AI.
+        File size limit is 20MB and only {', '.join(SUPPORTED_IMAGE_FORMATS)} are supported.
+        Replying to a message will include it in the context of the response.""",
     )
     @requires_tos_acceptance
     async def SharedChat(self, ctx: commands.Context, *, user_message: str):
@@ -396,7 +403,13 @@ class Chat(commands.Cog):
     @commands.command(
         aliases=["chat", "talk", "c"],
         brief="Talk to QuantumKat.",
-        description=f"Talk to QuantumKat using the OpenAI API/ChatGPT. Each user has their own chat history. Is not shared between servers. URLs of images and gifs are supported and will be analyzed by the AI. File size limit is 20MB and only {', '.join(SUPPORTED_IMAGE_FORMATS)} are supported.",
+        description=f"""Talk to QuantumKat using the OpenAI API/ChatGPT.
+        Each user has their own chat history and is not shared between servers.
+
+        *NEW*
+        URLs AND attached files of images and gifs are supported and will be analyzed by the AI.
+        File size limit is 20MB and only {', '.join(SUPPORTED_IMAGE_FORMATS)} are supported.
+        Replying to a message will include it in the context of the response.""",
     )
     @requires_tos_acceptance
     async def Chat(self, ctx: commands.Context, *, user_message: str):
