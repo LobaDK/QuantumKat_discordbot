@@ -193,6 +193,9 @@ class Chat(commands.Cog):
                     if urls:
                         base64_images = []
                         for url in urls:
+                            user_message = user_message.replace(
+                                url, ""
+                            )  # Remove the URL from the message so it doesn't mess with the AI
                             url = strip_embed_disabler(url)
                             try:
                                 base64_images.extend(get_image_as_base64(url))
@@ -210,7 +213,9 @@ class Chat(commands.Cog):
                             "role": "user",
                             "content": [
                                 user_message,
-                                *map(lambda x: {"image": x}, base64_images),
+                                *map(
+                                    lambda x: {"image": x}, base64_images
+                                ),  # Generate a dictionary of each image
                             ],
                         }
                     else:
