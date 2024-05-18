@@ -81,7 +81,7 @@ class FileInfoFromURL:
             str: The MIME type from the 'Content-Type' header, or None if not present.
         """
         try:
-            return self.header["Content-Type"]
+            return self.header["Content-Type"].split(";")[0]
         except KeyError:
             return None
 
@@ -189,10 +189,6 @@ def strip_embed_disabler(url: str) -> str:
     return url.replace("<", "").replace(">", "")
 
 
-# TODO: It shouldn't necessarily be added here, but add a function to detect and get files attached to a ctx object (ctx.message.attachments)
-# TODO: While we're at it with the above, add the ability (unsure if function is necessary) for the bot to include the message a user is replying to i.e. they initiated the chat command while replying to a message
-# TODO: Improve file type detection and minimize the amount of data being fetched before the checks (check the Content-Type header of the response)
-# TODO: Add some fallbacks where we may still download the file if the Content-Type header is not available, but only the first 1 KB or so
 def get_image_as_base64(url_or_byte_stream: str | bytes) -> list[str]:
     """
     Converts an image from a URL or byte stream into a base64 encoded string.
