@@ -226,6 +226,7 @@ async def get_chats_for_user(db: AsyncSession, chat: schemas.Chat.Get):
         result = await db.execute(
             select(models.Chat.user_message, models.Chat.assistant_message)
             .where(models.Chat.user_id == chat.user_id)
+            .where(models.Chat.server_id == chat.server_id)
             .where(models.Chat.shared_chat == 0)
             .order_by(models.Chat.id.desc())
             .limit(chat.n)
@@ -272,7 +273,7 @@ async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete):
     """
     async with db() as db:
         if chat.n is None:
-            result = await db.execute(
+            results = await db.execute(
                 select(models.Chat)
                 .where(models.Chat.user_id == chat.user_id)
                 .where(models.Chat.server_id == chat.server_id)
@@ -280,7 +281,7 @@ async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete):
                 .order_by(models.Chat.id.desc())
             )
         else:
-            result = await db.execute(
+            results = await db.execute(
                 select(models.Chat)
                 .where(models.Chat.user_id == chat.user_id)
                 .where(models.Chat.server_id == chat.server_id)
@@ -288,9 +289,9 @@ async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete):
                 .order_by(models.Chat.id.desc())
                 .limit(chat.n)
             )
-        result = result.all()
-        for chat in result:
-            db.delete(chat)
+        results = results.scalars()
+        for result in results:
+            await db.delete(result)
         await db.commit()
 
 
@@ -308,23 +309,23 @@ async def delete_shared_chat(db: AsyncSession, chat: schemas.Chat.Delete):
     """
     async with db() as db:
         if chat.n is None:
-            result = await db.execute(
+            results = await db.execute(
                 select(models.Chat)
                 .where(models.Chat.server_id == chat.server_id)
                 .where(models.Chat.shared_chat == 1)
                 .order_by(models.Chat.id.desc())
             )
         else:
-            result = await db.execute(
+            results = await db.execute(
                 select(models.Chat)
                 .where(models.Chat.server_id == chat.server_id)
                 .where(models.Chat.shared_chat == 1)
                 .order_by(models.Chat.id.desc())
                 .limit(chat.n)
             )
-        result = result.all()
-        for chat in result:
-            db.delete(chat)
+        results = results.scalars()
+        for result in results:
+            await db.delete(result)
         await db.commit()
 
 
