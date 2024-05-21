@@ -4,7 +4,7 @@ from os import environ
 from random import choice, randint
 from sys import exit
 
-from helpers import LogHelper, MiscHelper, DiscordHelper
+from helpers import MiscHelper, DiscordHelper
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -15,6 +15,7 @@ import pubapi
 from sql import models, schemas
 from sql.database import engine, AsyncSessionLocal
 from sql import crud
+from cogs.utils._logger import quantumkat_logger
 
 
 async def init_models():
@@ -24,15 +25,8 @@ async def init_models():
         await conn.run_sync(models.Base.metadata.create_all)
 
 
-log_helper = LogHelper()
 misc_helper = MiscHelper()
 discord_helper = DiscordHelper()
-
-logger = log_helper.create_logger(
-    log_helper.TimedRotatingFileAndStreamHandler(
-        logger_name="QuantumKat", log_file="logs/quantumkat/QuantumKat.log"
-    )
-)
 
 
 # If False, will exit if a required program is missing
@@ -52,11 +46,15 @@ TOKEN = environ.get("TOKEN")
 
 # If the bot token or my user ID is not set, exit the program
 if OWNER_ID is None or OWNER_ID == "":
-    logger.error("Error: The OWNER_ID environment variable is not set or is empty.")
+    quantumkat_logger.error(
+        "Error: The OWNER_ID environment variable is not set or is empty."
+    )
     exit(1)
 
 if TOKEN is None or TOKEN == "":
-    logger.error("Error: The TOKEN environment variable is not set or is empty.")
+    quantumkat_logger.error(
+        "Error: The TOKEN environment variable is not set or is empty."
+    )
     exit(1)
 
 # Gives the bot default access as well as access
@@ -82,10 +80,10 @@ async def setup(bot: commands.Bot):
     if not ignoreMissingExe:
         for executable in executables:
             if not misc_helper.is_installed(executable):
-                logger.error(f"Error: {executable} is not installed.")
+                quantumkat_logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
-    await discord_helper.first_load_cogs(bot, "./cogs", logger)
+    await discord_helper.first_load_cogs(bot, "./cogs", quantumkat_logger)
     await bot.start(TOKEN, reconnect=True)
 
 
@@ -208,7 +206,7 @@ Discord.py version: {discord.__version__}
 \nStarted at {datetime.now()}\n
 {bot.user} has appeared from the {num2words(randint(1, 1000),
                                             to="ordinal_num")} {choice(quantum)}!"""
-    logger.info(message)
+    quantumkat_logger.info(message)
     print(message)
 
     bot.add_check(is_banned)

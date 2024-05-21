@@ -1,6 +1,4 @@
 import time
-from helpers import LogHelper
-from logging import DEBUG
 import discord
 from discord.ext import commands
 from functools import wraps
@@ -8,6 +6,7 @@ from textwrap import dedent
 
 from sql import database
 from sql import crud, schemas
+from cogs.utils._logger import timer_logger
 
 TIMEOUT_IN_SECONDS = 60
 
@@ -109,13 +108,6 @@ class ToSChangeView(discord.ui.View):
         await self.message.delete()
         self.value = 0
         self.stop()
-
-
-logger = LogHelper().create_logger(
-    LogHelper.TimedRotatingFileAndStreamHandler(
-        logger_name="Timer", log_file="logs/timer/Timer.log", file_log_level=DEBUG
-    )
-)
 
 
 def requires_tos_acceptance(func):
@@ -222,7 +214,7 @@ def timeit(func):
         result = func(*args, **kwargs)
         end = time.perf_counter()
         elapsed_time = (end - start) * 1_000_000  # Convert to microseconds
-        logger.debug(
+        timer_logger.debug(
             f"CRUD function {func.__name__} took {round(elapsed_time, 5)} microseconds to execute."
         )
         return result

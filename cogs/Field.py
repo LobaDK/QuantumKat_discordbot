@@ -12,18 +12,14 @@ from ntplib import NTPClient
 from num2words import num2words
 from re import compile
 
-from QuantumKat import log_helper
+from cogs.utils._logger import field_logger
 
 
 class Fields(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="Fields", log_file="logs/fields/Fields.log"
-            )
-        )
+        self.logger = field_logger
 
         self.aURL = "https://aaaa.lobadk.com/"
         self.a_folder = "/var/www/aaaa/"

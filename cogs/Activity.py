@@ -3,7 +3,7 @@ from discord import Game
 from discord.ext import commands, tasks
 from num2words import num2words
 
-from QuantumKat import log_helper
+from cogs.utils._logger import activity_logger
 
 
 class Activity(commands.Cog):
@@ -11,11 +11,7 @@ class Activity(commands.Cog):
 
         self.bot = bot
 
-        self.logger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="Activity", log_file="logs/activity/Activity.log"
-            )
-        )
+        self.logger = activity_logger
 
         self.hissList = ["Hissing", "Hissed"]
 

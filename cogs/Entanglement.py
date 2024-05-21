@@ -30,19 +30,15 @@ from sql.database import AsyncSessionLocal
 from sql import crud, schemas
 from cogs.utils.utils import get_file_type
 
-from QuantumKat import log_helper, misc_helper
+from QuantumKat import misc_helper
+from cogs.utils._logger import entanglement_logger
 
 
 class Entanglements(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="Entanglements",
-                log_file="logs/entanglements/Entanglements.log",
-            )
-        )
+        self.logger = entanglement_logger
 
         self.alembic_cfg = Config("./alembic.ini")
 
@@ -465,9 +461,7 @@ class Entanglements(commands.Cog):
                         quantizer.write(block)
 
                 if not Path(filename).suffix:
-                    file_extension = get_file_type(
-                        ctx, str(Path(data_dir, filename))
-                    )
+                    file_extension = get_file_type(ctx, str(Path(data_dir, filename)))
                     if not file_extension:
                         return
                     msg = await msg.edit(

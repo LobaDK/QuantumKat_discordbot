@@ -3,18 +3,15 @@ import asyncio
 from sql import database
 from sql import crud, schemas
 
-from QuantumKat import log_helper, discord_helper, misc_helper
+from QuantumKat import discord_helper, misc_helper
+from cogs.utils._logger import auth_logger
 
 
 class Auth(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-        self.logger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="Auth", log_file="logs/auth/Auth.log"
-            )
-        )
+        self.logger = auth_logger
 
     @commands.command(aliases=["requestauth", "auth"])
     @commands.cooldown(1, 300, commands.BucketType.guild)

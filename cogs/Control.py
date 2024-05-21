@@ -9,7 +9,8 @@ from decorators import requires_tos_acceptance
 from sql import crud, schemas
 from sql.database import AsyncSessionLocal
 
-from QuantumKat import log_helper, discord_helper
+from QuantumKat import discord_helper
+from cogs.utils._logger import control_logger
 
 TIMEOUT_IN_SECONDS = 60
 
@@ -81,11 +82,7 @@ class Control(commands.Cog):
         self.bot = bot
         self.locations = ["universe", "reality", "dimension", "timeline"]
 
-        self.logger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="Control", log_file="logs/control/Control.log"
-            )
-        )
+        self.logger = control_logger
 
     async def get_permissions(self, guild: discord.Guild) -> list[str]:
         permissions = []

@@ -4,18 +4,14 @@ from datetime import datetime
 from discord.ext import commands
 from discord import Client
 
-from QuantumKat import log_helper
+from cogs.utils._logger import tunnel_logger
 
 
 class Tunnel(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="Tunnel", log_file="logs/tunnel/Tunnel.log"
-            )
-        )
+        self.logger = tunnel_logger
 
     @commands.Cog.listener()
     async def on_command_error(

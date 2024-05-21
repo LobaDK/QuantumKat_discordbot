@@ -20,7 +20,8 @@ from cogs.utils.utils import (
     SUPPORTED_IMAGE_FORMATS,
 )
 
-from QuantumKat import log_helper, misc_helper, discord_helper
+from QuantumKat import misc_helper, discord_helper
+from cogs.utils._logger import chat_logger, chat_history_logger
 
 TOKEN_LIMIT = 1024 * 2
 
@@ -29,17 +30,9 @@ class Chat(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.logger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="Chat", log_file="logs/chat/Chat.log"
-            )
-        )
+        self.logger = chat_logger
 
-        self.historylogger = log_helper.create_logger(
-            log_helper.TimedRotatingFileAndStreamHandler(
-                logger_name="ChatHistory", log_file="logs/chat/ChatHistory.log"
-            )
-        )
+        self.historylogger = chat_history_logger
 
         # Set the system message for ChatGPT. This controls the personality of the bot and how it responds.
         self.system_message = """You are QuantumKat, a cybernetic cat with void-like black fur.
