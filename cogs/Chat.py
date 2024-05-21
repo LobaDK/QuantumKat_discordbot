@@ -180,150 +180,144 @@ class Chat(commands.Cog):
             None
         """
         if self.FOUND_API_KEY is True:
-            if user_message:
-                system_message = self.system_message
-                if ctx.message.reference:
-                    system_message += f"The user has included this message in their response, which was written by {ctx.message.reference.resolved.author.display_name}: `{ctx.message.reference.resolved.content}`. Use it as context for the response."
-                tokens = calculate_tokens(user_message, system_message)
-                if not tokens > TOKEN_LIMIT:
-                    command = ctx.invoked_with
-                    user_message = ctx.message.content.split(
-                        f"{self.bot.command_prefix}{command}", 1
-                    )[1].strip()
-                    for member in ctx.message.mentions:
+            system_message = self.system_message
+            if ctx.message.reference:
+                system_message += f"The user has included this message in their response, which was written by {ctx.message.reference.resolved.author.display_name}: `{ctx.message.reference.resolved.content}`. Use it as context for the response."
+            tokens = calculate_tokens(user_message, system_message)
+            if not tokens > TOKEN_LIMIT:
+                command = ctx.invoked_with
+                user_message = ctx.message.content.split(
+                    f"{self.bot.command_prefix}{command}", 1
+                )[1].strip()
+                for member in ctx.message.mentions:
+                    user_message = user_message.replace(
+                        member.mention, member.display_name
+                    )
+                urls = get_urls_in_message(user_message)
+                if urls or ctx.message.attachments:
+                    base64_images = []
+                    for url in urls:
                         user_message = user_message.replace(
-                            member.mention, member.display_name
-                        )
-                    urls = get_urls_in_message(user_message)
-                    if urls or ctx.message.attachments:
-                        base64_images = []
-                        for url in urls:
-                            user_message = user_message.replace(
-                                url, ""
-                            )  # Remove the URL from the message so it doesn't mess with the AI
-                            url = strip_embed_disabler(url)
-                            try:
-                                base64_images.extend(get_image_as_base64(url))
-                            except (
-                                UnsupportedImageFormatError,
-                                FileSizeLimitError,
-                                ValueError,
-                            ) as e:
-                                await ctx.reply(
-                                    str(e),
-                                    silent=True,
-                                )
-                                return
-                        for attachment in ctx.message.attachments:
-                            try:
-                                base64_images.extend(
-                                    get_image_as_base64(await attachment.read())
-                                )
-                            except (
-                                UnsupportedImageFormatError,
-                                FileSizeLimitError,
-                                ValueError,
-                                FileSizeLimitError,
-                            ) as e:
-                                await ctx.reply(
-                                    str(e),
-                                    silent=True,
-                                )
-                                return
-
-                        user_role = {
-                            "role": "user",
-                            "content": [
-                                user_message,
-                                *map(
-                                    lambda x: {"image": x}, base64_images
-                                ),  # Generate a dictionary of each image
-                            ],
-                        }
-                    else:
-                        user_role = {"role": "user", "content": user_message}
-                    conversation_history = await self.database_read(ctx, shared_chat)
-                    async with ctx.typing():
+                            url, ""
+                        )  # Remove the URL from the message so it doesn't mess with the AI
+                        url = strip_embed_disabler(url)
                         try:
-                            # Create a conversation with the system message first
-                            # Then inject the 10 most recent conversation pairs
-                            # Then add the user's message
-                            messages = [
-                                {
-                                    "role": "system",
-                                    "content": system_message.format(
-                                        user=ctx.author.id,
-                                        version=".".join(
-                                            str(misc_helper.get_git_commit_count())
-                                        ),
-                                    ),
-                                },
-                                *conversation_history,
-                                user_role,
-                            ]
-
-                            response = await self.openai.chat.completions.create(
-                                model="gpt-4o",
-                                messages=messages,
-                                temperature=1,
-                                max_tokens=512,
-                                top_p=1,
-                                frequency_penalty=1,
-                                presence_penalty=0,
-                                user=str(ctx.message.author.id),
-                            )
-                            chat_response = response.choices[0].message.content
-
-                            server_id, _ = get_server_id_and_name(ctx)
-
-                            await crud.add_chat(
-                                database.AsyncSessionLocal,
-                                schemas.Chat.Add(
-                                    user_id=ctx.author.id,
-                                    server_id=server_id,
-                                    user_message=user_message,
-                                    assistant_message=chat_response,
-                                    shared_chat=shared_chat,
-                                ),
-                            )
-
-                            messages = []
-                            for message in conversation_history:
-                                messages.append(
-                                    f"{message['role'].title()}: {message['content']}"
-                                )
-                            messages = "\n".join(messages)
-
-                            username = ctx.author.name
-                            user_id = ctx.author.id
-                            server_id, server_name = get_server_id_and_name(ctx)
-
-                            self.historylogger.info(
-                                f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message} [History]: {messages}."
-                            )
-                            self.logger.info(
-                                f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message}. [Response]: {chat_response}. [Tokens]: {response.usage.total_tokens} tokens used in total."
-                            )
-                            if len(chat_response) > 2000:
-                                chat_response = split_message_by_sentence(chat_response)
-                                for message in chat_response:
-                                    await ctx.reply(message, silent=True)
-                            else:
-                                await ctx.reply(chat_response, silent=True)
-                        except OpenAIError as e:
-                            self.logger.error(f"Error message: {e}")
+                            base64_images.extend(get_image_as_base64(url))
+                        except (
+                            UnsupportedImageFormatError,
+                            FileSizeLimitError,
+                            ValueError,
+                        ) as e:
                             await ctx.reply(
-                                f"OpenAI returned an error with the error {e}. Please try again later.",
+                                str(e),
                                 silent=True,
                             )
+                            return
+                    for attachment in ctx.message.attachments:
+                        try:
+                            base64_images.extend(
+                                get_image_as_base64(await attachment.read())
+                            )
+                        except (
+                            UnsupportedImageFormatError,
+                            FileSizeLimitError,
+                            ValueError,
+                            FileSizeLimitError,
+                        ) as e:
+                            await ctx.reply(
+                                str(e),
+                                silent=True,
+                            )
+                            return
+
+                    user_role = {
+                        "role": "user",
+                        "content": [
+                            user_message,
+                            *map(
+                                lambda x: {"image": x}, base64_images
+                            ),  # Generate a dictionary of each image
+                        ],
+                    }
                 else:
-                    await ctx.reply(
-                        f"Message is too long! Your message is {tokens} tokens long, but the maximum is {TOKEN_LIMIT} tokens.",
-                        silent=True,
-                    )
+                    user_role = {"role": "user", "content": user_message}
+                conversation_history = await self.database_read(ctx, shared_chat)
+                async with ctx.typing():
+                    try:
+                        # Create a conversation with the system message first
+                        # Then inject the 10 most recent conversation pairs
+                        # Then add the user's message
+                        messages = [
+                            {
+                                "role": "system",
+                                "content": system_message.format(
+                                    user=ctx.author.id,
+                                    version=".".join(
+                                        str(misc_helper.get_git_commit_count())
+                                    ),
+                                ),
+                            },
+                            *conversation_history,
+                            user_role,
+                        ]
+
+                        response = await self.openai.chat.completions.create(
+                            model="gpt-4o",
+                            messages=messages,
+                            temperature=1,
+                            max_tokens=512,
+                            top_p=1,
+                            frequency_penalty=1,
+                            presence_penalty=0,
+                            user=str(ctx.message.author.id),
+                        )
+                        chat_response = response.choices[0].message.content
+
+                        server_id, _ = get_server_id_and_name(ctx)
+
+                        await crud.add_chat(
+                            database.AsyncSessionLocal,
+                            schemas.Chat.Add(
+                                user_id=ctx.author.id,
+                                server_id=server_id,
+                                user_message=user_message,
+                                assistant_message=chat_response,
+                                shared_chat=shared_chat,
+                            ),
+                        )
+
+                        messages = []
+                        for message in conversation_history:
+                            messages.append(
+                                f"{message['role'].title()}: {message['content']}"
+                            )
+                        messages = "\n".join(messages)
+
+                        username = ctx.author.name
+                        user_id = ctx.author.id
+                        server_id, server_name = get_server_id_and_name(ctx)
+
+                        self.historylogger.info(
+                            f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message} [History]: {messages}."
+                        )
+                        self.logger.info(
+                            f"[User]: {username} ({user_id}) [Server]: {server_name} ({server_id}) [Message]: {user_message}. [Response]: {chat_response}. [Tokens]: {response.usage.total_tokens} tokens used in total."
+                        )
+                        if len(chat_response) > 2000:
+                            chat_response = split_message_by_sentence(chat_response)
+                            for message in chat_response:
+                                await ctx.reply(message, silent=True)
+                        else:
+                            await ctx.reply(chat_response, silent=True)
+                    except OpenAIError as e:
+                        self.logger.error(f"Error message: {e}")
+                        await ctx.reply(
+                            f"OpenAI returned an error with the error {e}. Please try again later.",
+                            silent=True,
+                        )
             else:
                 await ctx.reply(
-                    "Message cannot be empty! I may be smart, but I'm not a mind reader!",
+                    f"Message is too long! Your message is {tokens} tokens long, but the maximum is {TOKEN_LIMIT} tokens.",
                     silent=True,
                 )
         else:
