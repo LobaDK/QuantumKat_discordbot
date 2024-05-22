@@ -1,6 +1,6 @@
 from openai import AsyncOpenAI as OpenAI, OpenAIError
-import os
 import requests
+from subprocess import CalledProcessError
 
 from discord.ext import commands
 
@@ -15,6 +15,7 @@ from cogs.utils.utils import (
     get_server_id_and_name,
     get_image_as_base64,
     strip_embed_disabler,
+    get_field_from_1password,
     UnsupportedImageFormatError,
     FileSizeLimitError,
     SUPPORTED_IMAGE_FORMATS,
@@ -48,21 +49,29 @@ class Chat(commands.Cog):
                                  You are currently running on version {version}.
                                  Avoid repeating yourself."""
         # Attempt to get the OpenAI API key from the environment variables
-        if os.environ.get("OPENAI_API_KEY"):
+        try:
+            self.openai = OpenAI(
+                api_key=get_field_from_1password(
+                    "op://Programming and IT security/QuantumKat Discord bot/OpenAI token"
+                )
+            )
             self.FOUND_API_KEY = True
-            self.openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        else:
+        except CalledProcessError as e:
             self.FOUND_API_KEY = False
-            self.logger.error(
-                "OpenAI API key not found. Chatstatus command will not work."
+            self.logger.warning(
+                f"Could not retrieve OpenAI API key due to the following reason. Chat commands have been disabled: {e.output}",
+                exc_info=True,
             )
 
-        if os.environ.get("OPENAI_SESSION_KEY"):
-            self.session_key = os.environ.get("OPENAI_SESSION_KEY")
-        else:
+        try:
+            self.session_key = get_field_from_1password(
+                "op://Programming and IT security/QuantumKat Discord bot/OpenAI session key"
+            )
+        except CalledProcessError as e:
             self.session_key = None
-            self.logger.error(
-                "OpenAI Session key not found. Chatstatus command will not work."
+            self.logger.warning(
+                f"Could not retrieve OpenAI session key due to the following reason. ChatStatus won't be able to retrieve usage data. {e.output}",
+                exc_info=True,
             )
 
     async def database_add(
