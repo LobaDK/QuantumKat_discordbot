@@ -44,7 +44,8 @@ load_dotenv()
 
 # Get the bot token and my user ID from the environment variables
 OWNER_ID = environ.get("OWNER_ID")
-references = f"op://Personal/Discord/{environ.get('TOKEN_TYPE', 'Main')}/Token"  # The tokens are stored in 1Password, separated by sections matching the token type, allowing us to have multiple tokens and quickly switch between them
+token_type = environ.get("TOKEN_TYPE", "Main")
+references = f"op://Programming and IT security/QuantumKat Discord bot/{token_type} token"  # The tokens are stored in 1Password, separated by sections matching the token type, allowing us to have multiple tokens and quickly switch between them
 try:
     TOKEN = get_field_from_1password(references)
 except CalledProcessError:
