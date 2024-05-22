@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from os import environ
 from random import choice, randint
 from sys import exit
+from subprocess import CalledProcessError
 
 from helpers import MiscHelper, DiscordHelper
 import discord
@@ -16,6 +17,7 @@ from sql import models, schemas
 from sql.database import engine, AsyncSessionLocal
 from sql import crud
 from cogs.utils._logger import quantumkat_logger
+from cogs.utils.utils import get_field_from_1password
 
 
 async def init_models():
@@ -42,7 +44,15 @@ load_dotenv()
 
 # Get the bot token and my user ID from the environment variables
 OWNER_ID = environ.get("OWNER_ID")
-TOKEN = environ.get("TOKEN")
+references = f"op://Personal/Discord/{environ.get("TOKEN_TYPE", "Main")}/Token"  # The tokens are stored in 1Password, separated by sections matching the token type, allowing us to have multiple tokens and quickly switch between them
+try:
+    TOKEN = get_field_from_1password(references)
+except CalledProcessError:
+    quantumkat_logger.error(
+        f"Error: Unable to retrieve token from 1Password. Reference: {references}",
+        exc_info=True,
+    )
+    exit(1)
 
 # If the bot token or my user ID is not set, exit the program
 if OWNER_ID is None or OWNER_ID == "":
