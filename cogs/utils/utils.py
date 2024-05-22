@@ -11,6 +11,8 @@ from PIL import Image
 from io import BytesIO
 from base64 import b64encode
 from pathlib import Path
+from subprocess import check_output
+from shutil import which
 
 from QuantumKat import discord_helper
 
@@ -119,6 +121,28 @@ class UnsupportedImageFormatError(Exception):
 
 # Set the model encoding for tiktoken
 encoding = encoding_for_model("gpt-4o")
+
+
+def get_field_from_1password(reference: str) -> str:
+    """
+    Retrieves the value of a field from 1Password and returns it as a string.
+
+    Requires the 1Password CLI to be installed and configured.
+
+    Args:
+        reference (str): The reference to the token in 1Password.
+
+    Returns:
+        str: The token retrieved from 1Password.
+
+    Raises:
+        CalledProcessError: If the token cannot be retrieved from 1Password.
+        EnvironmentError: If the 1Password CLI is not installed.
+    """
+    if which("op") is None:
+        raise EnvironmentError("The 1Password CLI is not installed. Please install it.")
+    token = check_output(["op", "read", reference]).decode("utf-8").strip()
+    return token
 
 
 def download_file(
