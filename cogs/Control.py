@@ -9,8 +9,8 @@ from decorators import requires_tos_acceptance
 from sql import crud, schemas
 from sql.database import AsyncSessionLocal
 
-from QuantumKat import discord_helper
 from cogs.utils._logger import control_logger
+from cogs.utils.utils import DiscordHelper
 
 TIMEOUT_IN_SECONDS = 60
 
@@ -169,8 +169,8 @@ class Control(commands.Cog):
         ),
     )
     async def Leave(self, ctx: commands.Context):
-        if not discord_helper.is_dm(ctx):
-            if discord_helper.is_privileged_user(ctx):
+        if not DiscordHelper.is_dm(ctx):
+            if DiscordHelper.is_privileged_user(ctx):
                 await ctx.send(f"*Poofs to another {choice(self.locations)}*")
                 await ctx.guild.leave()
             else:
@@ -193,7 +193,7 @@ class Control(commands.Cog):
     async def ListPermissions(self, ctx: commands.Context, Server_ID: str = ""):
         guild = None
         # If Server_ID is provided and the command was used in DM's
-        if Server_ID and discord_helper.is_dm(ctx):
+        if Server_ID and DiscordHelper.is_dm(ctx):
             if Server_ID.isnumeric():
                 # Get a guild object of the server from it's ID
                 guild = self.bot.get_guild(int(Server_ID))
@@ -213,7 +213,7 @@ class Control(commands.Cog):
                 return
 
         # If Server_ID is not provided and the command was used in a server
-        elif not discord_helper.is_dm(ctx) and not Server_ID:
+        elif not DiscordHelper.is_dm(ctx) and not Server_ID:
             guild = ctx.guild
         else:
             await ctx.send(
@@ -327,7 +327,7 @@ class Control(commands.Cog):
             Created at: {user.created_at}
             """
         )
-        if not discord_helper.is_dm(ctx) and discord_helper.user_in_guild(
+        if not DiscordHelper.is_dm(ctx) and DiscordHelper.user_in_guild(
             user, ctx.guild
         ):
             member = ctx.guild.get_member(user.id)

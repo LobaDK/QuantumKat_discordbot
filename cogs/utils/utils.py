@@ -13,8 +13,10 @@ from base64 import b64encode
 from pathlib import Path
 from subprocess import check_output
 from shutil import which
+from discord import Guild, User
+from os import path, listdir
 
-from QuantumKat import discord_helper
+from cogs.utils._logger import system_logger
 
 SUPPORTED_IMAGE_FORMATS = [
     ".png",
@@ -457,7 +459,7 @@ def get_server_id_and_name(ctx: commands.Context) -> tuple:
     Returns:
         tuple: A tuple containing the server ID and name.
     """
-    if not discord_helper.is_dm(ctx):
+    if not DiscordHelper.is_dm(ctx):
         server_id = ctx.guild.id
         server_name = ctx.guild.name
     else:
@@ -529,3 +531,154 @@ def get_file_type(file_path_or_stream: str | bytes) -> str:
         mime_type = mime.from_file(file_path_or_stream)
     file_extension = get_mime_type(mime_type)
     return file_extension
+
+
+class DiscordHelper:
+    """
+    A helper class for Discord-related operations.
+
+    This class provides various methods to check different conditions related to Discord contexts and users.
+
+    Attributes:
+        None
+
+    Methods:
+        is_dm(ctx): Checks if the given context is a direct message (DM).
+        is_bot_owner(ctx): Checks if the author of the given context is the owner of the bot.
+        is_guild_owner(ctx): Checks if the author of the given context is the owner of the server.
+        is_admin(ctx): Checks if the author of the given context has administrator permissions in the guild.
+        is_mod(ctx): Checks if the author of the command has moderator permissions.
+        is_privileged_user(ctx): Checks if the user is a privileged user.
+        first_load_cogs(bot, cog_dir): Loads initial extensions (cogs) for the bot.
+        user_in_guild(user, guild): Checks if a user is a member of a guild.
+    """
+
+    @staticmethod
+    def is_dm(ctx: commands.Context) -> bool:
+        """
+        Checks if the given context is a direct message (DM).
+
+        Args:
+            ctx (discord.ext.commands.Context): The context object representing the command invocation.
+
+        Returns:
+            bool: True if the context is a DM, False otherwise.
+        """
+        return ctx.guild is None
+
+    @staticmethod
+    def is_bot_owner(ctx: commands.Context) -> bool:
+        """
+        Checks if the author of the given context is the owner of the bot.
+
+        Args:
+            ctx (discord.ext.commands.Context): The context object representing the command invocation.
+
+        Returns:
+            bool: True if the author is the owner of the bot, False otherwise.
+        """
+        return ctx.author.id in ctx.bot.owner_ids
+
+    @staticmethod
+    def is_guild_owner(ctx: commands.Context) -> bool:
+        """
+        Checks if the author of the given context is the owner of the server.
+
+        Args:
+            ctx (discord.ext.commands.Context): The context object representing the command invocation.
+
+        Returns:
+            bool: True if the author is the owner of the server, False otherwise.
+        """
+        return ctx.author.id == ctx.guild.owner_id
+
+    @staticmethod
+    def is_admin(ctx: commands.Context) -> bool:
+        """
+        Checks if the author of the given context has administrator permissions in the guild.
+
+        Args:
+            ctx (discord.ext.commands.Context): The context object representing the command invocation.
+
+        Returns:
+            bool: True if the author has administrator permissions, False otherwise.
+        """
+        return ctx.author.guild_permissions.administrator
+
+    @staticmethod
+    def is_mod(ctx: commands.Context) -> bool:
+        """
+        Checks if the author of the command has moderator permissions.
+
+        Args:
+            ctx (discord.ext.commands.Context): The context object representing the command invocation.
+
+        Returns:
+            bool: True if the author has moderator permissions, False otherwise.
+        """
+        # Since there is no official "moderator" role, we can instead check for some common moderator-only permissions.
+        mod_perms = [
+            "kick_members",
+            "ban_members",
+            "manage_messages",
+            "manage_channels",
+        ]
+        return any([getattr(ctx.author.guild_permissions, perm) for perm in mod_perms])
+
+    @staticmethod
+    def is_privileged_user(ctx: commands.Context) -> bool:
+        """
+        Checks if the user is a privileged user.
+
+        A privileged user is defined as a bot owner, guild owner, administrator, or moderator.
+
+        Args:
+            ctx: The context object representing the current command invocation.
+
+        Returns:
+            True if the user is a privileged user, False otherwise.
+        """
+        return (
+            DiscordHelper.is_bot_owner(ctx)
+            or DiscordHelper.is_guild_owner(ctx)
+            or DiscordHelper.is_admin(ctx)
+            or DiscordHelper.is_mod(ctx)
+        )
+
+    @staticmethod
+    async def first_load_cogs(bot: commands.Bot, cog_dir: str):
+        """
+        Loads initial extensions (cogs) for the bot.
+
+        This method iterates over the files in the specified `cog_dir` directory and loads the valid Python files
+        as extensions for the bot.
+
+        Args:
+            bot: The bot instance.
+            cog_dir (str): The directory path where the cogs are located.
+
+        Returns:
+            None
+        """
+        initial_extensions = []
+        for cog in listdir(cog_dir):
+            if cog.endswith(".py"):
+                system_logger.info(f"Loading cog: {cog}")
+                initial_extensions.append(f"cogs.{path.splitext(cog)[0]}")
+
+        for extension in initial_extensions:
+            await bot.load_extension(extension)
+
+    @staticmethod
+    def user_in_guild(user: User, guild: Guild) -> bool:
+        """
+        Checks if a user is a member of a guild.
+
+        Args:
+            user (discord.User): The user object to check.
+            guild (discord.Guild): The guild object to check.
+
+        Returns:
+            bool: True if the user is a member of the guild, False otherwise.
+        """
+        return guild.get_member(user.id) is not None

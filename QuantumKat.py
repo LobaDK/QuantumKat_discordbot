@@ -5,7 +5,7 @@ from random import choice, randint
 from sys import exit
 from subprocess import CalledProcessError
 
-from helpers import MiscHelper, DiscordHelper
+from helpers import MiscHelper
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -18,6 +18,7 @@ from sql.database import engine, AsyncSessionLocal
 from sql import crud
 from cogs.utils._logger import quantumkat_logger
 from cogs.utils.utils import get_field_from_1password
+from cogs.utils.utils import DiscordHelper
 
 
 async def init_models():
@@ -28,7 +29,6 @@ async def init_models():
 
 
 misc_helper = MiscHelper()
-discord_helper = DiscordHelper()
 
 
 # If False, will exit if a required program is missing
@@ -93,7 +93,7 @@ async def setup(bot: commands.Bot):
                 quantumkat_logger.error(f"Error: {executable} is not installed.")
                 exit(1)
 
-    await discord_helper.first_load_cogs(bot, "./cogs", quantumkat_logger)
+    await DiscordHelper.first_load_cogs(bot, "./cogs")
     await bot.start(TOKEN, reconnect=True)
 
 
@@ -105,11 +105,11 @@ async def is_authenticated(ctx: commands.Context) -> bool:
             AsyncSessionLocal
         )
         authenticated_server_ids = [server[0] for server in authenticated_server_ids]
-        if discord_helper.is_dm(ctx):
+        if DiscordHelper.is_dm(ctx):
             # If the command is run in a DM, check if the user is in an authenticated server
             for guild in bot.guilds:
                 if guild.id in authenticated_server_ids:
-                    if discord_helper.user_in_guild(ctx.author, guild):
+                    if DiscordHelper.user_in_guild(ctx.author, guild):
                         return True
             await ctx.send(
                 "You need to be in an at least one authenticated server to interact with me in DMs."
@@ -150,7 +150,7 @@ async def is_banned(ctx: commands.Context) -> bool:
         )
         return False
 
-    if not discord_helper.is_dm(ctx):
+    if not DiscordHelper.is_dm(ctx):
         server = await crud.get_server(
             AsyncSessionLocal, schemas.Server.Get(server_id=ctx.guild.id)
         )

@@ -3,8 +3,9 @@ import asyncio
 from sql import database
 from sql import crud, schemas
 
-from QuantumKat import discord_helper, misc_helper
+from QuantumKat import misc_helper
 from cogs.utils._logger import auth_logger
+from cogs.utils.utils import DiscordHelper
 
 
 class Auth(commands.Cog):
@@ -25,7 +26,7 @@ class Auth(commands.Cog):
         Returns:
         None
         """
-        if discord_helper.is_dm(ctx):
+        if DiscordHelper.is_dm(ctx):
             await ctx.send("This command must be used in a server.")
             return
         authenticated_servers = await crud.get_authenticated_servers(
@@ -42,7 +43,7 @@ class Auth(commands.Cog):
                 "This server has been banned from using the bot. Please contact the bot owner for more information."
             )
             return
-        if not discord_helper.is_privileged_user(ctx):
+        if not DiscordHelper.is_privileged_user(ctx):
             await ctx.send(
                 "You must be a server admin/moderator, owner or the bot owner to request authentication."
             )
@@ -125,7 +126,7 @@ class Auth(commands.Cog):
         None
         """
         if server_id_or_name:
-            if not discord_helper.is_bot_owner(ctx):
+            if not DiscordHelper.is_bot_owner(ctx):
                 await ctx.send("You must be the bot owner to deauthenticate a server.")
                 return
             server = crud.get_authenticated_server_by_id_or_name(
@@ -144,10 +145,10 @@ class Auth(commands.Cog):
             await ctx.send(
                 f"Deauthenticated server `{server[1]}` with ID `{server[0]}`."
             )
-        elif discord_helper.is_dm(ctx):
+        elif DiscordHelper.is_dm(ctx):
             await ctx.send("This command must be used in a server.")
             return
-        elif discord_helper.is_privileged_user(ctx):
+        elif DiscordHelper.is_privileged_user(ctx):
             await crud.set_server_is_authorized(
                 database.AsyncSessionLocal,
                 schemas.Server.SetIsAuthorized(

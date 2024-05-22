@@ -65,3 +65,9 @@ timer_logger = log_helper.create_logger(
         logger_name="Timer", log_file="logs/timer/Timer.log", file_log_level=DEBUG
     )
 )
+
+system_logger = log_helper.create_logger(
+    log_helper.TimedRotatingFileAndStreamHandler(
+        logger_name="System", log_file="logs/system/System.log"
+    )
+)

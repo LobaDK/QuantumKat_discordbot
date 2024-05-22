@@ -20,8 +20,9 @@ from cogs.utils.utils import (
     SUPPORTED_IMAGE_FORMATS,
 )
 
-from QuantumKat import misc_helper, discord_helper
+from QuantumKat import misc_helper
 from cogs.utils._logger import chat_logger, chat_history_logger
+from cogs.utils.utils import DiscordHelper
 
 TOKEN_LIMIT = 1024 * 2
 
@@ -444,7 +445,7 @@ class Chat(commands.Cog):
         Returns:
         None
         """
-        if discord_helper.is_privileged_user(ctx):
+        if DiscordHelper.is_privileged_user(ctx):
             await self.initiatechatclear(ctx, True)
         else:
             await ctx.reply(
