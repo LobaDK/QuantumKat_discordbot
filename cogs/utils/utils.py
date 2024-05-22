@@ -11,7 +11,7 @@ from PIL import Image
 from io import BytesIO
 from base64 import b64encode
 from pathlib import Path
-from subprocess import check_output
+from subprocess import check_output, STDOUT
 from shutil import which
 from discord import Guild, User
 from os import path, listdir
@@ -138,12 +138,14 @@ def get_field_from_1password(reference: str) -> str:
         str: The token retrieved from 1Password.
 
     Raises:
-        CalledProcessError: If the token cannot be retrieved from 1Password.
+        CalledProcessError: If the 1Password CLI command fails. The exception will include an `output` attribute containing the output of the command.
         EnvironmentError: If the 1Password CLI is not installed.
     """
     if which("op") is None:
         raise EnvironmentError("The 1Password CLI is not installed. Please install it.")
-    token = check_output(["op", "read", reference]).decode("utf-8").strip()
+    token = (
+        check_output(["op", "read", reference], stderr=STDOUT).decode("utf-8").strip()
+    )
     return token
 
 
