@@ -98,7 +98,7 @@ class FileInfoFromURL:
             str: The MIME type of the header.
         """
         file = download_file(self.url, amount_or_limit=1, unit="KB")
-        return get_file_type(file)
+        return guess_file_extension(file)
 
 
 class FileSizeLimitError(Exception):
@@ -389,7 +389,7 @@ def stream_is_supported_image(
     - bool: True if the stream is a supported image format, False otherwise. Returned if `return_file_type` is False.
     - tuple: A tuple containing a boolean indicating if the stream is a supported image format and the file type of the stream. Returned if `return_file_type` is True.
     """
-    file_type = get_file_type(data)
+    file_type = guess_file_extension(data)
     if return_file_type:
         return file_type in SUPPORTED_IMAGE_FORMATS, file_type
     return file_type in SUPPORTED_IMAGE_FORMATS

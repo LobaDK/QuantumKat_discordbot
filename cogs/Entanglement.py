@@ -28,7 +28,7 @@ from psutil import cpu_percent, disk_usage, virtual_memory
 
 from sql.database import AsyncSessionLocal
 from sql import crud, schemas
-from cogs.utils.utils import get_file_type
+from cogs.utils.utils import guess_file_extension
 
 from QuantumKat import misc_helper
 from cogs.utils._logger import entanglement_logger
@@ -461,7 +461,7 @@ class Entanglements(commands.Cog):
                         quantizer.write(block)
 
                 if not Path(filename).suffix:
-                    file_extension = get_file_type(str(Path(data_dir, filename)))
+                    file_extension = guess_file_extension(str(Path(data_dir, filename)))
                     if not file_extension:
                         return
                     msg = await msg.edit(
