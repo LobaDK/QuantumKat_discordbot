@@ -35,6 +35,7 @@ from cogs.utils.utils import (
     filename_exists,
     generate_random_filename,
     download_file,
+    write_to_file,
     FileSizeLimitError,
 )
 
@@ -473,10 +474,16 @@ class Entanglements(commands.Cog):
             sent_msg = await sent_msg.edit(
                 content=f"{sent_msg.content}\nSaving to {filename}..."
             )
-            with open(f"{DOWNLOAD_LOCATIONS[location]}{filename}", "wb") as f:
-                f.write(data)
+            try:
+                write_to_file(f"{DOWNLOAD_LOCATIONS[location]}{filename}", data)
+            except OSError as e:
+                entanglement_logger.exception("Quantize: Error writing file")
+                await ctx.reply(str(e), silent=True)
+                return
             await sent_msg.edit(
-                content=sent_msg.content.replace("Saving to", "Saved to")
+                content=sent_msg.content.replace(
+                    f"Saving to {filename}...", f"Saved to {filename}!"
+                )
             )
 
     # command splitter for easier reading and navigating
