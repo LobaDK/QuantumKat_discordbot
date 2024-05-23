@@ -1,6 +1,5 @@
 __pycache__
 .venv
-.vscode
 .env
 *.exe
 ff*
