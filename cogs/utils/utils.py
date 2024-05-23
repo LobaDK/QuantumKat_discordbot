@@ -28,6 +28,9 @@ SUPPORTED_IMAGE_FORMATS = [
 
 UNITS = {"B": 1, "KB": 1024, "MB": 1024**2, "GB": 1024**3}
 
+DIRECT_MEDIA_TYPES = ["image", "video", "audio"]
+EXTRACT_MEDIA_TYPES = ["text", "application"]
+
 OPENAI_IMAGE_SIZE_LIMIT_MB = 20
 
 
@@ -40,7 +43,7 @@ class FileInfoFromURL:
             url (str): The URL of the file.
 
         Raises:
-            ValueError: If the file cannot be accessed.
+            ValueError: If the URL cannot be accessed.
 
         """
         self.url = url
@@ -123,6 +126,29 @@ class UnsupportedImageFormatError(Exception):
 
 # Set the model encoding for tiktoken
 encoding = encoding_for_model("gpt-4o")
+
+
+def guess_download_type(url: str) -> str:
+    """
+    Guesses the download type based on the Content-Type header from the URL.
+
+    Args:
+        url (str): The URL of the file or page.
+
+    Returns:
+        str: The download type, which can be one of the following:
+            - "direct" if the file can be directly downloaded.
+            - "extract" if the media is embedded in a webpage and needs to be extracted.
+            - "unknown" if the download type cannot be determined.
+
+    """
+    file_info = FileInfoFromURL(url)
+    type, subtype = tuple(file_info.header_mime_type.split("/"))
+    if type in DIRECT_MEDIA_TYPES:
+        return "direct"
+    if type in EXTRACT_MEDIA_TYPES:
+        return "extract"
+    return "unknown"
 
 
 def get_field_from_1password(reference: str) -> str:
