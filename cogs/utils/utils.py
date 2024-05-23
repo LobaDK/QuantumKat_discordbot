@@ -223,6 +223,7 @@ def download_file(
                             raise FileSizeLimitError(
                                 f"The image from {url} exceeds the specified limit of {original_amount_or_limit} {unit}."
                             )
+                        break
             else:
                 data = response.content
     except RequestException as e:
