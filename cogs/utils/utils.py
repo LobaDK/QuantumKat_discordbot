@@ -253,6 +253,12 @@ def download_file(
         ValueError: If the unit is invalid or if the unit is provided without specifying the amount.
         FileSizeLimitError: If the downloaded file exceeds the specified limit and raise_exception is True.
         ValueError: If the file at the specified URL cannot be accessed.
+
+    Notes:
+        `amount_or_limit` is considered an amount if `raise_exception` is False, and a limit if `raise_exception` is True.
+        If `amount_or_limit` is provided, `unit` must also be provided.
+        If `unit` is provided, `amount_or_limit` must also be provided.
+        If the file is smaller than the specified limit, the entire file is downloaded.
     """
     if amount_or_limit and unit not in ["B", "KB", "MB", "GB"]:
         if unit:
