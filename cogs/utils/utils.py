@@ -405,10 +405,7 @@ def get_urls_in_message(message: str) -> list:
     Returns:
     - list: A list of URLs found in the message.
     """
-    return findall(
-        r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+\.[a-zA-Z]{2,6}(?:/[^\s]*)?",
-        message,
-    )
+    return findall(r"https?://[^\s]+", message)
 
 
 def calculate_tokens(user_message: str, system_message: str) -> int:
