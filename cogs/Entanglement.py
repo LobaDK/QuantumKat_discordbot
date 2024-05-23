@@ -461,7 +461,7 @@ class Entanglements(commands.Cog):
                         quantizer.write(block)
 
                 if not Path(filename).suffix:
-                    file_extension = get_file_type(ctx, str(Path(data_dir, filename)))
+                    file_extension = get_file_type(str(Path(data_dir, filename)))
                     if not file_extension:
                         return
                     msg = await msg.edit(
