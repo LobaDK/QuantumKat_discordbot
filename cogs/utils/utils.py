@@ -131,6 +131,28 @@ class UnsupportedImageFormatError(Exception):
 encoding = encoding_for_model("gpt-4o")
 
 
+def write_to_file(file_path: str, data: str | bytes, mode: str = None) -> None:
+    """
+    Writes data to a file.
+
+    Args:
+        - file_path (str): The path and name of the file to write to.
+        - data (str | bytes): The data to write to the file, either as text or bytes.
+        - mode (str, optional): The mode to open the file in. If not provided, it defaults to "w" for strings and "wb" for bytes.
+
+    Returns:
+        None
+
+    Notes:
+        Refer to the Python documentation for the `open()` function for more information on file modes.
+    """
+    if mode is None:
+        mode = "w" if isinstance(data, str) else "wb"
+
+    with open(file_path, mode) as file:
+        file.write(data)
+
+
 def generate_random_filename(length: int = 10) -> str:
     """
     Generates a random filename consisting of alphanumeric characters.
