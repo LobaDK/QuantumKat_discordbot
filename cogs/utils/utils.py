@@ -510,26 +510,39 @@ def get_mime_type(mime_type: str) -> str:
     return guess_extension(mime_type)
 
 
-def get_file_type(file_path_or_stream: str | bytes) -> str:
+def guess_file_extension(
+    file_path_or_stream: str | bytes, split_mime: bool = False
+) -> str:
     """
-    Retrieves the file type of a given filename.
+    Guesses the file extension of the given file or byte stream based on its MIME type.
 
     Parameters:
     - file_path_or_stream (str | bytes): The filename or byte stream to determine the file type of.
       If this is a string representing a filename, the function uses `Magic.from_file()`
       to determine the file type. If this is a byte stream, the function uses
       `Magic.from_buffer()` to determine the file type.
+    - split_mime (bool): Whether to return the MIME type as a split tuple (type, subtype), instead of the file extension.
+      Defaults to False.
 
     Returns:
-    - str: The file extension of the given file.
+    - str | tuple: The file extension of the given file, or a tuple (type, subtype) if split_mime is True.
+
+    Examples:
+    - guess_file_extension("image.png") -> ".png"
+    - guess_file_extension(b"image data") -> ".png"
+    - guess_file_extension("image.png", split_mime=True) -> ("image", "png")
+    - guess_file_extension(b"image data", split_mime=True) -> ("image", "png")
     """
     mime = Magic(mime=True)
     if isinstance(file_path_or_stream, bytes):
         mime_type = mime.from_buffer(file_path_or_stream)
     else:
         mime_type = mime.from_file(file_path_or_stream)
-    file_extension = get_mime_type(mime_type)
-    return file_extension
+    if split_mime:
+        return tuple(mime_type.split("/"))
+    else:
+        file_extension = get_mime_type(mime_type)
+        return file_extension
 
 
 class DiscordHelper:
