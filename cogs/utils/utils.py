@@ -15,6 +15,9 @@ from subprocess import check_output, STDOUT
 from shutil import which
 from discord import Guild, User
 from os import path, listdir
+from string import ascii_letters, digits
+from random import choice
+from glob import glob
 
 from cogs.utils._logger import system_logger
 
@@ -128,6 +131,59 @@ class UnsupportedImageFormatError(Exception):
 encoding = encoding_for_model("gpt-4o")
 
 
+def generate_random_filename(length: int = 10) -> str:
+    """
+    Generates a random filename consisting of alphanumeric characters.
+
+    Args:
+        length (int): The length of the filename to generate. Defaults to 10.
+
+    Notes:
+        - The generated filename is base62, consisting of uppercase and lowercase letters and digits.
+
+    Returns:
+        str: The randomly generated filename.
+    """
+    return "".join(choice(ascii_letters + digits) for _ in range(length))
+
+
+def filename_exists(
+    file_path: str,
+    return_extension: bool = False,
+    ignore_extension: bool = False,
+) -> bool | tuple[bool, str]:
+    """
+    Checks if a file exists at the given path.
+
+    Args:
+        - file_path (str): The path to the file to check.
+        - return_extension (bool, optional): Whether to return the extension of the file if it exists. Defaults to False.
+        - ignore_extension (bool, optional): Whether to ignore the file extension when checking if the file exists. Defaults to False.
+
+    Returns:
+        - bool: True if the file exists, False otherwise. If `return_extension` is True, returns a tuple containing the existence status and the extension of the file.
+
+    Notes:
+        - If no file exists, the function will only return False, regardless of the value of `return_extension`.
+        - `ignore_extension` does not take into account if multiple files with the same name but different extensions exist. If even one file with the same name exists, it will return True.
+
+    Examples:
+        - filename_exists("file.txt") -> True
+        - filename_exists("file", ignore_extension=True) -> True
+        - filename_exists("file.txt", return_extension=True) -> (True, ".txt")
+    """
+    if ignore_extension:
+        file_path = path.splitext(file_path)[0]
+        file_exists = any(glob(file_path + ".*"))
+    else:
+        file_exists = path.exists(file_path)
+
+    if return_extension and file_exists:
+        return file_exists, path.splitext(file_path)[1]
+
+    return file_exists
+
+
 def guess_download_type(url: str) -> str:
     """
     Guesses the download type based on the Content-Type header from the URL.
@@ -195,7 +251,7 @@ def download_file(
 
     Raises:
         ValueError: If the unit is invalid or if the unit is provided without specifying the amount.
-        FileSizeError: If the downloaded file exceeds the specified limit and raise_exception is True.
+        FileSizeLimitError: If the downloaded file exceeds the specified limit and raise_exception is True.
         ValueError: If the file at the specified URL cannot be accessed.
     """
     if amount_or_limit and unit not in ["B", "KB", "MB", "GB"]:

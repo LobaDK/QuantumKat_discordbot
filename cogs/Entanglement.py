@@ -28,10 +28,25 @@ from psutil import cpu_percent, disk_usage, virtual_memory
 
 from sql.database import AsyncSessionLocal
 from sql import crud, schemas
-from cogs.utils.utils import guess_file_extension
+from cogs.utils.utils import (
+    guess_file_extension,
+    strip_embed_disabler,
+    guess_download_type,
+    filename_exists,
+    generate_random_filename,
+    download_file,
+    FileSizeLimitError,
+)
 
 from QuantumKat import misc_helper
 from cogs.utils._logger import entanglement_logger
+
+VALID_SUBDOMAINS = ["aaaa", "possum"]
+DOWNLOAD_LOCATIONS = {
+    VALID_SUBDOMAINS[0]: "/var/www/aaaa/",
+    VALID_SUBDOMAINS[1]: "/var/www/possum/",
+}
+VALID_DOWNLOAD_MODES = ["auto", "direct", "extract"]
 
 
 class Entanglements(commands.Cog):
@@ -369,316 +384,100 @@ class Entanglements(commands.Cog):
     async def quantize(
         self,
         ctx: commands.Context,
-        URL: str = "",
+        URL: str,
         filename: str = "",
-        location: str = "",
-        mode: str = "",
+        *,
+        kwargs: commands.clean_content = None,
     ):
-        oldfilename = filename
+        kwargs = dict(kv.split("=") for kv in kwargs.split(" ")) if kwargs else {}
 
-        # Check if user has given all required inputs
-        if URL and filename and location and mode:
+        location = kwargs.get("location", "aaaa")
+        download_type = kwargs.get("download_type", "auto")
+        random_filename = kwargs.get("random_filename", False)
 
-            # Check and set the correct download location
-            if location.casefold() == "aaaa":
-                data_dir = self.aaaa_dir
-                data_domain = self.aaaa_domain
+        URL = strip_embed_disabler(URL)
+        msg = []
 
-            elif location.casefold() == ("possum" or "opossum"):
-                data_dir = self.possum_dir
-                data_domain = self.possum_domain
-
-            # If an incorrect location is given
-            else:
-                await ctx.reply(
-                    ("Only `aaaa` and `possum` are valid " "parameters!"), silent=True
-                )
-                return
-
-        # If a required input is missing
-        else:
-            await ctx.reply(
-                "Command requires 4 arguments:\n```?quantize "
-                "<URL> <filename|rand> <aaaa|possum> <mode>```",
-                silent=True,
+        # Check if the parameters are valid
+        if not URL.startswith(
+            "https://"
+        ):  # Tiny check to ensure the URL is valid, and only allow HTTPS
+            msg.append("Invalid URL: URL must start with 'https://'")
+        if not filename and not random_filename:
+            msg.append("Filename must be specified if random_filename is not used")
+        if random_filename and filename:
+            msg.append("Cannot use both random_filename and a specified filename")
+        if location not in VALID_SUBDOMAINS:
+            msg.append("Invalid location: Location must be either 'aaaa' or 'possum'")
+        if download_type not in VALID_DOWNLOAD_MODES:
+            msg.append(
+                "Invalid download type: Download type must be either 'auto', 'direct', or 'extract'"
             )
+        if download_type == "auto":
+            download_type = guess_download_type(URL)
+        if download_type == "unknown":
+            msg.append(
+                "Could not determine the download type. Please specify it manually."
+            )
+        if msg:
+            await ctx.reply("\n".join(msg), silent=True)
             return
 
-        msg = await ctx.reply("Creating quantum tunnel... ", silent=True)
-
-        # If filename is 'rand' generate a random 8-character base62 filename
-        if oldfilename.casefold() == "rand":
-            filename = await self.generatefilename()
-
-        # Strip greater-than and less-than symbols
-        # if they've been used to disable embeds
-        if URL.startswith("<") or URL.endswith(">"):
-            URL = URL.replace("<", "")
-            URL = URL.replace(">", "")
-
-        msg = await msg.edit(content=f"{msg.content} Tunnel created!")
-
-        # If mode is 'normal' i.e. normal downloads
-        if mode.casefold() == "normal":
-
-            while True:
-
-                # If the filename already exists
-                if Path(data_dir, filename).exists():
-
-                    # If the old filename is not 'rand' and thus not supposed to be randomly generated
-                    if not oldfilename.casefold() == "rand":
-                        await ctx.reply(
-                            "Filename already exists, consider using a different name",
-                            silent=True,
-                        )
-                        return
-
-                    # Regenerate random filename
-                    else:
-                        filename = await self.generatefilename()
-                        continue
-
-                # Request and write file data
-                with open(f"{Path(data_dir, filename)}", "wb") as quantizer:
-                    msg = await msg.edit(content=f"{msg.content} Retrieving {filename}")
-
-                    response = get(URL, stream=True)
-
-                    if not response.ok:
-                        self.logger.error(
-                            f"Error connecting to server! {response.status_code}"
-                        )
-                        await ctx.reply(
-                            f"Error connecting to server! {response.status_code}"
-                        )
-                        return
-
-                    for block in response.iter_content(1024):
-                        if not block:
-                            break
-
-                        quantizer.write(block)
-
-                if not Path(filename).suffix:
-                    file_extension = guess_file_extension(str(Path(data_dir, filename)))
-                    if not file_extension:
-                        return
-                    msg = await msg.edit(
-                        content=f"{msg.content} \nFile extension detected: {file_extension}"
-                    )
-                    rename(
-                        f"{Path(data_dir, filename)}",
-                        f"{Path(data_dir, filename)}{file_extension}",
-                    )
-                    filename = f"{filename}{file_extension}"
-                await msg.edit(
-                    content=f"{msg.content} \nSuccess! Data quantized to {data_domain}{filename}",
-                    suppress=True,
+        # If the filename is specified, check if it already exists
+        if filename:
+            exists, ext = filename_exists(
+                filename, return_extension=True, ignore_extension=True
+            )
+            if exists:
+                await ctx.reply(
+                    f"A file with the extension {ext} already exists. Please choose a different filename.",
                 )
                 return
+        # If the filename is set to be randomly generated, generate a random filename
+        if random_filename:
+            while True:
+                filename = generate_random_filename()
+                if not filename_exists(filename, ignore_extension=True):
+                    break
 
-        # If mode is 'yt' i.e. requires yt-dlp
-        elif mode.casefold() == "yt":
+        sent_msg = await ctx.reply("Creating quantum tunnel...", silent=True)
 
-            # If the URL is a link to a YouTube playlist and not a video.
-            # Since links to videos IN playlists contain '&list=' instead
-            # we can still allow those by using the --no-playlist flag in yt-dlp
-            if "playlist?list" in URL:
-                await ctx.reply("Playlists are not supported", silent=True)
+        # If the download type is 'direct', download the file directly using requests.get
+        if download_type == "direct":
+            sent_msg = await sent_msg.edit(
+                content=f"{sent_msg.content} Tunnel created! Directly retrieving {filename}"
+            )
+            try:
+                data = download_file(
+                    URL, amount_or_limit=100, unit="MB", raise_exception=True
+                )
+            except FileSizeLimitError as e:
+                await ctx.reply(str(e), silent=True)
                 return
-
-            # Downloads the best (up to 720p) MP4 video and m4a audio, and then combines them
-            # Or a single video with audio included (up to 720p), if that's the best option
-            arg = f'yt-dlp -f "bv[ext=mp4][height<=720]+ba[ext=m4a]/b[ext=mp4][height<=720]" {quote(URL)} --no-playlist -o {quote(f"{data_dir}{filename}.%(ext)s")}'
-
-            msg = await msg.edit(content=f"{msg.content} Retrieving {filename}")
-
-            # Make the bot show as 'typing' in the channel while it is downloading the video
-            async with ctx.typing():
-                # Attempt to run command with above args
-                try:
-                    process = await create_subprocess_shell(
-                        arg, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                    )
-                    await process.wait()
-                    stdout, stderr = await process.communicate()
-
-                except Exception as e:
-                    self.logger.error(f"{type(e).__name__}: {e}")
-                    await ctx.reply(
-                        "Error, quantization tunnel collapsed unexpectedly!",
-                        silent=False,
-                    )
-                    return
-
-                # yt-dlp sometimes outputs non-fatal errors or warnings
-                # making it unreliable for canceling the process.
-                # Instead we're supplying the error for verbosity.
-                # TODO: Test and figure out the warning and error messages
-                # it can return, for better process handling
-                if stderr:
-                    await ctx.reply(stderr.decode(), silent=True)
-
-                # If a file with the same name already exists
-                # yt-dlp returns this string in it's output
-                # which we can use to handle duplicates
-                if "has already been downloaded" in stdout.decode():
-                    await msg.reply(
-                        "Filename already exists, consider using a different name",
-                        silent=True,
-                    )
-                    return
-
-                # Reaching this part assumes that everything went well.
-                # Improvements and research could be made
-                # But I am too lazy, tired and stressed
-                elif stdout:
-
-                    # Check if the downloaded file is above 50MB's
-                    if (
-                        int(
-                            stat(quote(f"{data_dir}{filename}.mp4")).st_size
-                            / (1024 * 1024)
-                        )
-                        > 50
-                    ):
-                        msg = await msg.edit(
-                            content=f"{msg.content} \nDataset exceeded recommended limit! Crunching some bits... this might take a ***bit***"
-                        )
-
-                        # We wanna try and lower the resolution first by 1.5
-                        # as that should hurt quality and viewability in
-                        # Discord embeds the least
-
-                        # Gets the video metadata from custom function
-                        try:
-                            video_metadata = await self.getvideometadata(
-                                data_dir, filename
-                            )
-                        except Exception as e:
-                            self.logger.error(f"{type(e).__name__}: {e}")
-                            await ctx.reply(
-                                "Error getting video metadata!", silent=True
-                            )
-                            return
-
-                        # Get new frame sizes from custom function
-                        try:
-                            frame_width, frame_height = await self.decreaseesolution(
-                                video_metadata
-                            )
-                        except Exception as e:
-                            self.logger.error(f"{type(e).__name__}: {e}")
-                            await ctx.reply(
-                                "Error parsing video resolution, manual conversion required!",
-                                silent=True,
-                            )
-                            return
-
-                        # Transcode the video into an h264 stream with a CRF of 30
-                        # and downscale the video to the new resolution.
-                        # Currently audio is encoded regardless if it's there or not
-                        # so in the future we should check if audio is actually present.
-                        arg3 = f'ffmpeg -y -i {quote(f"{data_dir}{filename}.mp4")} -c:v libx264 -c:a aac -crf 30 -b:v 0 -b:a 192k -movflags +faststart -vf scale={frame_width}:{frame_height} -f mp4 {quote(f"{data_dir}{filename}.tmp")}'
-
-                        # Attempt to run command with above args
-                        try:
-                            process2 = await create_subprocess_shell(arg3)
-                            await process2.wait()
-                        except Exception as e:
-                            self.logger.error(f"{type(e).__name__}: {e}")
-                            await ctx.reply(
-                                "Error transcoding resized video!", silent=True
-                            )
-                            return
-
-                        # If the returncode is 0, i.e. no errors happened
-                        if process2.returncode == 0:
-                            # Check if the new lower-resolution version is under 50MB's.
-                            # As a last resort, if the file is still above 50MB's
-                            # it will enter a loop where it attempts x amount of times
-                            # and decreases the bitrate each time until it is under
-
-                            # Attempt to parse, convert from string, to float, to int, and save the video duration
-                            # 100% accuracy down to the exact millisecond isn't required, so we just get the whole number instead
-                            try:
-                                video_duration = int(float(video_metadata["duration"]))
-                            except Exception as e:
-                                self.logger.error(f"{type(e).__name__}: {e}")
-                                await ctx.reply(
-                                    "Error parsing video duration, manual conversion required!",
-                                    silent=True,
-                                )
-                                return
-
-                            bitrate_decrease = 0
-                            attempts = 0
-                            while (
-                                int(
-                                    stat(f"{data_dir}{filename}.tmp").st_size
-                                    / (1024 * 1024)
-                                )
-                                > 50
-                                or attempts >= 15
-                            ):
-                                attempts, bitrate = await self.decreasebitrate(
-                                    ctx,
-                                    video_duration,
-                                    bitrate_decrease,
-                                    attempts,
-                                    data_dir,
-                                    filename,
-                                    frame_width,
-                                    frame_height,
-                                )
-
-                            # Attempt to delete the original video, and then rename the transcoded .tmp video to .mp4
-                            try:
-                                remove(f"{data_dir}{filename}.mp4")
-                                rename(
-                                    f"{data_dir}{filename}.tmp",
-                                    f"{data_dir}{filename}.mp4",
-                                )
-                            except Exception as e:
-                                self.logger.error(f"{type(e).__name__}: {e}")
-                                await ctx.reply(
-                                    "Error moving/removing file!", silent=True
-                                )
-                                return
-
-                            # If the bitrate option was reached, this would be at least 1
-                            # Otherwise if it's 0, it means it never attempted to transcode with a variable bitrate
-                            if attempts == 0:
-                                message = f"\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nResized to {frame_width}:{frame_height}"
-                            else:
-                                message = f"\nSuccess! Data quantized and bit-crunched to {data_domain}{filename}.mp4\nUsing {bitrate}k/s and Resized to {frame_width}:{frame_height} with {attempts} attempt(s)"
-
-                            await msg.edit(
-                                content=f"{msg.content}{message}", suppress=True
-                            )
-
-                        # Else statement for the process returncode, from the initial ffmpeg command
-                        else:
-                            await ctx.reply(
-                                "Non-0 exit status code detected!", silent=True
-                            )
-
-                    # If the file is under 50MB's
-                    else:
-                        await msg.edit(
-                            content=f"{msg.content}\nSuccess! Data quantized to {data_domain}{filename}.mp4",
-                            suppress=True,
-                        )
-
-                else:
-                    ctx.reply("No output detected in yt-dlp!", silent=True)
-                    return
-
-        # If mode is not 'normal' or 'yt'
-        else:
-            await ctx.reply("Only 'normal'|'yt' are valid download modes!", silent=True)
-            return
+            if not data:
+                await ctx.reply("Received no data from the URL", silent=True)
+                return
+            sent_msg = await sent_msg.edit(
+                content=sent_msg.content.replace(
+                    f"retrieving {filename}", f"retrieved {filename}!"
+                )
+            )
+            extension = guess_file_extension(data)
+            if not extension:
+                await ctx.reply("Could not determine the file extension", silent=True)
+                return
+            sent_msg = await sent_msg.edit(
+                content=f"{sent_msg.content}\nFile extension detected: {extension}"
+            )
+            filename = f"{filename}.{extension}"
+            sent_msg = await sent_msg.edit(
+                content=f"{sent_msg.content}\nSaving to {filename}..."
+            )
+            with open(f"{DOWNLOAD_LOCATIONS[location]}{filename}", "wb") as f:
+                f.write(data)
+            await sent_msg.edit(
+                content=sent_msg.content.replace("Saving to", "Saved to")
+            )
 
     # command splitter for easier reading and navigating
 
