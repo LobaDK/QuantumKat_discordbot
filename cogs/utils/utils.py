@@ -18,6 +18,7 @@ from os import path, listdir
 from string import ascii_letters, digits
 from random import choice
 from glob import glob
+from typing import overload
 
 from cogs.utils._logger import system_logger
 
@@ -37,33 +38,68 @@ EXTRACT_MEDIA_TYPES = ["text", "application"]
 OPENAI_IMAGE_SIZE_LIMIT_MB = 20
 
 
-class FileInfoFromURL:
+class URLMetadataExtractor:
+    """
+    A convenience class to retrieve header information from a URL and expose them as properties.
+
+    This class provides properties to access the file size and MIME type from the header information of a URL.
+
+    Attributes:
+        url (str): The URL of the file.
+        header (dict): The header information from the URL.
+
+    Properties:
+        header_file_size: Returns the size of the file from the 'Content-Length' header.
+        header_mime_type: Returns the MIME type from the 'Content-Type' header.
+        get_header_mime_type: Attempts to download the first 1 KB of the file and determine the MIME type.
+    """
+
+    @overload
     def __init__(self, url: str):
         """
-        Initialize a new instance of the class.
+        Creates an instance of the FileInfoFromURL class.
+
+        Automatically retrieves the header information from the URL, and exposes them as properties for convenience.
 
         Args:
             url (str): The URL of the file.
 
         Raises:
-            ValueError: If the URL cannot be accessed.
-
+            ValueError: If the file at the specified URL cannot be accessed.
         """
-        self.url = url
-        try:
-            header = head(url)
-            header.raise_for_status()
-        except RequestException:
+        ...
+
+    @overload
+    def __init__(self, header: dict):
+        """
+        Creates an instance of the FileInfoFromURL class.
+
+        Uses the provided header information to expose them as properties for convenience.
+
+        Args:
+            header (dict): The header from a URL.
+        """
+        ...
+
+    def __init__(self, arg: str | dict):
+        if isinstance(arg, str):
+            url = arg
             try:
-                # If the header request fails, try using a streamed GET request to get the header
-                header = get(url, stream=True)
+                header = head(url)
                 header.raise_for_status()
-                header.close()
-            except (
-                RequestException
-            ) as e:  # If this fails too, assume the file cannot be accessed
-                raise ValueError(f"Could not access the file at {url}.") from e
-        self.header = header.headers
+            except RequestException:
+                try:
+                    # If the header request fails, try using a streamed GET request to get the header
+                    header = get(url, stream=True)
+                    header.raise_for_status()
+                    header.close()
+                except (
+                    RequestException
+                ) as e:  # If this fails too, assume the file cannot be accessed
+                    raise ValueError(f"Could not access the file at {url}.") from e
+            self.header = header.headers
+        if isinstance(arg, dict):
+            self.header = arg
 
     @property
     def header_file_size(self) -> int:
@@ -220,7 +256,7 @@ def guess_download_type(url: str) -> str:
             - "unknown" if the download type cannot be determined.
 
     """
-    file_info = FileInfoFromURL(url)
+    file_info = URLMetadataExtractor(url)
     type, subtype = tuple(file_info.header_mime_type.split("/"))
     if type in DIRECT_MEDIA_TYPES:
         return "direct"
@@ -362,7 +398,7 @@ def get_image_as_base64(url_or_byte_stream: str | bytes) -> list[str]:
         byte_stream = url_or_byte_stream
 
     if isinstance(url_or_byte_stream, str):
-        file_info = FileInfoFromURL(url_or_byte_stream)
+        file_info = URLMetadataExtractor(url_or_byte_stream)
         file_size = file_info.header_file_size
         file_type = get_mime_type(
             file_info.header_mime_type or file_info.get_header_mime_type
