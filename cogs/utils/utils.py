@@ -167,6 +167,21 @@ class UnsupportedImageFormatError(Exception):
 encoding = encoding_for_model("gpt-4o")
 
 
+def get_bot_header() -> dict:
+    """
+    Returns the header for the bot.
+
+    Returns:
+        dict: The header for the bot.
+    """
+    contact_email = get_field_from_1password(
+        "op://Programming and IT security/QuantumKat Discord bot/Contact Email"
+    )
+    return {
+        "User-Agent": f"QuantumKat Discord Bot/1.0; GitHub: https://github.com/LobaDK/QuantumKat-discordbot; Contact Email: {contact_email}"
+    }
+
+
 def write_to_file(file_path: str, data: str | bytes, mode: str = None) -> None:
     """
     Writes data to a file.
