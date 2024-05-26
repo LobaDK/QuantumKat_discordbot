@@ -184,7 +184,7 @@ def get_bot_header() -> dict:
 
 def write_to_file(file_path: str, data: str | bytes, mode: str = None) -> None:
     """
-    Writes data to a file.
+    Writes data to a file using the built-in `open()` function.
 
     Args:
         - file_path (str): The path and name of the file to write to.
