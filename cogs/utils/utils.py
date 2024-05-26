@@ -272,10 +272,10 @@ def get_field_from_1password(reference: str) -> str:
     Requires the 1Password CLI to be installed and configured.
 
     Args:
-        reference (str): The reference to the token in 1Password.
+        reference (str): The reference to the field in 1Password.
 
     Returns:
-        str: The token retrieved from 1Password.
+        str: The value in the field retrieved from 1Password.
 
     Raises:
         CalledProcessError: If the 1Password CLI command fails. The exception will include an `output` attribute containing the output of the command.
