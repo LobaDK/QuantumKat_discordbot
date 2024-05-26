@@ -182,25 +182,60 @@ def get_bot_header() -> dict:
     }
 
 
-def write_to_file(file_path: str, data: str | bytes, mode: str = None) -> None:
+@overload
+def write_to_file(
+    file_path: str, bytestream: bytes, raise_on_exist: bool = True
+) -> None:
     """
-    Writes data to a file using the built-in `open()` function.
+    Writes (or overwrites) the given bytestream to the specified file path.
+
+    The function uses the built-in `open()` function to write the bytestream to the file.
 
     Args:
-        - file_path (str): The path and name of the file to write to.
-        - data (str | bytes): The data to write to the file, either as text or bytes.
-        - mode (str, optional): The mode to open the file in. If not provided, it defaults to "w" for strings and "wb" for bytes.
+        file_path (str): The path of the file to write to.
+        bytestream (bytes): The bytestream to write to the file.
+        raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
 
     Returns:
         None
 
     Notes:
-        Refer to the Python documentation for the `open()` function for more information on file modes.
+        Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
     """
-    if mode is None:
-        mode = "w" if isinstance(data, str) else "wb"
+    ...
 
+
+@overload
+def write_to_file(file_path: str, text: str, raise_on_exist: bool = True) -> None:
+    """
+    Writes (or overwrites) the given text to the specified file path.
+
+    The function uses the built-in `open()` function to write the text to the file.
+
+    Args:
+        file_path (str): The path of the file to write to.
+        text (str): The text to write to the file.
+        raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
+
+    Returns:
+        None
+
+    Notes:
+        Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
+    """
+    ...
+
+
+def write_to_file(
+    file_path: str, data: str | bytes = None, raise_on_exist: bool = True
+) -> None:
+    if isinstance(data, str):
+        mode = "w"
+    elif isinstance(data, bytes):
+        mode = "wb"
     with open(file_path, mode) as file:
+        if raise_on_exist and path.exists(file_path):
+            raise FileExistsError(f"The file at {file_path} already exists.")
         file.write(data)
 
 
@@ -217,6 +252,7 @@ def generate_random_filename(length: int = 10) -> str:
     Returns:
         str: The randomly generated filename.
     """
+    write_to_file()
     return "".join(choice(ascii_letters + digits) for _ in range(length))
 
 
