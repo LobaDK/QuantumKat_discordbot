@@ -13,7 +13,7 @@ from cogs.utils.utils import (
     get_usage,
     split_message_by_sentence,
     get_server_id_and_name,
-    get_image_as_base64,
+    convert_to_base64,
     strip_embed_disabler,
     get_field_from_1password,
     UnsupportedImageFormatError,
@@ -205,7 +205,7 @@ class Chat(commands.Cog):
                         )  # Remove the URL from the message so it doesn't mess with the AI
                         url = strip_embed_disabler(url)
                         try:
-                            base64_images.extend(get_image_as_base64(url))
+                            base64_images.extend(convert_to_base64(url=url))
                         except (
                             UnsupportedImageFormatError,
                             FileSizeLimitError,
@@ -219,7 +219,7 @@ class Chat(commands.Cog):
                     for attachment in ctx.message.attachments:
                         try:
                             base64_images.extend(
-                                get_image_as_base64(await attachment.read())
+                                convert_to_base64(bytestream=await attachment.read())
                             )
                         except (
                             UnsupportedImageFormatError,

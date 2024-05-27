@@ -38,15 +38,20 @@ EXTRACT_MEDIA_TYPES = ["text", "application"]
 OPENAI_IMAGE_SIZE_LIMIT_MB = 20
 
 
-class URLMetadataExtractor:
+class URLHandler:
     """
-    A convenience class to retrieve header information from a URL and expose them as properties.
+    A convenience class with methods and properties to make handling URLs easier.
 
-    This class provides properties to access the file size and MIME type from the header information of a URL.
+    This class provides properties to access the file size and MIME type from the header information of a URL, as well as methods to download files from URLs.
 
     Attributes:
         url (str): The URL of the file.
         header (dict): The header information from the URL.
+
+    Methods:
+        download_file(url: str) -> bytes: Downloads a file from the specified URL.
+        download_file(url: str, amount_or_limit: int, unit: str) -> bytes: Downloads a defined amount of data from the specified URL.
+        download_file(url: str, amount_or_limit: int, unit: str, raise_exception: bool = True) -> bytes: Downloads a file from the specified URL and raises an exception if the file exceeds the specified limit.
 
     Properties:
         header_file_size: Returns the size of the file from the 'Content-Length' header.
@@ -55,9 +60,9 @@ class URLMetadataExtractor:
     """
 
     @overload
-    def __init__(self, url: str):
+    def __init__(self, *, url: str):
         """
-        Creates an instance of the FileInfoFromURL class.
+        Creates an instance of the URLHandler class.
 
         Automatically retrieves the header information from the URL, and exposes them as properties for convenience.
 
@@ -70,9 +75,9 @@ class URLMetadataExtractor:
         ...
 
     @overload
-    def __init__(self, header: dict):
+    def __init__(self, *, header: dict):
         """
-        Creates an instance of the FileInfoFromURL class.
+        Creates an instance of the URLHandler class.
 
         Uses the provided header information to expose them as properties for convenience.
 
@@ -81,25 +86,31 @@ class URLMetadataExtractor:
         """
         ...
 
-    def __init__(self, arg: str | dict):
-        if isinstance(arg, str):
-            url = arg
+    def __init__(self, url: str = None, header: dict = None):
+        if url and header:
+            raise ValueError("Both URL and header cannot be specified.")
+        if not url and not header:
+            raise ValueError("Either URL or header must be specified.")
+        self.url = None
+        self.header = None
+        if url:
+            self.url = url
             try:
-                header = head(url)
+                header = head(self.url)
                 header.raise_for_status()
             except RequestException:
                 try:
                     # If the header request fails, try using a streamed GET request to get the header
-                    header = get(url, stream=True)
+                    header = get(self.url, stream=True)
                     header.raise_for_status()
                     header.close()
                 except (
                     RequestException
                 ) as e:  # If this fails too, assume the file cannot be accessed
-                    raise ValueError(f"Could not access the file at {url}.") from e
+                    raise ValueError(f"Could not access the file at {self.url}.") from e
             self.header = header.headers
-        if isinstance(arg, dict):
-            self.header = arg
+        if header:
+            self.header = header
 
     @property
     def header_file_size(self) -> int:
@@ -131,16 +142,94 @@ class URLMetadataExtractor:
         except KeyError:
             return None
 
-    @property
-    def get_header_mime_type(self) -> str:
+    @overload
+    def download_file(self) -> bytes:
         """
-        Attempts to download the first 1 KB of the file and determine the MIME type.
+        Downloads the file.
 
         Returns:
-            str: The MIME type of the header.
+            bytes: The downloaded file.
+
+        Raises:
+            ValueError: If the file at the URL cannot be accessed.
         """
-        file = download_file(self.url, amount_or_limit=1, unit="KB")
-        return guess_file_extension(file)
+        ...
+
+    @overload
+    def download_file(self, *, amount: int, unit: str) -> bytes:
+        """
+        Downloads the file.
+
+        Stops when either the file is fully downloaded or the specified amount of data is downloaded.
+
+        Args:
+            amount (int): The maximum amount of data to download, specified in the given unit.
+            unit (str): The unit of the amount to download. Must be one of 'B', 'KB', 'MB', 'GB'.
+
+        Returns:
+            bytes: The downloaded file.
+
+        Raises:
+            ValueError: If the unit is invalid or either the unit or amount is missing.
+            ValueError: If the file at the specified URL cannot be accessed.
+        """
+        ...
+
+    @overload
+    def download_file(self, *, limit: int, unit: str) -> bytes:
+        """
+        Downloads the file.
+
+        Raises an exception if the downloaded file exceeds the specified limit.
+
+        Args:
+            limit (int): The limit, specified in the given unit, before raising an exception.
+            unit (str): The unit of the amount to download. Must be one of 'B', 'KB', 'MB', 'GB'.
+
+        Returns:
+            bytes: The downloaded file.
+
+        Raises:
+            ValueError: If the unit is invalid or either the unit or amount is missing.
+            FileSizeLimitError: If the downloaded file exceeds the specified limit
+            ValueError: If the file at the specified URL cannot be accessed.
+        """
+        ...
+
+    def download_file(
+        self,
+        amount: int = None,
+        limit: int = None,
+        unit: str = None,
+    ) -> bytes:
+        if not self.url:
+            raise ValueError("URL must be specified to download the file.")
+        if amount and limit:
+            raise ValueError("Both amount and limit cannot be specified.")
+        if (amount or limit) and not unit:
+            raise ValueError("Unit must be specified if amount or limit is specified.")
+
+        if amount or limit:
+            calculated_size = (amount or limit) * UNITS[unit]
+
+        try:
+            with get(self.url, stream=True) as response:
+                response.raise_for_status()
+                if amount or limit:
+                    data = b""
+                    for chunk in response.iter_content(chunk_size=1024):
+                        data += chunk
+                        if len(data) >= calculated_size:
+                            if limit:
+                                raise FileSizeLimitError(
+                                    f"The file from {self.url} exceeds the specified limit of {limit} {unit}."
+                                )
+                            break
+                else:
+                    data = response.content
+        except RequestException as e:
+            raise ValueError(f"Could not access the file at {self.url}.") from e
+        return data
 
 
 class FileSizeLimitError(Exception):
@@ -184,7 +273,7 @@ def get_bot_header() -> dict:
 
 @overload
 def write_to_file(
-    file_path: str, bytestream: bytes, raise_on_exist: bool = True
+    file_path: str, *, bytestream: bytes, raise_on_exist: bool = True
 ) -> None:
     """
     Writes (or overwrites) the given bytestream to the specified file path.
@@ -206,7 +295,7 @@ def write_to_file(
 
 
 @overload
-def write_to_file(file_path: str, text: str, raise_on_exist: bool = True) -> None:
+def write_to_file(file_path: str, *, text: str, raise_on_exist: bool = True) -> None:
     """
     Writes (or overwrites) the given text to the specified file path.
 
@@ -227,16 +316,24 @@ def write_to_file(file_path: str, text: str, raise_on_exist: bool = True) -> Non
 
 
 def write_to_file(
-    file_path: str, data: str | bytes = None, raise_on_exist: bool = True
+    file_path: str,
+    bytestream: bytes = None,
+    text: str = None,
+    raise_on_exist: bool = True,
 ) -> None:
-    if isinstance(data, str):
+    if text and bytestream:
+        raise ValueError("Both text and bytestream cannot be specified.")
+    if not text and not bytestream:
+        raise ValueError("Either text or bytestream must be specified.")
+    mode = None
+    if text:
         mode = "w"
-    elif isinstance(data, bytes):
+    elif bytestream:
         mode = "wb"
     with open(file_path, mode) as file:
         if raise_on_exist and path.exists(file_path):
             raise FileExistsError(f"The file at {file_path} already exists.")
-        file.write(data)
+        file.write(text) if text else file.write(bytestream)
 
 
 def generate_random_filename(length: int = 10) -> str:
@@ -252,7 +349,6 @@ def generate_random_filename(length: int = 10) -> str:
     Returns:
         str: The randomly generated filename.
     """
-    write_to_file()
     return "".join(choice(ascii_letters + digits) for _ in range(length))
 
 
@@ -307,7 +403,7 @@ def guess_download_type(url: str) -> str:
             - "unknown" if the download type cannot be determined.
 
     """
-    file_info = URLMetadataExtractor(url)
+    file_info = URLHandler(url)
     type, subtype = tuple(file_info.header_mime_type.split("/"))
     if type in DIRECT_MEDIA_TYPES:
         return "direct"
@@ -340,68 +436,6 @@ def get_field_from_1password(reference: str) -> str:
     return token
 
 
-def download_file(
-    url: str,
-    amount_or_limit: int = None,
-    unit: str = None,
-    raise_exception: bool = False,
-) -> bytes:
-    """
-    Downloads a file from the specified URL.
-
-    Args:
-        url (str): The URL of the file to download.
-        amount_or_limit (int, optional): The maximum amount of data to download, specified in the given unit. Defaults to None.
-        unit (str, optional): The unit of the amount to download. Must be one of 'B', 'KB', 'MB', 'GB'. Defaults to None.
-        raise_exception (bool, optional): Whether to raise an exception if the downloaded file exceeds the specified limit. Defaults to False.
-
-    Returns:
-        bytes: The downloaded file.
-
-    Raises:
-        ValueError: If the unit is invalid or if the unit is provided without specifying the amount.
-        FileSizeLimitError: If the downloaded file exceeds the specified limit and raise_exception is True.
-        ValueError: If the file at the specified URL cannot be accessed.
-
-    Notes:
-        `amount_or_limit` is considered an amount if `raise_exception` is False, and a limit if `raise_exception` is True.
-        If `amount_or_limit` is provided, `unit` must also be provided.
-        If `unit` is provided, `amount_or_limit` must also be provided.
-        If the file is smaller than the specified limit, the entire file is downloaded.
-    """
-    if amount_or_limit and unit not in ["B", "KB", "MB", "GB"]:
-        if unit:
-            raise ValueError("Invalid unit. Choose from 'B', 'KB', 'MB', 'GB'.")
-        else:
-            raise ValueError("Unit must be specified if amount is provided.")
-    if unit and not amount_or_limit:
-        raise ValueError("Amount must be specified if unit is provided.")
-
-    original_amount_or_limit = amount_or_limit
-
-    if amount_or_limit and unit:
-        amount_or_limit = amount_or_limit * UNITS[unit]
-
-    try:
-        with get(url, stream=True) as response:
-            response.raise_for_status()
-            if amount_or_limit:
-                data = b""
-                for chunk in response.iter_content(chunk_size=1024):
-                    data += chunk
-                    if len(data) >= amount_or_limit:
-                        if raise_exception:
-                            raise FileSizeLimitError(
-                                f"The image from {url} exceeds the specified limit of {original_amount_or_limit} {unit}."
-                            )
-                        break
-            else:
-                data = response.content
-    except RequestException as e:
-        raise ValueError(f"Could not access the file at {url}.") from e
-    return data
-
-
 def strip_embed_disabler(url: str) -> str:
     """
     Strips the greater-than and less-than symbols from a given URL.
@@ -415,55 +449,79 @@ def strip_embed_disabler(url: str) -> str:
     return url.replace("<", "").replace(">", "")
 
 
-def get_image_as_base64(url_or_byte_stream: str | bytes) -> list[str]:
+@overload
+def convert_to_base64(*, url: str) -> list[str]:
     """
-    Converts an image from a URL or byte stream into a base64 encoded string.
+    Converts a file from a URL into a base64 encoded string.
+
+    If the file is a sequence of images (e.g., a GIF), the function retrieves the frames from the GIF and encodes them into a list of base64 formatted strings.
 
     Args:
-        url_or_byte_stream (str | bytes): The URL or byte stream of the image.
+        url (str): The URL of the file.
 
     Returns:
-        list[str]: A list containing the base64 encoded string of the image.
+        list[str]: A list containing the base64 encoded string(s) of the file.
 
     Raises:
         UnsupportedImageFormatError: If the image format is not supported.
         FileSizeError: If the image size exceeds the limit.
 
     """
+    ...
+
+
+@overload
+def convert_to_base64(*, bytestream: bytes) -> list[str]:
+    """
+    Converts a file from a byte stream into a base64 encoded string.
+
+    If the file is a sequence of images (e.g., a GIF), the function retrieves the frames from the GIF and encodes them into a list of base64 formatted strings.
+
+    Args:
+        bytestream (bytes): The byte stream of the file.
+
+    Returns:
+        list[str]: A list containing the base64 encoded string(s) of the file.
+
+    Raises:
+        UnsupportedImageFormatError: If the image format is not supported.
+        FileSizeError: If the image size exceeds the limit.
+
+    """
+    ...
+
+
+def convert_to_base64(url: str = None, bytestream: bytes = None) -> list[str]:
     byte_stream = None
 
-    if isinstance(url_or_byte_stream, bytes):
+    if bytestream:
         stream_is_supported, file_type = stream_is_supported_image(
-            url_or_byte_stream, return_file_type=True
+            bytestream, return_file_type=True
         )
         if not stream_is_supported:
             raise UnsupportedImageFormatError(
                 f"File type {file_type} is not supported. Supported image formats are {', '.join(SUPPORTED_IMAGE_FORMATS)}."
             )
-        if content_size_is_over_limit(
-            url_or_byte_stream, OPENAI_IMAGE_SIZE_LIMIT_MB, "MB"
-        ):
+        if content_size_is_over_limit(bytestream, OPENAI_IMAGE_SIZE_LIMIT_MB, "MB"):
             raise FileSizeLimitError(
                 f"The image exceeds the size limit of {OPENAI_IMAGE_SIZE_LIMIT_MB} MB."
             )
-        byte_stream = url_or_byte_stream
+        byte_stream = bytestream
 
-    if isinstance(url_or_byte_stream, str):
-        file_info = URLMetadataExtractor(url_or_byte_stream)
+    if url:
+        file_info = URLHandler(url)
         file_size = file_info.header_file_size
-        file_type = get_mime_type(
-            file_info.header_mime_type or file_info.get_header_mime_type
-        )
+        file_type = get_mime_type(file_info.header_mime_type)
         if file_type not in SUPPORTED_IMAGE_FORMATS:
             raise UnsupportedImageFormatError(
-                f"The image from the URL {url_or_byte_stream} has {file_type} format, but only {', '.join(SUPPORTED_IMAGE_FORMATS)} is supported."
+                f"The image from the URL {url} has {file_type} format, but only {', '.join(SUPPORTED_IMAGE_FORMATS)} is supported."
             )
         if content_size_is_over_limit(file_size, OPENAI_IMAGE_SIZE_LIMIT_MB, "MB"):
             raise FileSizeLimitError(
-                f"The image from the URL {url_or_byte_stream} exceeds the size limit of {OPENAI_IMAGE_SIZE_LIMIT_MB} MB."
+                f"The image from the URL {url} exceeds the size limit of {OPENAI_IMAGE_SIZE_LIMIT_MB} MB."
             )
-        byte_stream = download_file(
-            url_or_byte_stream, amount_or_limit=20, unit="MB", raise_exception=True
+        byte_stream = file_info.download_file(
+            limit=OPENAI_IMAGE_SIZE_LIMIT_MB, unit="MB"
         )
 
     return encode_byte_stream_to_base64(byte_stream)

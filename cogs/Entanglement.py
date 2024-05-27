@@ -34,9 +34,11 @@ from cogs.utils.utils import (
     guess_download_type,
     filename_exists,
     generate_random_filename,
-    download_file,
     write_to_file,
+    URLHandler,
     FileSizeLimitError,
+    DIRECT_MEDIA_TYPES,
+    EXTRACT_MEDIA_TYPES,
 )
 
 from QuantumKat import misc_helper
@@ -448,10 +450,9 @@ class Entanglements(commands.Cog):
             sent_msg = await sent_msg.edit(
                 content=f"{sent_msg.content} Tunnel created! Directly retrieving {filename}"
             )
+            url_handler = URLHandler(URL)
             try:
-                data = download_file(
-                    URL, amount_or_limit=100, unit="MB", raise_exception=True
-                )
+                data = url_handler.download_file(limit=100, unit="MB")
             except FileSizeLimitError as e:
                 await ctx.reply(str(e), silent=True)
                 return
@@ -463,10 +464,17 @@ class Entanglements(commands.Cog):
                     f"retrieving {filename}", f"retrieved {filename}!"
                 )
             )
-            extension = guess_file_extension(data)
-            if not extension:
+            mime_type, _ = guess_file_extension(data, split_mime=True)
+            if not mime_type:
                 await ctx.reply("Could not determine the file extension", silent=True)
                 return
+            if mime_type not in DIRECT_MEDIA_TYPES:
+                await ctx.reply(
+                    f"Invalid file type: {mime_type}. Supported types: {', '.join(DIRECT_MEDIA_TYPES)}",
+                    silent=True,
+                )
+                return
+            extension = guess_file_extension(data)
             sent_msg = await sent_msg.edit(
                 content=f"{sent_msg.content}\nFile extension detected: {extension}"
             )
@@ -475,7 +483,9 @@ class Entanglements(commands.Cog):
                 content=f"{sent_msg.content}\nSaving to {filename}..."
             )
             try:
-                write_to_file(f"{DOWNLOAD_LOCATIONS[location]}{filename}", data)
+                write_to_file(
+                    f"{DOWNLOAD_LOCATIONS[location]}{filename}", bytestream=data
+                )
             except OSError as e:
                 entanglement_logger.exception("Quantize: Error writing file")
                 await ctx.reply(str(e), silent=True)
