@@ -38,6 +38,119 @@ EXTRACT_MEDIA_TYPES = ["text", "application"]
 OPENAI_IMAGE_SIZE_LIMIT_MB = 20
 
 
+class FileHandler:
+    # TODO: Create convenience class that contain file-related methods and properties
+    @overload
+    def __init__(self, file_path: str):
+        """
+        Creates an instance of the FileHandler class.
+
+        Args:
+            file_path (str): The path to the file.
+        """
+        ...
+
+    @overload
+    def __init__(self, bytestream: bytes):
+        """
+        Creates an instance of the FileHandler class.
+
+        Args:
+            bytestream (bytes): The byte stream of the file.
+        """
+        ...
+
+    def __init__(self, *, file_path: str = None, bytestream: bytes = None):
+        if file_path and bytestream:
+            raise ValueError("Both file_path and bytestream cannot be specified.")
+        if not file_path and not bytestream:
+            raise ValueError("Either file_path or bytestream must be specified.")
+        self.file_path = file_path
+        self.bytestream = bytestream
+
+        if self.file_path:
+            self.bytestream = self.read_from_file()
+
+    def read_from_file(self, mode: str = "rb") -> bytes:
+        """
+        Reads the contents of the file at the specified path.
+
+        Args:
+            mode (str): The mode to open the file in. Defaults to "rb".
+
+        Returns:
+            bytes: The contents of the file as a byte stream.
+        """
+        if not self.file_path:
+            raise ValueError("This instances was not created with a file path.")
+        with open(self.file_path, mode) as file:
+            return file.read()
+
+    @overload
+    def write_to_file(
+        file_path: str, *, bytestream: bytes, raise_on_exist: bool = True
+    ) -> None:
+        """
+        Writes (or overwrites) the given bytestream to the specified file path.
+
+        The function uses the built-in `open()` function to write the bytestream to the file.
+
+        Args:
+            file_path (str): The path of the file to write to.
+            bytestream (bytes): The bytestream to write to the file.
+            raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
+
+        Returns:
+            None
+
+        Notes:
+            Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
+        """
+        ...
+
+    @overload
+    def write_to_file(
+        file_path: str, *, text: str, raise_on_exist: bool = True
+    ) -> None:
+        """
+        Writes (or overwrites) the given text to the specified file path.
+
+        The function uses the built-in `open()` function to write the text to the file.
+
+        Args:
+            file_path (str): The path of the file to write to.
+            text (str): The text to write to the file.
+            raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
+
+        Returns:
+            None
+
+        Notes:
+            Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
+        """
+        ...
+
+    def write_to_file(
+        file_path: str,
+        bytestream: bytes = None,
+        text: str = None,
+        raise_on_exist: bool = True,
+    ) -> None:
+        if text and bytestream:
+            raise ValueError("Both text and bytestream cannot be specified.")
+        if not text and not bytestream:
+            raise ValueError("Either text or bytestream must be specified.")
+        mode = None
+        if text:
+            mode = "w"
+        elif bytestream:
+            mode = "wb"
+        with open(file_path, mode) as file:
+            if raise_on_exist and path.exists(file_path):
+                raise FileExistsError(f"The file at {file_path} already exists.")
+            file.write(text) if text else file.write(bytestream)
+
+
 class URLHandler:
     """
     A convenience class with methods and properties to make handling URLs easier.
@@ -269,71 +382,6 @@ def get_bot_header() -> dict:
     return {
         "User-Agent": f"QuantumKat Discord Bot/1.0; GitHub: https://github.com/LobaDK/QuantumKat-discordbot; Contact Email: {contact_email}"
     }
-
-
-@overload
-def write_to_file(
-    file_path: str, *, bytestream: bytes, raise_on_exist: bool = True
-) -> None:
-    """
-    Writes (or overwrites) the given bytestream to the specified file path.
-
-    The function uses the built-in `open()` function to write the bytestream to the file.
-
-    Args:
-        file_path (str): The path of the file to write to.
-        bytestream (bytes): The bytestream to write to the file.
-        raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
-
-    Returns:
-        None
-
-    Notes:
-        Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
-    """
-    ...
-
-
-@overload
-def write_to_file(file_path: str, *, text: str, raise_on_exist: bool = True) -> None:
-    """
-    Writes (or overwrites) the given text to the specified file path.
-
-    The function uses the built-in `open()` function to write the text to the file.
-
-    Args:
-        file_path (str): The path of the file to write to.
-        text (str): The text to write to the file.
-        raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
-
-    Returns:
-        None
-
-    Notes:
-        Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
-    """
-    ...
-
-
-def write_to_file(
-    file_path: str,
-    bytestream: bytes = None,
-    text: str = None,
-    raise_on_exist: bool = True,
-) -> None:
-    if text and bytestream:
-        raise ValueError("Both text and bytestream cannot be specified.")
-    if not text and not bytestream:
-        raise ValueError("Either text or bytestream must be specified.")
-    mode = None
-    if text:
-        mode = "w"
-    elif bytestream:
-        mode = "wb"
-    with open(file_path, mode) as file:
-        if raise_on_exist and path.exists(file_path):
-            raise FileExistsError(f"The file at {file_path} already exists.")
-        file.write(text) if text else file.write(bytestream)
 
 
 def generate_random_filename(length: int = 10) -> str:
