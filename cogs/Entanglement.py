@@ -1,6 +1,6 @@
 from asyncio import create_subprocess_shell, create_subprocess_exec, subprocess
 from json import loads
-from os import execl, listdir, remove, rename, stat, path
+from os import execl, listdir, remove, rename, path
 from random import choice, randint
 from string import ascii_letters, digits
 from sys import argv, executable
@@ -8,7 +8,6 @@ from asyncio import sleep as asyncsleep
 from shlex import quote
 from re import compile
 from pathlib import Path
-from requests import get
 from inspect import Parameter
 import shutil
 from datetime import datetime
@@ -34,7 +33,6 @@ from cogs.utils.utils import (
     guess_download_type,
     filename_exists,
     generate_random_filename,
-    write_to_file,
     URLHandler,
     FileSizeLimitError,
     DIRECT_MEDIA_TYPES,
@@ -452,7 +450,7 @@ class Entanglements(commands.Cog):
             )
             url_handler = URLHandler(URL)
             try:
-                data = url_handler.download_file(limit=100, unit="MB")
+                data = url_handler.download_file(100, "MB", raise_on_limit=True)
             except FileSizeLimitError as e:
                 await ctx.reply(str(e), silent=True)
                 return
