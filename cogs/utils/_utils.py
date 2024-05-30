@@ -17,7 +17,6 @@ from discord import Guild, User
 from os import path, listdir
 from string import ascii_letters, digits
 from random import choice
-from glob import glob
 from typing import Literal, overload, Optional, Union, Any
 
 from cogs.utils._logger import system_logger
@@ -41,123 +40,270 @@ OPENAI_IMAGE_SIZE_LIMIT_MB = 20
 class FileHandler:
     # TODO: Create convenience class that contain file-related methods and properties
     @overload
-    def __init__(self, file_path: str, /) -> None:
-        """
-        Creates an instance of the FileHandler class.
-
-        Attributes:
-            file_path (str): The file path used in the instance.
-            bytestream (bytes): The byte stream of the file.
-
-        Args:
-            file_path (str): The path to the file. The file will be read and stored as a byte stream.
-        """
+    def __init__(self) -> None:
+        """ """
         ...
 
     @overload
-    def __init__(self, bytestream: bytes, /) -> None:
-        """
-        Creates an instance of the FileHandler class.
-
-        Attributes:
-            bytestream (bytes): The byte stream of the file.
-
-        Args:
-            bytestream (bytes): The byte stream of the file.
-        """
+    def __init__(self, data: str, /) -> None:
+        """ """
         ...
 
-    def __init__(self, **kwargs: Any) -> None:
-        file_path: Optional[str] = kwargs.get("file_path", None)
-        bytestream: Optional[str] = kwargs.get("bytestream", None)
-        if file_path and bytestream:
-            raise ValueError("Both file_path and bytestream cannot be specified.")
-        if not file_path and not bytestream:
-            raise ValueError("Either file_path or bytestream must be specified.")
-        self.file_path: str = file_path
-        self.bytestream: bytes = bytestream
+    @overload
+    def __init__(self, data: bytes, /) -> None:
+        """ """
+        ...
 
-        if self.file_path:
-            self.bytestream = self.read_from_file()
+    def __init__(self, data: Optional[str | bytes] = None) -> None:
+        if data is not None and not isinstance(data, (str, bytes)):
+            raise ValueError("Data must be a string or bytes, if provided.")
+        self.data: Optional[Union[str, bytes]] = data
 
-    def read_from_file(self, mode: Optional[str] = "rb") -> bytes:
-        """
-        Reads the contents of the file at the specified path.
+    @staticmethod
+    @overload
+    def read(file_path: str, /, mode: Literal["r"] = "r") -> str:
+        """ """
+        ...
 
-        Args:
-            mode (str): The mode to open the file in. Defaults to "rb".
+    @staticmethod
+    @overload
+    def read(file_path: str, /, mode: Literal["rb"]) -> bytes:
+        """ """
+        ...
 
-        Returns:
-            bytes: The contents of the file as a byte stream.
-        """
-        if not self.file_path:
-            raise ValueError(
-                "This instances was not created with a file path. You will need to set the file path first using the 'file_path' attribute."
-            )
-        with open(file=self.file_path, mode=mode) as file:
+    @staticmethod
+    def read(file_path: str, /, mode: Literal["r", "rb"] = "r") -> Union[str, bytes]:
+        with open(file=file_path, mode=mode) as file:
             return file.read()
 
     @overload
-    def write_to_file(
-        file_path: str, bytestream: bytes, /, raise_on_exist: bool = True
+    def write(
+        self, file_path: str, /, *, mode: Literal["w", "wb", "auto"] = "auto"
     ) -> int:
+        """ """
+        ...
+
+    @overload
+    def write(self, file_path: str, /, *, data: str) -> int:
+        """ """
+        ...
+
+    @overload
+    def write(self, file_path: str, /, *, data: bytes) -> int:
+        """ """
+        ...
+
+    def write(
+        self,
+        file_path: str,
+        /,
+        *,
+        mode: str = "auto",
+        data: Optional[Union[str, bytes]] = None,
+    ) -> int:
+        if mode not in ["w", "wb", "auto"]:
+            raise ValueError("Invalid mode. Choose from 'w', 'wb', 'auto'.")
+        if not isinstance(data, (str, bytes)) and data is not None:
+            raise ValueError("Data must be a string or bytes.")
+        if isinstance(data, str) and mode == "wb":
+            raise ValueError("Cannot write a string to a binary file.")
+        if isinstance(data, bytes) and mode == "w":
+            raise ValueError("Cannot write bytes to a text file.")
+        if mode == "auto":
+            mode = "wb" if isinstance(data, bytes) else "w"
+        if data is None:
+            if self.data is None:
+                raise ValueError(
+                    "No data to write. No data was provided and no data was set in the instance."
+                )
+            else:
+                data = self.data
+
+        return self._write(file_path, mode=mode, data=data)
+
+    def _write(self, file_path: str, /, *, mode: str, data: Union[str, bytes]) -> int:
+        if not isinstance(data, (str, bytes)):
+            raise ValueError("Data must be a string or bytes.")
+        with open(file=file_path, mode=mode) as file:
+            return file.write(data)
+
+    @overload
+    def convert_to_bytes(self) -> bytes:
         """
-        Writes (or overwrites) the given bytestream to the specified file path.
-
-        The function uses the built-in `open()` function to write the bytestream to the file.
-
-        Args:
-            file_path (str): The path of the file to write to.
-            bytestream (bytes): The bytestream to write to the file.
-            raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
+        Returns the instance data as bytes. If the data is already bytes, it is returned as is.
 
         Returns:
-            int: The number of bytes written to the file.
+            bytes: The converted data in bytes.
 
-        Notes:
-            Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
+        Raises:
+            ValueError: If no data is set in the instance.
+
         """
         ...
 
     @overload
-    def write_to_file(file_path: str, text: str, /, raise_on_exist: bool = True) -> int:
+    def convert_to_bytes(self, data: str, /) -> bytes:
         """
-        Writes (or overwrites) the given text to the specified file path.
-
-        The function uses the built-in `open()` function to write the text to the file.
+        Converts the given data to bytes. If the data is already bytes, it is returned as is.
 
         Args:
-            file_path (str): The path of the file to write to.
-            text (str): The text to write to the file.
-            raise_on_exist (bool, optional): Whether to raise an exception if the file already exists. Defaults to True.
+            data (str): The data to be converted. If not provided, the data set in the instance will be used.
 
         Returns:
-            int: The number of characters written to the file.
+            bytes: The converted data in bytes.
 
-        Notes:
-            Refer to the `open()` function for more information on the file modes and exceptions that can be raised.
+        Raises:
+            ValueError: If no data is provided and no data is set in the instance.
+            ValueError: If the data is not a string.
+
         """
         ...
 
-    def write_to_file(file_path: str, **kwargs: Any) -> int:
-        text: Optional[str] = kwargs.get("text", None)
-        bytestream: Optional[bytes] = kwargs.get("bytestream", None)
-        raise_on_exist: bool = kwargs.get("raise_on_exist", True)
-        if text is not None and bytestream is not None:
-            raise ValueError("Both text and bytestream cannot be specified.")
-        if text is None and bytestream is None:
-            raise ValueError("Either text or bytestream must be specified.")
+    def convert_to_bytes(self, data: Optional[str] = None) -> bytes:
+        if data is None:
+            if self.data is None:
+                raise ValueError(
+                    "No data to convert. No data was provided and no data was set in the instance."
+                )
+            if isinstance(self.data, bytes):
+                return self.data
+            data = self.data
+        if isinstance(data, bytes):
+            return data
+        if not isinstance(data, str):
+            raise ValueError("Data must be a string.")
+        return data.encode()
 
-        if raise_on_exist and path.exists(path=file_path):
-            raise FileExistsError(f"The file at {file_path} already exists.")
+    @overload
+    def convert_to_str(self) -> str:
+        """
+        Returns the instance data as a string. If the data is already a string, it is returned as is.
 
-        mode: Union[Literal["wb"], Literal["w"]] = (
-            "wb" if bytestream is not None else "w"
-        )
-        data: Union[bytes, str] = bytestream if bytestream is not None else text
+        Returns:
+            str: The converted string.
 
-        with open(file=file_path, mode=mode) as file:
-            return file.write(data)
+        Raises:
+            ValueError: If no data is set in the instance.
+
+        """
+        ...
+
+    @overload
+    def convert_to_str(self, data: bytes, /) -> str:
+        """
+        Converts the given data to a string. If the data is already a string, it is returned as is.
+
+        Args:
+            data (bytes): The data to be converted.
+
+        Returns:
+            str: The converted string.
+
+        Raises:
+            ValueError: If no data is provided and no data is set in the instance.
+            ValueError: If the data is not of type bytes.
+
+        """
+        ...
+
+    def convert_to_str(self, data: Optional[bytes] = None) -> str:
+        if data is None:
+            if self.data is None:
+                raise ValueError(
+                    "No data to convert. No data was provided and no data was set in the instance."
+                )
+            if isinstance(self.data, str):
+                return self.data
+            data = self.data
+        if isinstance(data, str):
+            return data
+        if not isinstance(data, bytes):
+            raise ValueError("Data must be bytes.")
+        return data.decode()
+
+    @overload
+    @staticmethod
+    def generate_random_filename(length: int = 10) -> str:
+        """
+        Generates a random filename consisting of alphanumeric characters.
+
+        Args:
+            length (int): The length of the filename to generate. Defaults to 10.
+
+        Notes:
+            - The generated filename is base62, consisting of uppercase and lowercase letters and digits.
+
+        Returns:
+            str: The randomly generated filename.
+
+        """
+        ...
+
+    @overload
+    @staticmethod
+    def generate_random_filename(length: int = 10, *, charset: str) -> str:
+        """
+        Generates a random filename consisting of characters from the specified charset.
+
+        Args:
+            length (int): The length of the filename to generate. Defaults to 10.
+            charset (str): The charset to use for generating the filename.
+
+        Returns:
+            str: The randomly generated filename.
+
+        """
+        ...
+
+    @staticmethod
+    def generate_random_filename(
+        length: int = 10, *, charset: str = ascii_letters + digits
+    ) -> str:
+        return "".join(choice(seq=charset) for _ in range(length))
+
+    @staticmethod
+    @overload
+    def exists(file_path: str, /) -> bool:
+        """ """
+        ...
+
+    @staticmethod
+    @overload
+    def exists(file_path: str, /, *, ignore_extension: Literal[True]) -> bool:
+        """ """
+        ...
+
+    @staticmethod
+    @overload
+    def exists(
+        file_path: str,
+        /,
+        *,
+        ignore_extension: Literal[True],
+        return_extension: Literal[True],
+    ) -> tuple[bool, str]:
+        """ """
+        ...
+
+    @staticmethod
+    def exists(
+        file_path: str,
+        /,
+        *,
+        ignore_extension: bool = False,
+        return_extension: bool = False,
+    ) -> Union[bool, tuple[bool, str]]:
+        if ignore_extension:
+            file: Path = Path(file_path)
+            for f in file.parent.iterdir():
+                if f.stem == file.stem:
+                    file_exists: bool = True
+                    if return_extension:
+                        return file_exists, f.suffix
+                    return file_exists
+        else:
+            file_exists = path.exists(path=file_path)
+        return file_exists
 
 
 class URLHandler:
@@ -376,59 +522,6 @@ def get_bot_header() -> dict:
     return {
         "User-Agent": f"QuantumKat Discord Bot/1.0; GitHub: https://github.com/LobaDK/QuantumKat-discordbot; Contact Email: {contact_email}"
     }
-
-
-def generate_random_filename(length: int = 10) -> str:
-    """
-    Generates a random filename consisting of alphanumeric characters.
-
-    Args:
-        length (int): The length of the filename to generate. Defaults to 10.
-
-    Notes:
-        - The generated filename is base62, consisting of uppercase and lowercase letters and digits.
-
-    Returns:
-        str: The randomly generated filename.
-    """
-    return "".join(choice(seq=ascii_letters + digits) for _ in range(length))
-
-
-def filename_exists(
-    file_path: str,
-    return_extension: bool = False,
-    ignore_extension: bool = False,
-) -> bool | tuple[bool, str]:
-    """
-    Checks if a file exists at the given path.
-
-    Args:
-        - file_path (str): The path to the file to check.
-        - return_extension (bool, optional): Whether to return the extension of the file if it exists. Defaults to False.
-        - ignore_extension (bool, optional): Whether to ignore the file extension when checking if the file exists. Defaults to False.
-
-    Returns:
-        - bool: True if the file exists, False otherwise. If `return_extension` is True, returns a tuple containing the existence status and the extension of the file.
-
-    Notes:
-        - If no file exists, the function will only return False, regardless of the value of `return_extension`.
-        - `ignore_extension` does not take into account if multiple files with the same name but different extensions exist. If even one file with the same name exists, it will return True.
-
-    Examples:
-        - filename_exists("file.txt") -> True
-        - filename_exists("file", ignore_extension=True) -> True
-        - filename_exists("file.txt", return_extension=True) -> (True, ".txt")
-    """
-    if ignore_extension:
-        file_path = path.splitext(p=file_path)[0]
-        file_exists: bool = any(glob(pathname=file_path + ".*"))
-    else:
-        file_exists: bool = path.exists(path=file_path)
-
-    if return_extension and file_exists:
-        return file_exists, path.splitext(p=file_path)[1]
-
-    return file_exists
 
 
 def guess_download_type(url: str) -> str:
