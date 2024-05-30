@@ -17,8 +17,8 @@ from sql import models, schemas
 from sql.database import engine, AsyncSessionLocal
 from sql import crud
 from cogs.utils._logger import quantumkat_logger
-from cogs.utils.utils import get_field_from_1password
-from cogs.utils.utils import DiscordHelper
+from cogs.utils._utils import get_field_from_1password
+from cogs.utils._utils import DiscordHelper
 
 
 async def init_models():

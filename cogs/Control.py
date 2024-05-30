@@ -10,7 +10,7 @@ from sql import crud, schemas
 from sql.database import AsyncSessionLocal
 
 from cogs.utils._logger import control_logger
-from cogs.utils.utils import DiscordHelper
+from cogs.utils._utils import DiscordHelper
 
 TIMEOUT_IN_SECONDS = 60
 

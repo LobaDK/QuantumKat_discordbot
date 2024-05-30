@@ -45,8 +45,12 @@ class FileHandler:
         """
         Creates an instance of the FileHandler class.
 
+        Attributes:
+            file_path (str): The file path used in the instance.
+            bytestream (bytes): The byte stream of the file.
+
         Args:
-            file_path (str): The path to the file.
+            file_path (str): The path to the file. The file will be read and stored as a byte stream.
         """
         ...
 
@@ -54,6 +58,9 @@ class FileHandler:
     def __init__(self, bytestream: bytes, /) -> None:
         """
         Creates an instance of the FileHandler class.
+
+        Attributes:
+            bytestream (bytes): The byte stream of the file.
 
         Args:
             bytestream (bytes): The byte stream of the file.
@@ -676,7 +683,7 @@ def stream_is_supported_image(
     *,
     return_file_type: Literal[
         False
-    ] = False,  # Literal[False] helps mypy infer which overload to use.
+    ] = False,  # Using Literal helps mypy and the IDE decide which overload to infer to.
 ) -> bool:
     """
     Verifies that the given stream is a supported image format.
@@ -696,9 +703,7 @@ def stream_is_supported_image(
     data: bytes,
     /,
     *,
-    return_file_type: Literal[
-        True
-    ],  # Literal[True] helps mypy infer which overload to use.
+    return_file_type: Literal[True],
 ) -> tuple[bool, str]:
     """
     Verifies that the given stream is a supported image format.

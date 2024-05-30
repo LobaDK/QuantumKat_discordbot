@@ -7,7 +7,7 @@ from discord.ext import commands
 from sql import database
 from sql import crud, schemas
 from decorators import requires_tos_acceptance
-from cogs.utils.utils import (
+from cogs.utils._utils import (
     get_urls_in_message,
     calculate_tokens,
     get_usage,
@@ -23,7 +23,7 @@ from cogs.utils.utils import (
 
 from QuantumKat import misc_helper
 from cogs.utils._logger import chat_logger, chat_history_logger
-from cogs.utils.utils import DiscordHelper
+from cogs.utils._utils import DiscordHelper
 
 TOKEN_LIMIT = 1024 * 2
 

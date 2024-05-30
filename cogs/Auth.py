@@ -5,7 +5,7 @@ from sql import crud, schemas
 
 from QuantumKat import misc_helper
 from cogs.utils._logger import auth_logger
-from cogs.utils.utils import DiscordHelper
+from cogs.utils._utils import DiscordHelper
 
 
 class Auth(commands.Cog):

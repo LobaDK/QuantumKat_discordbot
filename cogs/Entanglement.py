@@ -27,7 +27,7 @@ from psutil import cpu_percent, disk_usage, virtual_memory
 
 from sql.database import AsyncSessionLocal
 from sql import crud, schemas
-from cogs.utils.utils import (
+from cogs.utils._utils import (
     guess_file_extension,
     strip_embed_disabler,
     guess_download_type,
