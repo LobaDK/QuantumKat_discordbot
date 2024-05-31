@@ -38,7 +38,71 @@ OPENAI_IMAGE_SIZE_LIMIT_MB = 20
 
 
 class FileHandler:
-    # TODO: Create convenience class that contain file-related methods and properties
+    """
+    A convenience class that contains file-related methods and properties.
+
+    This class provides various instance and static methods for file and data handling. Most of which are overloaded to help hint their usage.
+    When initializing the class, you can provide data as a string or bytes. The data can be set or changed later using the `set_data` method.
+    By setting the data, most data-related methods can be used without providing the data as an argument. If no data is set, the data must be provided as an argument.
+    The user is expected to handle exceptions raised by the methods and the underlying functions they use.
+
+    Attributes:
+        data (Optional[Union[str, bytes]]): The data stored in the instance.
+
+    Methods:
+        ```
+         (Static)  def read(file_path: str, /, mode: Literal["r", "rb"] = "r") -> Union[str, bytes]: # Read the contents of a file.
+         (Static)  def write_data(file_path: str, /, data: Union[str, bytes]) -> int: # Write data to a file.
+        (Instance) def write(file_path: str, /) -> int: # Write the data stored in the instance to a file.
+        (Instance) def convert_to_bytes(data: Optional[str] = None) -> bytes: # Convert data to bytes.
+        (Instance) def convert_to_str(data: Optional[bytes] = None) -> str: # Convert data to a string.
+        (Instance) def convert_to_base64(bytestream: bytes, /) -> str: # Convert a byte stream to base64 format.
+        (Instance) def set_data(data: Union[str, bytes]) -> None: # Set the data in the instance.
+         (Static)  def generate_random_filename(length: int = 10, /, *, charset: str = ascii_letters + digits) -> str: # Generate a random filename.
+         (Static)  def exists(file_path: str, /, *, ignore_extension: bool = False, return_extension: bool = False) -> Union[bool, tuple[bool, str]]: # Check if a file exists at the given file path.
+         (Static)  def list_files_in_directory(directory: str, /) -> list[str]: # List all files in a given directory.
+         (Static)  def list_directories_in_directory(directory: str, /) -> list[str]: List all directories in a given directory.
+        ```
+
+    Examples:
+        ```
+        import FileHandler
+
+        # Initialize the class with data
+        file_handler = FileHandler(data="Hello, World!")
+
+        # Write the data to a file
+        file_handler.write("example.txt")
+
+        # Or don't create an instance and use the static method :)
+        FileHandler.write_data("example.txt", "Hello, World!")
+
+        # Read the contents of the file
+        data = FileHandler.read("example.txt")
+
+        # You could set the data in the instance from a file
+        file_handler.set_data(FileHandler.read("example.txt"))
+
+        # Convert the data to bytes
+        byte_data = file_handler.convert_to_bytes()
+
+        # Convert the data to a string
+        str_data = file_handler.convert_to_str()
+
+        # Convert the data to base64
+        base64_data = file_handler.convert_to_base64()
+
+        # Check if the file exists
+        file_exists = FileHandler.exists("example.txt")
+
+        # List all files in a directory
+        files = FileHandler.list_files_in_directory("path/to/directory")
+
+        # List all directories in a directory
+        directories = FileHandler.list_directories_in_directory("path/to/directory")
+        ```
+    """
+
     @overload
     def __init__(self) -> None:
         """
