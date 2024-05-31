@@ -41,17 +41,41 @@ class FileHandler:
     # TODO: Create convenience class that contain file-related methods and properties
     @overload
     def __init__(self) -> None:
-        """ """
+        """
+        Initialize the class with no data.
+
+        Args:
+            None
+
+        Raises:
+            None
+        """
         ...
 
     @overload
     def __init__(self, data: str, /) -> None:
-        """ """
+        """
+        Initialize the class with data.
+
+        Args:
+            data (str): The data to be stored.
+
+        Raises:
+            ValueError: If the provided data is not a string.
+        """
         ...
 
     @overload
     def __init__(self, data: bytes, /) -> None:
-        """ """
+        """
+        Initialize the class with data.
+
+        Args:
+            data (bytes): The data to be stored.
+
+        Raises:
+            ValueError: If the provided data is not bytes.
+        """
         ...
 
     def __init__(self, data: Optional[str | bytes] = None) -> None:
@@ -62,13 +86,37 @@ class FileHandler:
     @staticmethod
     @overload
     def read(file_path: str, /, mode: Literal["r"] = "r") -> str:
-        """ """
+        """
+        Read the contents of a file.
+
+        Args:
+            file_path (str): The path to the file.
+            mode (Literal["r"], optional): The mode in which the file should be opened. Defaults to "r".
+
+        Returns:
+            str: The contents of the file as a string.
+
+        Raises:
+            ValueError: If an invalid mode is provided.
+        """
         ...
 
     @staticmethod
     @overload
     def read(file_path: str, /, mode: Literal["rb"]) -> bytes:
-        """ """
+        """
+        Read the contents of a file.
+
+        Args:
+            file_path (str): The path to the file.
+            mode (Literal["rb"]): The mode in which the file should be opened.
+
+        Returns:
+            bytes: The contents of the file as bytes.
+
+        Raises:
+            ValueError: If an invalid mode is provided.
+        """
         ...
 
     @staticmethod
@@ -80,17 +128,54 @@ class FileHandler:
     def write(
         self, file_path: str, /, *, mode: Literal["w", "wb", "auto"] = "auto"
     ) -> int:
-        """ """
+        """
+        Write the data set in the instance to a file.
+
+        Args:
+            file_path (str): The path and name of the file to write to.
+            mode (str, optional): The write mode. Choose from 'w', 'wb', 'auto'. Defaults to 'auto'.
+
+        Returns:
+            int: The number of characters or bytes written to the file.
+
+        Raises:
+            ValueError: If an invalid mode is provided.
+            ValueError: If no data is set in the instance.
+        """
         ...
 
     @overload
     def write(self, file_path: str, /, *, data: str) -> int:
-        """ """
+        """
+        Write the provided data to a file.
+
+        Args:
+            file_path (str): The path and name of the file to write to.
+            data (str): The data to write to the file.
+
+        Returns:
+            int: The number of characters written to the file.
+
+        Raises:
+            ValueError: If the data is not a string.
+        """
         ...
 
     @overload
     def write(self, file_path: str, /, *, data: bytes) -> int:
-        """ """
+        """
+        Write the provided data to a file.
+
+        Args:
+            file_path (str): The path and name of the file to write to.
+            data (bytes): The data to write to the file.
+
+        Returns:
+            int: The number of bytes written to the file.
+
+        Raises:
+            ValueError: If the data is not bytes.
+        """
         ...
 
     def write(
@@ -122,6 +207,20 @@ class FileHandler:
         return self._write(file_path, mode=mode, data=data)
 
     def _write(self, file_path: str, /, *, mode: str, data: Union[str, bytes]) -> int:
+        """
+        Internal convenience method to write data to a file.
+
+        Args:
+            file_path (str): The path and name of the file to write to.
+            mode (str): Which mode to open the file in. Must be one of 'w', 'wb'.
+            data (Union[str, bytes]): The data to write to the file.
+
+        Raises:
+            ValueError: If the data is not a string or bytes.
+
+        Returns:
+            int: The number of characters or bytes written to the file.
+        """
         if not isinstance(data, (str, bytes)):
             raise ValueError("Data must be a string or bytes.")
         with open(file=file_path, mode=mode) as file:
@@ -264,13 +363,30 @@ class FileHandler:
     @staticmethod
     @overload
     def exists(file_path: str, /) -> bool:
-        """ """
+        """
+        Check if a file exists at the given file path.
+
+        Args:
+            file_path (str): The path to the file.
+
+        Returns:
+            bool: A boolean indicating whether the file exists.
+        """
         ...
 
     @staticmethod
     @overload
     def exists(file_path: str, /, *, ignore_extension: Literal[True]) -> bool:
-        """ """
+        """
+        Check if a file exists at the given file path.
+
+        Args:
+            file_path (str): The path to the file.
+            ignore_extension (bool, optional): Whether to ignore the file extension when checking for existence. Defaults to False.
+
+        Returns:
+            bool: A boolean indicating whether the file exists.
+        """
         ...
 
     @staticmethod
@@ -282,7 +398,21 @@ class FileHandler:
         ignore_extension: Literal[True],
         return_extension: Literal[True],
     ) -> tuple[bool, str]:
-        """ """
+        """
+        Check if a file exists at the given file path.
+
+        Args:
+            file_path (str): The path to the file.
+            ignore_extension (bool, optional): Whether to ignore the file extension when checking for existence. Defaults to False.
+            return_extension (bool, optional): Whether to return the file extension if it exists. This argument is only valid if ignore_extension is True. Defaults to False.
+
+        Returns:
+            tuple[bool, str]: If ignore_extension is False, returns a boolean indicating whether the file exists. If ignore_extension is True and return_extension is True, returns a tuple with a boolean indicating whether the file exists and the file extension.
+
+        Raises:
+            ValueError: If return_extension is True and ignore_extension is False.
+
+        """
         ...
 
     @staticmethod
