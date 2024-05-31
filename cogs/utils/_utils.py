@@ -471,6 +471,10 @@ class FileHandler:
         ignore_extension: bool = False,
         return_extension: bool = False,
     ) -> Union[bool, tuple[bool, str]]:
+        if return_extension and not ignore_extension:
+            raise ValueError(
+                "ignore_extension must be True if return_extension is True."
+            )
         if ignore_extension:
             file: Path = Path(file_path)
             for f in file.parent.iterdir():
