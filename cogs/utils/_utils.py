@@ -6,7 +6,7 @@ from requests.exceptions import RequestException
 from discord.ext import commands
 from tiktoken import encoding_for_model
 from mimetypes import guess_extension
-from magic import Magic  # type: ignore
+from magic import Magic  # type: ignore # TODO: Replace with `filetype` library. The overhead of having to deal with two different libraries depending on the OS is making it a bitch to work with.
 from PIL import Image
 from io import BytesIO
 from base64 import b64encode
