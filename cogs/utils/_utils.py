@@ -130,110 +130,62 @@ class FileHandler:
 
     @staticmethod
     def read(file_path: str, /, mode: Literal["r", "rb"] = "r") -> Union[str, bytes]:
-        with open(file=file_path, mode=mode) as file:
-            return file.read()
-
-    @overload
-    def write(
-        self, file_path: str, /, *, mode: Literal["w", "wb", "auto"] = "auto"
-    ) -> int:
         """
-        Write the data set in the instance to a file.
+        Read the contents of a file.
 
         Args:
-            file_path (str): The path and name of the file to write to.
-            mode (str, optional): The write mode. Choose from 'w', 'wb', 'auto'. Defaults to 'auto'.
+            file_path (str): The path to the file.
+            mode (Literal["r", "rb"], optional): The mode in which the file should be opened. Defaults to "r".
 
         Returns:
-            int: The number of characters or bytes written to the file.
+            Union[str, bytes]: The contents of the file as a string or bytes.
 
         Raises:
             ValueError: If an invalid mode is provided.
-            ValueError: If no data is set in the instance.
         """
-        ...
+        with open(file=file_path, mode=mode) as file:
+            return file.read()
 
-    @overload
-    def write(self, file_path: str, /, *, data: str) -> int:
+    @staticmethod
+    def write_data(file_path: str, /, data: Union[str, bytes]) -> int:
         """
-        Write the provided data to a file.
+        Write data to a file.
+
+        The data can be a string or bytes. The mode is determined based on the type of data.
 
         Args:
             file_path (str): The path and name of the file to write to.
-            data (str): The data to write to the file.
-
-        Returns:
-            int: The number of characters written to the file.
-
-        Raises:
-            ValueError: If the data is not a string.
-        """
-        ...
-
-    @overload
-    def write(self, file_path: str, /, *, data: bytes) -> int:
-        """
-        Write the provided data to a file.
-
-        Args:
-            file_path (str): The path and name of the file to write to.
-            data (bytes): The data to write to the file.
-
-        Returns:
-            int: The number of bytes written to the file.
-
-        Raises:
-            ValueError: If the data is not bytes.
-        """
-        ...
-
-    def write(
-        self,
-        file_path: str,
-        /,
-        *,
-        mode: str = "auto",
-        data: Optional[Union[str, bytes]] = None,
-    ) -> int:
-        if mode not in ["w", "wb", "auto"]:
-            raise ValueError("Invalid mode. Choose from 'w', 'wb', 'auto'.")
-        if not isinstance(data, (str, bytes)) and data is not None:
-            raise ValueError("Data must be a string or bytes.")
-        if isinstance(data, str) and mode == "wb":
-            raise ValueError("Cannot write a string to a binary file.")
-        if isinstance(data, bytes) and mode == "w":
-            raise ValueError("Cannot write bytes to a text file.")
-        if mode == "auto":
-            mode = "wb" if isinstance(data, bytes) else "w"
-        if data is None:
-            if self.data is None:
-                raise ValueError(
-                    "No data to write. No data was provided and no data was set in the instance."
-                )
-            else:
-                data = self.data
-
-        return self._write(file_path, mode=mode, data=data)
-
-    def _write(self, file_path: str, /, *, mode: str, data: Union[str, bytes]) -> int:
-        """
-        Internal convenience method to write data to a file.
-
-        Args:
-            file_path (str): The path and name of the file to write to.
-            mode (str): Which mode to open the file in. Must be one of 'w', 'wb'.
             data (Union[str, bytes]): The data to write to the file.
-
-        Raises:
-            ValueError: If the data is not a string or bytes.
 
         Returns:
             int: The number of characters or bytes written to the file.
+
+        Raises:
+            ValueError: If the data is not a string or bytes.
         """
         if not isinstance(data, (str, bytes)):
             raise ValueError("Data must be a string or bytes.")
-        with open(file=file_path, mode=mode) as file:
+        with open(file=file_path, mode="w" if isinstance(data, str) else "wb") as file:
             return file.write(data)
+
+    def write(self, file_path: str) -> int:
+        """
+        Write the data stored in the instance to a file.
+
+        Args:
+            file_path (str): The path and name of the file to write to.
+
+        Returns:
+            int: The number of characters or bytes written to the file.
+
+        Raises:
+            ValueError: If no data is set in the instance.
+        """
+        if self.data is None:
+            raise ValueError("No data to write. No data was set in the instance.")
+        if not isinstance(self.data, (str, bytes)):
+            raise ValueError("Data must be a string or bytes.")
+        return self.write_data(file_path, data=self.data)
 
     @overload
     def convert_to_bytes(self) -> bytes:
