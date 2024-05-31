@@ -320,6 +320,54 @@ class FileHandler:
             raise ValueError("Data must be bytes.")
         return data.decode()
 
+    def convert_to_base64(self, bytestream: bytes) -> str:
+        """
+        Converts a byte stream to base64 format.
+
+        Args:
+            bytestream (bytes): The byte stream to be converted.
+
+        Returns:
+            str: The byte stream in base64 format.
+
+        """
+        if not isinstance(bytestream, bytes):
+            raise ValueError("Data must be bytes.")
+        return b64encode(s=bytestream).decode()
+
+    @overload
+    def set_data(self, data: str, /) -> None:
+        """
+        Set the data in the instance.
+
+        Args:
+            data (str): The data to be set.
+
+        Raises:
+            ValueError: If the data is not a string.
+
+        """
+        ...
+
+    @overload
+    def set_data(self, data: bytes, /) -> None:
+        """
+        Set the data in the instance.
+
+        Args:
+            data (bytes): The data to be set.
+
+        Raises:
+            ValueError: If the data is not bytes.
+
+        """
+        ...
+
+    def set_data(self, data: Union[str, bytes]) -> None:
+        if not isinstance(data, (str, bytes)):
+            raise ValueError("Data must be a string or bytes.")
+        self.data = data
+
     @overload
     @staticmethod
     def generate_random_filename(length: int = 10) -> str:
@@ -434,6 +482,38 @@ class FileHandler:
         else:
             file_exists = path.exists(path=file_path)
         return file_exists
+
+    @staticmethod
+    def list_files_in_directory(directory: str) -> list[str]:
+        """
+        Lists all files in a given directory.
+
+        Args:
+            directory (str): The directory to list files from.
+
+        Returns:
+            list[str]: A list of filenames in the directory.
+        """
+        return [
+            f
+            for f in listdir(path=directory)
+            if path.isfile(path=path.join(directory, f))
+        ]
+
+    @staticmethod
+    def list_directories_in_directory(directory: str) -> list[str]:
+        """
+        Lists all directories in a given directory.
+
+        Args:
+            directory (str): The directory to list directories from.
+
+        Returns:
+            list[str]: A list of directory names in the directory.
+        """
+        return [
+            d for d in listdir(path=directory) if path.isdir(s=path.join(directory, d))
+        ]
 
 
 class URLHandler:
