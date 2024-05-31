@@ -79,6 +79,15 @@ class FileHandler:
         ...
 
     def __init__(self, data: Optional[str | bytes] = None) -> None:
+        """
+        Initialize the FileHandler instance.
+
+        Args:
+            data (Optional[str | bytes], optional): The data to be stored. Defaults to None.
+
+        Raises:
+            ValueError: If the provided data is not a string or bytes.
+        """
         if data is not None and not isinstance(data, (str, bytes)):
             raise ValueError("Data must be a string or bytes, if provided.")
         self.data: Optional[Union[str, bytes]] = data
@@ -259,6 +268,20 @@ class FileHandler:
         ...
 
     def convert_to_bytes(self, data: Optional[str] = None) -> bytes:
+        """
+        Convert data to bytes.
+
+        Args:
+            data (Optional[str], optional): The data to be converted. If not provided, the data set in the instance will be used. Defaults to None.
+
+        Returns:
+            bytes: The converted data in bytes.
+
+        Raises:
+            ValueError: If no data is provided and no data is set in the instance.
+            ValueError: If the data is not a string.
+
+        """
         if data is None:
             if self.data is None:
                 raise ValueError(
@@ -306,6 +329,20 @@ class FileHandler:
         ...
 
     def convert_to_str(self, data: Optional[bytes] = None) -> str:
+        """
+        Convert data to a string.
+
+        Args:
+            data (Optional[bytes], optional): The data to be converted. If not provided, the data set in the instance will be used. Defaults to None.
+
+        Returns:
+            str: The converted string.
+
+        Raises:
+            ValueError: If no data is provided and no data is set in the instance.
+            ValueError: If the data is not of type bytes.
+
+        """
         if data is None:
             if self.data is None:
                 raise ValueError(
@@ -320,7 +357,7 @@ class FileHandler:
             raise ValueError("Data must be bytes.")
         return data.decode()
 
-    def convert_to_base64(self, bytestream: bytes) -> str:
+    def convert_to_base64(self, bytestream: bytes, /) -> str:
         """
         Converts a byte stream to base64 format.
 
@@ -329,6 +366,9 @@ class FileHandler:
 
         Returns:
             str: The byte stream in base64 format.
+
+        Raises:
+            ValueError: If the data is not bytes.
 
         """
         if not isinstance(bytestream, bytes):
@@ -364,13 +404,23 @@ class FileHandler:
         ...
 
     def set_data(self, data: Union[str, bytes]) -> None:
+        """
+        Set the data in the instance.
+
+        Args:
+            data (Union[str, bytes]): The data to be set.
+
+        Raises:
+            ValueError: If the data is not a string or bytes.
+
+        """
         if not isinstance(data, (str, bytes)):
             raise ValueError("Data must be a string or bytes.")
         self.data = data
 
     @overload
     @staticmethod
-    def generate_random_filename(length: int = 10) -> str:
+    def generate_random_filename(length: int = 10, /) -> str:
         """
         Generates a random filename consisting of alphanumeric characters.
 
@@ -488,7 +538,7 @@ class FileHandler:
         return file_exists
 
     @staticmethod
-    def list_files_in_directory(directory: str) -> list[str]:
+    def list_files_in_directory(directory: str, /) -> list[str]:
         """
         Lists all files in a given directory.
 
@@ -505,7 +555,7 @@ class FileHandler:
         ]
 
     @staticmethod
-    def list_directories_in_directory(directory: str) -> list[str]:
+    def list_directories_in_directory(directory: str, /) -> list[str]:
         """
         Lists all directories in a given directory.
 
