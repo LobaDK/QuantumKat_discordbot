@@ -51,7 +51,7 @@ class FileHandler:
 
     Methods:
         ```
-         (Static)  def read(file_path: str, /, mode: Literal["r", "rb"] = "r") -> Union[str, bytes]: # Read the contents of a file.
+         (Static)  def read_data(file_path: str, /, mode: Literal["r", "rb"] = "r") -> Union[str, bytes]: # Read the contents of a file.
          (Static)  def write_data(file_path: str, /, data: Union[str, bytes]) -> int: # Write data to a file.
         (Instance) def write(file_path: str, /) -> int: # Write the data stored in the instance to a file.
         (Instance) def convert_to_bytes(data: Optional[str] = None) -> bytes: # Convert data to bytes.
@@ -62,6 +62,8 @@ class FileHandler:
          (Static)  def exists(file_path: str, /, *, ignore_extension: bool = False, return_extension: bool = False) -> Union[bool, tuple[bool, str]]: # Check if a file exists at the given file path.
          (Static)  def list_files_in_directory(directory: str, /) -> list[str]: # List all files in a given directory.
          (Static)  def list_directories_in_directory(directory: str, /) -> list[str]: List all directories in a given directory.
+         (Static)  def get_size(file_path: str, /, unit: Optional[str] = None) -> Union[int, float]: # Retrieve the size of a file.
+        (Instance) def size(unit: Optional[str] = None) -> Union[int, float]:
         ```
 
     Examples:
@@ -158,7 +160,7 @@ class FileHandler:
 
     @staticmethod
     @overload
-    def read(file_path: str, /, mode: Literal["r"] = "r") -> str:
+    def read_data(file_path: str, /, mode: Literal["r"] = "r") -> str:
         """
         Read the contents of a file.
 
@@ -176,7 +178,7 @@ class FileHandler:
 
     @staticmethod
     @overload
-    def read(file_path: str, /, mode: Literal["rb"]) -> bytes:
+    def read_data(file_path: str, /, mode: Literal["rb"]) -> bytes:
         """
         Read the contents of a file.
 
@@ -193,7 +195,9 @@ class FileHandler:
         ...
 
     @staticmethod
-    def read(file_path: str, /, mode: Literal["r", "rb"] = "r") -> Union[str, bytes]:
+    def read_data(
+        file_path: str, /, mode: Literal["r", "rb"] = "r"
+    ) -> Union[str, bytes]:
         """
         Read the contents of a file.
 
@@ -585,6 +589,103 @@ class FileHandler:
             d for d in listdir(path=directory) if path.isdir(s=path.join(directory, d))
         ]
 
+    @staticmethod
+    @overload
+    def get_size(file_path: str, /) -> int:
+        """
+        Retrieves the size of a file.
+
+        Args:
+            file_path (str): The path to the file.
+
+        Returns:
+            int: The size of the file in bytes.
+        """
+        ...
+
+    @staticmethod
+    @overload
+    def get_size(file_path: str, /, unit: str) -> float:
+        """
+        Retrieves the size of a file.
+
+        Args:
+            file_path (str): The path to the file.
+            unit (str): The unit to return the size in. Must be one of 'B', 'KB', 'MB', 'GB'.
+
+        Returns:
+            float: The size of the file in the specified unit.
+        """
+        ...
+
+    @staticmethod
+    def get_size(file_path: str, /, unit: Optional[str] = None) -> Union[int, float]:
+        """
+        Retrieves the size of a file.
+
+        Args:
+            file_path (str): The path to the file.
+            unit (Optional[str], optional): The unit to return the size in. Must be one of 'B', 'KB', 'MB', 'GB'. Defaults to None.
+
+        Returns:
+            Union[int, float]: The size of the file in bytes or the specified unit.
+        """
+        size: int = path.getsize(filename=file_path)
+        if unit:
+            return size / UNITS[unit]
+        return size
+
+    @overload
+    def size(self) -> int:
+        """
+        Retrieves the size of the data stored in the instance.
+
+        Returns:
+            int: The size of the data in bytes.
+
+        Raises:
+            ValueError: If no data is set in the instance.
+        """
+        ...
+
+    @overload
+    def size(self, unit: str) -> float:
+        """
+        Retrieves the size of the data stored in the instance.
+
+        Args:
+            unit (str): The unit to return the size in. Must be one of 'B', 'KB', 'MB', 'GB'.
+
+        Returns:
+            float: The size of the data in the specified unit.
+
+        Raises:
+            ValueError: If no data is set in the instance.
+        """
+        ...
+
+    def size(self, unit: Optional[str] = None) -> Union[int, float]:
+        """
+        Retrieves the size of the data stored in the instance.
+
+        Args:
+            unit (Optional[str], optional): The unit to return the size in. Must be one of 'B', 'KB', 'MB', 'GB'. Defaults to None.
+
+        Returns:
+            Union[int, float]: The size of the data in bytes or the specified unit.
+
+        Raises:
+            ValueError: If no data is set in the instance.
+        """
+        if self.data is None:
+            raise ValueError(
+                "No data to get the size of. No data was set in the instance."
+            )
+        size: int = len(self.data) if isinstance(self.data, str) else len(self.data)
+        if unit:
+            return size / UNITS[unit]
+        return size
+
 
 class URLHandler:
     """
@@ -866,85 +967,6 @@ def strip_embed_disabler(url: str) -> str:
     return url.replace("<", "").replace(">", "")
 
 
-@overload
-def convert_to_base64(url: str, /) -> list[str]:
-    """
-    Converts a file from a URL into a base64 encoded string.
-
-    If the file is a sequence of images (e.g., a GIF), the function retrieves the frames from the GIF and encodes them into a list of base64 formatted strings.
-
-    Args:
-        url (str): The URL of the file.
-
-    Returns:
-        list[str]: A list containing the base64 encoded string(s) of the file.
-
-    Raises:
-        UnsupportedImageFormatError: If the image format is not supported.
-        FileSizeError: If the image size exceeds the limit.
-
-    """
-    ...
-
-
-@overload
-def convert_to_base64(bytestream: bytes, /) -> list[str]:
-    """
-    Converts a file from a byte stream into a base64 encoded string.
-
-    If the file is a sequence of images (e.g., a GIF), the function retrieves the frames from the GIF and encodes them into a list of base64 formatted strings.
-
-    Args:
-        bytestream (bytes): The byte stream of the file.
-
-    Returns:
-        list[str]: A list containing the base64 encoded string(s) of the file.
-
-    Raises:
-        UnsupportedImageFormatError: If the image format is not supported.
-        FileSizeError: If the image size exceeds the limit.
-
-    """
-    ...
-
-
-def convert_to_base64(**kwargs: Any) -> list[str]:
-    url: Optional[str] = kwargs.get("url", None)
-    bytestream: Optional[bytes] = kwargs.get("bytestream", None)
-
-    if bytestream:
-        stream_is_supported, file_type = stream_is_supported_image(
-            bytestream, return_file_type=True
-        )
-        if not stream_is_supported:
-            raise UnsupportedImageFormatError(
-                f"File type {file_type} is not supported. Supported image formats are {', '.join(SUPPORTED_IMAGE_FORMATS)}."
-            )
-        if content_size_is_over_limit(bytestream, OPENAI_IMAGE_SIZE_LIMIT_MB, "MB"):
-            raise FileSizeLimitError(
-                f"The image exceeds the size limit of {OPENAI_IMAGE_SIZE_LIMIT_MB} MB."
-            )
-        byte_stream = bytestream
-
-    if url:
-        file_info = URLHandler(url)
-        file_size = file_info.header_file_size
-        file_type = get_mime_type(file_info.header_mime_type)
-        if file_type not in SUPPORTED_IMAGE_FORMATS:
-            raise UnsupportedImageFormatError(
-                f"The image from the URL {url} has {file_type} format, but only {', '.join(SUPPORTED_IMAGE_FORMATS)} is supported."
-            )
-        if content_size_is_over_limit(file_size, OPENAI_IMAGE_SIZE_LIMIT_MB, "MB"):
-            raise FileSizeLimitError(
-                f"The image from the URL {url} exceeds the size limit of {OPENAI_IMAGE_SIZE_LIMIT_MB} MB."
-            )
-        byte_stream = file_info.download_file(
-            limit=OPENAI_IMAGE_SIZE_LIMIT_MB, unit="MB"
-        )
-
-    return encode_byte_stream_to_base64(byte_stream)
-
-
 def get_base64_encoded_frames_from_gif(byte_stream: bytes) -> list:
     """
     Retrieves the frames from a GIF image and returns them as a list of base64 encoded strings.
@@ -969,19 +991,6 @@ def get_base64_encoded_frames_from_gif(byte_stream: bytes) -> list:
         pass  # end of sequence
 
     return base64_frames
-
-
-def get_file_size(file_path: str) -> int:
-    """
-    Retrieves the size of a file.
-
-    Parameters:
-    - file_path (str): The path to the file to get the size of.
-
-    Returns:
-    - int: The size of the file in bytes.
-    """
-    return Path(file_path).stat().st_size
 
 
 def encode_byte_stream_to_base64(byte_stream: bytes) -> list[str]:
