@@ -4,6 +4,7 @@ from string import ascii_letters, digits
 from typing import Optional, Union, Literal, overload
 from base64 import b64encode
 from filetype import guess  # type: ignore
+from filetype.types import Type  # type: ignore
 from pathlib import Path
 from json import dumps, loads
 
@@ -600,7 +601,8 @@ class FileHandler:
         return size / UNITS[unit]
 
     @staticmethod
-    def guess_file_extension(file_path: str, /):
+    @overload
+    def guess_file_extension(file_path: str, /) -> Optional[Type]:
         """
         Guesses the file extension of a file based on its contents using the `filetype` library.
 
@@ -610,9 +612,46 @@ class FileHandler:
         Returns:
             An instance of the `filetype` library's `Type` class representing the guessed file type, or None if the file type could not be guessed.
         """
-        return guess(obj=file_path)
+        ...
 
-    def guess_extension(self):
+    @staticmethod
+    @overload
+    def guess_file_extension(*, data: bytes) -> Optional[Type]:
+        """
+        Guesses the file extension of a byteobject based on its contents using the `filetype` library.
+
+        Args:
+            data (bytes): The byteobject to guess the file extension of.
+
+        Returns:
+            An instance of the `filetype` library's `Type` class representing the guessed file type, or None if the file type could not be guessed.
+        """
+        ...
+
+    @staticmethod
+    def guess_file_extension(
+        file_path: Optional[str] = None, *, data: Optional[bytes] = None
+    ) -> Optional[Type]:
+        """
+        Guesses the file extension of a file or byteobject based on its contents using the `filetype` library.
+
+        Args:
+            file_path (Optional[str], optional): The path to the file. Defaults to None.
+            data (Optional[bytes], optional): The byteobject to guess the file extension of. Defaults to None.
+
+        Returns:
+            An instance of the `filetype` library's `Type` class representing the guessed file type, or None if the file type could not be guessed.
+
+        Raises:
+            ValueError: If neither a file path nor data is provided.
+        """
+        if file_path is None and data is None:
+            raise ValueError("Either a file path or data must be provided.")
+        if file_path is not None:
+            return guess(file_path)
+        return guess(obj=data)
+
+    def guess_extension(self) -> Optional[Type]:
         """
         Guesses the file extension of the data stored in the instance using the `filetype` library.
 
@@ -626,5 +665,5 @@ class FileHandler:
                 "No data to guess the extension of. No data was set in the instance."
             )
         if isinstance(self.data, str):
-            return guess(obj=self.data.encode())
-        return guess(obj=self.data)
+            return self.guess_file_extension(data=self.as_bytes)
+        return self.guess_file_extension(data=self.data)
