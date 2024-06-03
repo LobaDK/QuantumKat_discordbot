@@ -12,6 +12,59 @@ UNITS: dict[str, int] = {"B": 1, "KB": 1024, "MB": 1024**2, "GB": 1024**3}
 
 
 class FileHandler:
+    """
+    A convenience class that contains file-related methods and properties.
+
+    This class provides various instance and static methods for file and data handling. Most of which are overloaded to help hint their usage.
+    When initializing the class, you can provide data as a string or bytes. The data can be set or changed later using the `set_data` method.
+    By setting the data, most data-related methods can be used without providing the data as an argument. If no data is set, the data must be provided as an argument.
+    The user is expected to handle exceptions raised by the methods and the underlying functions they use.
+
+    Attributes:
+        data (Optional[Union[str, bytes]]): The data stored in the instance.
+
+    Properties:
+        ```python
+        @property
+        def as_bytes: bytes:
+        @property
+        def as_string: str:
+        @property
+        def as_base64: str:
+        ```
+
+    Instance Methods:
+        ```python
+        def set_data(data: Union[str, bytes]) -> None:
+        def size(unit: Optional[str] = None) -> Union[int, float]:
+        def guess_extension() -> Optional[Type]:
+        def write(file_path: str) -> int:
+        ```
+
+    Static Methods:
+        ```python
+        def read_data(file_path: str, /, mode: Literal["r", "rb"] = "r") -> Union[str, bytes]:
+        def write_data(file_path: str, /, data: Union[str, bytes]) -> int:
+        def convert_to_bytes(data: str, /) -> bytes:
+        def convert_to_string(data: bytes, /) -> str:
+        def encode_to_base64(data: Union[str, bytes]) -> str:
+        def encode_to_json(data: dict, /) -> str:
+        def decode_json(data: str, /) -> dict:
+        def generate_random_filename(length: int = 10, *, charset: str = ascii_letters + digits) -> str:
+        def exists(file_path: str, /, *, ignore_extension: bool = False, return_extension: bool = False) -> Union[bool, tuple[bool, str]]:
+        def list_files_in_directory(directory: str, /) -> list[str]:
+        def list_directories_in_directory(directory: str, /) -> list[str]:
+        def get_size(file_path: str, /, unit: Optional[str] = None) -> Union[int, float]:
+        def guess_file_extension(file_path: Optional[str] = None, *, data: Optional[bytes] = None) -> Optional[Type]:
+        ```
+
+    Raises:
+        ValueError: If the provided data is not a string or bytes.
+
+    Returns:
+        None
+    """
+
     @overload
     def __init__(self) -> None:
         """
