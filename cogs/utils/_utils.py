@@ -1,8 +1,7 @@
 from re import findall
 from datetime import datetime
 from calendar import monthrange
-from requests import Response, get, head
-from requests.exceptions import RequestException
+from requests import get
 from discord.ext import commands
 from tiktoken import encoding_for_model
 from PIL import Image
