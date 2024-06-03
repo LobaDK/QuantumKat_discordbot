@@ -11,18 +11,20 @@ from pathlib import Path
 from inspect import Parameter
 import shutil
 from datetime import datetime
+from typing import Optional
 
 from alembic import command
 from alembic.script import ScriptDirectory
 from alembic.config import Config
 from alembic.util.exc import CommandError
+from filetype.types.base import Type  # type: ignore
 from sqlalchemy.exc import OperationalError
 
 import discord
 import ast
-import astunparse
+import astunparse  # type: ignore
 from discord.ext import commands
-from num2words import num2words
+from num2words import num2words  # type: ignore
 from psutil import cpu_percent, disk_usage, virtual_memory
 
 from sql.database import AsyncSessionLocal
@@ -31,13 +33,11 @@ from cogs.utils._utils import (
     guess_file_extension,
     strip_embed_disabler,
     guess_download_type,
-    filename_exists,
-    generate_random_filename,
-    URLHandler,
-    FileSizeLimitError,
     DIRECT_MEDIA_TYPES,
     EXTRACT_MEDIA_TYPES,
 )
+from cogs.utils.urlhandler import URLHandler, FileSizeLimitError
+from cogs.utils.filehandler import FileHandler
 
 from QuantumKat import misc_helper
 from cogs.utils._logger import entanglement_logger
@@ -388,13 +388,13 @@ class Entanglements(commands.Cog):
         URL: str,
         filename: str = "",
         *,
-        kwargs: commands.clean_content = None,
+        kwargs: Optional[str] = None,
     ):
-        kwargs = dict(kv.split("=") for kv in kwargs.split(" ")) if kwargs else {}
+        _kwargs = dict(kv.split("=") for kv in kwargs.split(" ")) if kwargs else {}
 
-        location = kwargs.get("location", "aaaa")
-        download_type = kwargs.get("download_type", "auto")
-        random_filename = kwargs.get("random_filename", False)
+        location = _kwargs.get("location", "aaaa")
+        download_type = _kwargs.get("download_type", "auto")
+        random_filename = _kwargs.get("random_filename", False)
 
         URL = strip_embed_disabler(URL)
         msg = []
@@ -424,21 +424,25 @@ class Entanglements(commands.Cog):
             await ctx.reply("\n".join(msg), silent=True)
             return
 
+        file_handler = FileHandler()
+        url_handler = URLHandler(url=URL)
+
         # If the filename is specified, check if it already exists
         if filename:
-            exists, ext = filename_exists(
+            exists, ext = file_handler.exists(
                 filename, return_extension=True, ignore_extension=True
             )
             if exists:
                 await ctx.reply(
-                    f"A file with the extension {ext} already exists. Please choose a different filename.",
+                    content=f"A file with the extension {ext} already exists. Please choose a different filename.",
                 )
                 return
+
         # If the filename is set to be randomly generated, generate a random filename
         if random_filename:
             while True:
-                filename = generate_random_filename()
-                if not filename_exists(filename, ignore_extension=True):
+                filename = file_handler.generate_random_filename()
+                if not file_handler.exists(filename, ignore_extension=True):
                     break
 
         sent_msg = await ctx.reply("Creating quantum tunnel...", silent=True)
@@ -448,9 +452,8 @@ class Entanglements(commands.Cog):
             sent_msg = await sent_msg.edit(
                 content=f"{sent_msg.content} Tunnel created! Directly retrieving {filename}"
             )
-            url_handler = URLHandler(URL)
             try:
-                data = url_handler.download_file(100, "MB", raise_on_limit=True)
+                data = url_handler.download(100, "MB", raise_on_limit=True)
             except FileSizeLimitError as e:
                 await ctx.reply(str(e), silent=True)
                 return
@@ -462,27 +465,26 @@ class Entanglements(commands.Cog):
                     f"retrieving {filename}", f"retrieved {filename}!"
                 )
             )
-            mime_type, _ = guess_file_extension(data, split_mime=True)
-            if not mime_type:
+            file_type: Type | None = file_handler.guess_file_extension(data=data)
+            if not file_type:
                 await ctx.reply("Could not determine the file extension", silent=True)
                 return
-            if mime_type not in DIRECT_MEDIA_TYPES:
+            if file_type.mime.split("/")[0] not in DIRECT_MEDIA_TYPES:
                 await ctx.reply(
-                    f"Invalid file type: {mime_type}. Supported types: {', '.join(DIRECT_MEDIA_TYPES)}",
+                    f"Invalid MIME type: {file_type.mime}. Supported types: {', '.join(DIRECT_MEDIA_TYPES)}",
                     silent=True,
                 )
                 return
-            extension = guess_file_extension(data)
             sent_msg = await sent_msg.edit(
-                content=f"{sent_msg.content}\nFile extension detected: {extension}"
+                content=f"{sent_msg.content}\nFile extension detected: {file_type.extension}"
             )
-            filename = f"{filename}.{extension}"
+            filename = f"{filename}.{file_type.extension}"
             sent_msg = await sent_msg.edit(
                 content=f"{sent_msg.content}\nSaving to {filename}..."
             )
             try:
-                write_to_file(
-                    f"{DOWNLOAD_LOCATIONS[location]}{filename}", bytestream=data
+                file_handler.write_data(
+                    f"{DOWNLOAD_LOCATIONS[location]}{filename}", data=data
                 )
             except OSError as e:
                 entanglement_logger.exception("Quantize: Error writing file")
