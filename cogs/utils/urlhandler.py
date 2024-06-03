@@ -1,4 +1,4 @@
-from typing import Any, Optional, Literal, overload, Union
+from typing import Any, Optional, overload, Union
 from requests import head, get, Response, RequestException
 from requests.structures import CaseInsensitiveDict
 
