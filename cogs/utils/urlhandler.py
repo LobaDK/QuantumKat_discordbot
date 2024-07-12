@@ -73,27 +73,29 @@ class URLHandler:
         if not url and not header:
             raise ValueError("Either URL or header must be specified.")
 
-        self.url: Optional[str] = None
-        self.header: Union[dict[str, Any], CaseInsensitiveDict] = CaseInsensitiveDict()
+        self._url: Optional[str] = None
+        self._header: Union[dict[str, Any], CaseInsensitiveDict] = CaseInsensitiveDict()
 
         if url:
-            self.url = url
+            self._url = url
             try:
-                headers: Response = head(url=self.url)
+                headers: Response = head(url=self._url)
                 headers.raise_for_status()
             except RequestException:
                 try:
                     # If the header request fails, try using a streamed GET request to get the header
-                    headers = get(url=self.url, stream=True)
+                    headers = get(url=self._url, stream=True)
                     headers.raise_for_status()
                     headers.close()
                 except (
                     RequestException
                 ) as e:  # If this fails too, assume the file cannot be accessed
-                    raise ValueError(f"Could not access the file at {self.url}.") from e
-            self.header.update(headers.headers)
+                    raise ValueError(
+                        f"Could not access the file at {self._url}."
+                    ) from e
+            self._header.update(headers.headers)
         if header:
-            self.header = header
+            self._header = header
 
     @property
     def header_file_size(self) -> Optional[int]:
@@ -106,7 +108,7 @@ class URLHandler:
             int: The size of the file from the 'Content-Length' header, or None if not present.
         """
         try:
-            return int(self.header["Content-Length"])
+            return int(self._header["Content-Length"])
         except KeyError:
             return None
 
@@ -117,13 +119,36 @@ class URLHandler:
 
         If the 'Content-Type' header is not present, returns None.
 
+        Example:
+            'text/html; charset=utf-8' -> 'text/html'
+
         Returns:
             str: The MIME type from the 'Content-Type' header, or None if not present.
         """
         try:
-            return self.header["Content-Type"].split(";")[0]
+            return (
+                self._header["Content-Type"].split(";")[0]
+                if self._header["Content-Type"]
+                else None
+            )
         except KeyError:
             return None
+
+    @property
+    def url(self) -> Optional[str]:
+        return self._url
+
+    @url.setter
+    def url(self, url: str) -> None:
+        self._url = url
+
+    @property
+    def header(self) -> Union[dict[str, Any], CaseInsensitiveDict]:
+        return self._header
+
+    @header.setter
+    def header(self, header: Union[dict[str, Any], CaseInsensitiveDict]) -> None:
+        self._header = header
 
     @overload
     def download(self) -> bytes:
@@ -168,7 +193,7 @@ class URLHandler:
         unit: Optional[str] = None,
         raise_on_limit: bool = False,
     ) -> bytes:
-        if not self.url:
+        if not self._url:
             raise ValueError(
                 f"Instance of {self.__class__.__name__} does not have a URL."
             )
@@ -181,7 +206,7 @@ class URLHandler:
             calculated_size: int = amount_or_limit * UNITS[unit]
 
         try:
-            with get(url=self.url, stream=True) as response:
+            with get(url=self._url, stream=True) as response:
                 response.raise_for_status()
                 if amount_or_limit:
                     data: bytes = b""
@@ -190,11 +215,11 @@ class URLHandler:
                         if len(data) >= calculated_size:
                             if raise_on_limit:
                                 raise FileSizeLimitError(
-                                    f"The file from {self.url} exceeds the specified limit of {amount_or_limit} {unit}."
+                                    f"The file from {self._url} exceeds the specified limit of {amount_or_limit} {unit}."
                                 )
                             break
                 else:
                     data = response.content
         except RequestException as e:
-            raise ValueError(f"Could not access the file at {self.url}.") from e
+            raise ValueError(f"Could not access the file at {self._url}.") from e
         return data
