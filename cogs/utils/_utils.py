@@ -44,7 +44,7 @@ class UnsupportedImageFormatError(Exception):
 encoding = encoding_for_model("gpt-4o")
 
 
-def get_bot_header() -> dict:
+def create_bot_header() -> dict:
     """
     Returns the header for the bot.
 
@@ -100,12 +100,12 @@ def get_field_from_1password(reference: str) -> str:
     """
     if which(cmd="op") is None:
         raise EnvironmentError("The 1Password CLI is not installed. Please install it.")
-    token: str = (
+    field_value: str = (
         check_output(args=["op", "read", reference], stderr=STDOUT)
         .decode(encoding="utf-8")
         .strip()
     )
-    return token
+    return field_value
 
 
 def strip_embed_disabler(url: str) -> str:
