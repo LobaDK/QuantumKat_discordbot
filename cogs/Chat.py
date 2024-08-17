@@ -1,3 +1,4 @@
+from typing import Optional
 from openai import AsyncOpenAI as OpenAI, OpenAIError
 import requests
 from subprocess import CalledProcessError
@@ -146,7 +147,9 @@ class Chat(commands.Cog):
         messages.reverse()
         return messages
 
-    async def database_remove(self, ctx: commands.Context, shared_chat: bool):
+    async def database_remove(
+        self, ctx: commands.Context, shared_chat: bool, amount_to_clear: Optional[int]
+    ):
         """
         Removes the chat history for a specific user.
 
@@ -160,12 +163,17 @@ class Chat(commands.Cog):
         server_id, server_name = get_server_id_and_name(ctx)
         if shared_chat:
             await crud.delete_shared_chat(
-                database.AsyncSessionLocal, schemas.Chat.Delete(server_id=server_id)
+                database.AsyncSessionLocal,
+                schemas.Chat.Delete(
+                    server_id=server_id, user_id=ctx.author.id, n=amount_to_clear
+                ),
             )
         else:
             await crud.delete_chat(
                 database.AsyncSessionLocal,
-                schemas.Chat.Delete(server_id=server_id, user_id=ctx.author.id),
+                schemas.Chat.Delete(
+                    server_id=server_id, user_id=ctx.author.id, n=amount_to_clear
+                ),
             )
 
     async def initiateChat(
@@ -328,19 +336,27 @@ class Chat(commands.Cog):
                 "OpenAI API key not found. Chat commands will not work.", silent=True
             )
 
-    async def initiatechatclear(self, ctx: commands.Context, shared_chat: bool):
+    async def initiatechatclear(
+        self, ctx: commands.Context, shared_chat: bool, amount_to_clear: Optional[int]
+    ):
         """
         Clears the chat history for the server.
 
         Parameters:
         - ctx (commands.Context): The context of the command.
         - shared_chat (bool): Indicates whether the chat history is shared across servers.
+        - amount_to_clear (int): The number of messages to clear. If None, all messages are cleared.
 
         Returns:
         None
         """
-        await self.database_remove(ctx, shared_chat)
-        await ctx.reply("Chat history cleared for this server.", silent=True)
+        await self.database_remove(ctx, shared_chat, amount_to_clear)
+        if amount_to_clear:
+            await ctx.reply(
+                f"Cleared the {amount_to_clear} most recent messages in this server.",
+            )
+        else:
+            await ctx.reply("Chat history cleared for this server.", silent=True)
 
     async def initiatechatview(self, ctx: commands.Context, shared_chat: bool):
         """
@@ -427,35 +443,41 @@ class Chat(commands.Cog):
         brief="Clears the chat history.",
         description="Clears the chat history in the current server, for the user that started the command.",
     )
-    async def ChatClear(self, ctx: commands.Context):
+    async def ChatClear(
+        self, ctx: commands.Context, amount_to_clear: Optional[int] = None
+    ):
         """
         Clears the chat for the user initiating the command.
 
         Parameters:
         - ctx (commands.Context): The context object representing the invocation context.
+        - amount_to_clear (int): The number of messages to clear. Defaults to all messages.
 
         Returns:
         - None
         """
-        await self.initiatechatclear(ctx, False)
+        await self.initiatechatclear(ctx, False, amount_to_clear)
 
     @commands.command(
         aliases=["sharedchatclear", "sharedclearchat", "scc"],
         brief="Clears the shared chat history.",
         description="Clears the shared chat history in the current server. Only server and bot owner, and mods can do this.",
     )
-    async def SharedChatClear(self, ctx: commands.Context):
+    async def SharedChatClear(
+        self, ctx: commands.Context, amount_to_clear: Optional[int] = None
+    ):
         """
         Clears the shared chat history if the user has the necessary permissions.
 
         Parameters:
         - ctx (commands.Context): The context object representing the invocation of the command.
+        - amount_to_clear (int): The number of messages to clear. Defaults to all messages.
 
         Returns:
         None
         """
         if DiscordHelper.is_privileged_user(ctx):
-            await self.initiatechatclear(ctx, True)
+            await self.initiatechatclear(ctx, True, amount_to_clear)
         else:
             await ctx.reply(
                 "Sorry, only server and bot owner, and mods can clear the sharedchat history",
