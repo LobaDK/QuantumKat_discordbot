@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any, LiteralString, overload, Union, Literal
+from base64 import b64encode
+from typing import Any, LiteralString, overload, Union, Literal, Optional, Type
 from random import choice
 from string import ascii_letters, digits
 from pathlib import Path
+from filetype import guess
+from json import dumps, loads
 from requests.structures import (
     CaseInsensitiveDict,
 )  # Why re-invent the wheel when you can borrow it ;).
@@ -15,6 +18,13 @@ CHARSET: LiteralString = ascii_letters + digits
 
 
 class FileHandlerBase(ABC):
+    """
+    Base class for file handling operations.
+
+    Contains abstract methods which must be implemented by subclasses.
+    The class also contains static methods for common file operations, which can be imported and used directly.
+    """
+
     @abstractmethod
     def __init__(self, data: Any) -> None:
         self._data = data
@@ -174,6 +184,20 @@ class FileHandlerBase(ABC):
         return [d for d in dir.iterdir() if d.is_dir()]
 
     @staticmethod
+    def list_directory_contents(directory: str, /) -> list[Path]:
+        """
+        Lists all files and directories in a given directory.
+
+        Args:
+            directory (str): The directory to list files and directories from.
+
+        Returns:
+            list[str]: A list of filenames and directory names in the directory.
+        """
+        dir = Path(directory)
+        return [f for f in dir.iterdir()]
+
+    @staticmethod
     @overload
     def get_size(file_path: str, /) -> int:
         """
@@ -219,3 +243,132 @@ class FileHandlerBase(ABC):
         file = Path(file_path)
         size: int = file.stat().st_size
         return size / BYTE_UNITS[unit]
+
+    @staticmethod
+    @overload
+    def guess_file_extension(file_path: str, /) -> Optional[Type]:
+        """
+        Guesses the file extension of a file based on its contents using the `filetype` library.
+
+        Args:
+            file_path (str): The path to the file.
+
+        Returns:
+            An instance of the `filetype` library's `Type` class representing the guessed file type, or None if the file type could not be guessed.
+        """
+        ...
+
+    @staticmethod
+    @overload
+    def guess_file_extension(*, data: bytes) -> Optional[Type]:
+        """
+        Guesses the file extension of a byteobject based on its contents using the `filetype` library.
+
+        Args:
+            data (bytes): The byteobject to guess the file extension of.
+
+        Returns:
+            An instance of the `filetype` library's `Type` class representing the guessed file type, or None if the file type could not be guessed.
+        """
+        ...
+
+    @staticmethod
+    def guess_file_extension(
+        file_path: Optional[str] = None, *, data: Optional[bytes] = None
+    ) -> Optional[Type]:
+        """
+        Guesses the file extension of a file or byteobject based on its contents using the `filetype` library.
+
+        Args:
+            file_path (Optional[str], optional): The path to the file. Defaults to None.
+            data (Optional[bytes], optional): The byteobject to guess the file extension of. Defaults to None.
+
+        Returns:
+            An instance of the `filetype` library's `Type` class representing the guessed file type, or None if the file type could not be guessed.
+
+        Raises:
+            ValueError: If neither a file path nor data is provided.
+        """
+        if file_path is None and data is None:
+            raise ValueError("Either a file path or data must be provided.")
+        if file_path is not None:
+            return guess(file_path)
+        return guess(obj=data)
+
+    @staticmethod
+    def _convert_string_to_bytes(string: str, /) -> bytes:
+        """
+        Converts a string to bytes.
+
+        Args:
+            string (str): The string to convert.
+
+        Returns:
+            bytes: The string converted to bytes.
+        """
+        return string.encode()
+
+    @staticmethod
+    def _convert_bytes_to_string(data: bytes, /) -> str:
+        """
+        Converts bytes to a string.
+
+        Args:
+            data (bytes): The bytes to convert.
+
+        Returns:
+            str: The bytes converted to a string.
+        """
+        return data.decode()
+
+    @staticmethod
+    def _encode_string_to_base64(string: str, /) -> str:
+        """
+        Converts a string to base64.
+
+        Args:
+            string (str): The string to convert.
+
+        Returns:
+            str: The string converted to base64.
+        """
+        return b64encode(s=string.encode()).decode()
+
+    @staticmethod
+    def _encode_bytes_to_base64(data: bytes, /) -> str:
+        """
+        Converts bytes to base64.
+
+        Args:
+            data (bytes): The bytes to convert.
+
+        Returns:
+            str: The bytes converted to base64.
+        """
+        return b64encode(s=data).decode()
+
+    @staticmethod
+    def encode_to_json(data: Any, /) -> str:
+        """
+        Converts data to a JSON string.
+
+        Args:
+            data (Any): The data to convert.
+
+        Returns:
+            str: The data converted to a JSON string.
+        """
+        return dumps(obj=data)
+
+    @staticmethod
+    def decode_from_json(data: str, /) -> Any:
+        """
+        Converts a JSON string to data.
+
+        Args:
+            data (str): The JSON string to convert.
+
+        Returns:
+            Any: The JSON string converted to data.
+        """
+        return loads(s=data)
