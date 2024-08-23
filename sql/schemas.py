@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
@@ -60,7 +60,7 @@ class Chat:
         shared_chat: Optional[bool] = False
 
     class Get(_Base):
-        n: Optional[int] = Field(None, ge=1, le=10)
+        n: Optional[int] = None
 
         class Config:
             from_attributes = True
