@@ -260,7 +260,7 @@ async def get_shared_chats_for_server(db: AsyncSession, chat: schemas.Chat.Get):
 
 
 @timeit
-async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete):
+async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete) -> int:
     """
     Delete a chat from the database.
 
@@ -269,7 +269,7 @@ async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete):
         chat (schemas.Chat.Delete): The chat data to be deleted.
 
     Returns:
-        None
+        int: The number of chats deleted.
     """
     async with db() as db:
         if chat.n is None:
@@ -294,9 +294,11 @@ async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete):
             await db.delete(result)
         await db.commit()
 
+        return len(results)
+
 
 @timeit
-async def delete_shared_chat(db: AsyncSession, chat: schemas.Chat.Delete):
+async def delete_shared_chat(db: AsyncSession, chat: schemas.Chat.Delete) -> int:
     """
     Delete a shared chat from the database.
 
@@ -305,7 +307,7 @@ async def delete_shared_chat(db: AsyncSession, chat: schemas.Chat.Delete):
         chat (schemas.Chat.Delete): The chat data to be deleted.
 
     Returns:
-        None
+        int: The number of shared chats deleted.
     """
     async with db() as db:
         if chat.n is None:
@@ -327,6 +329,8 @@ async def delete_shared_chat(db: AsyncSession, chat: schemas.Chat.Delete):
         for result in results:
             await db.delete(result)
         await db.commit()
+
+        return len(results)
 
 
 @timeit
