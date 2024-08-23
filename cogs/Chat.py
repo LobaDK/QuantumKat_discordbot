@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from openai import AsyncOpenAI as OpenAI, OpenAIError
 import requests
 from subprocess import CalledProcessError
@@ -149,7 +149,7 @@ class Chat(commands.Cog):
 
     async def database_remove(
         self, ctx: commands.Context, shared_chat: bool, amount_to_clear: Optional[int]
-    ):
+    ) -> int:
         """
         Removes the chat history for a specific user.
 
@@ -160,21 +160,23 @@ class Chat(commands.Cog):
         Returns:
             None
         """
-        server_id, server_name = get_server_id_and_name(ctx)
+        server_id, server_name = get_server_id_and_name(ctx=ctx)
         if shared_chat:
-            await crud.delete_shared_chat(
-                database.AsyncSessionLocal,
-                schemas.Chat.Delete(
+            amount_deleted: int = await crud.delete_shared_chat(
+                db=database.AsyncSessionLocal,
+                chat=schemas.Chat.Delete(
                     server_id=server_id, user_id=ctx.author.id, n=amount_to_clear
                 ),
             )
         else:
-            await crud.delete_chat(
-                database.AsyncSessionLocal,
-                schemas.Chat.Delete(
+            amount_deleted = await crud.delete_chat(
+                db=database.AsyncSessionLocal,
+                chat=schemas.Chat.Delete(
                     server_id=server_id, user_id=ctx.author.id, n=amount_to_clear
                 ),
             )
+
+        return amount_deleted
 
     async def initiateChat(
         self, ctx: commands.Context, user_message: str, shared_chat: bool
@@ -338,7 +340,7 @@ class Chat(commands.Cog):
 
     async def initiatechatclear(
         self, ctx: commands.Context, shared_chat: bool, amount_to_clear: Optional[int]
-    ):
+    ) -> None:
         """
         Clears the chat history for the server.
 
@@ -350,13 +352,20 @@ class Chat(commands.Cog):
         Returns:
         None
         """
-        await self.database_remove(ctx, shared_chat, amount_to_clear)
+        amount_deleted: int = await self.database_remove(
+            ctx=ctx, shared_chat=shared_chat, amount_to_clear=amount_to_clear
+        )
+
+        message: str = ""
         if amount_to_clear:
-            await ctx.reply(
-                f"Cleared the {amount_to_clear} most recent messages in this server.",
-            )
+            if amount_deleted != amount_to_clear:
+                message = f"Cleared {amount_deleted} out of the requested {amount_to_clear} messages."
+            else:
+                message = f"Cleared {amount_deleted} messages."
         else:
-            await ctx.reply("Chat history cleared for this server.", silent=True)
+            message = f"Cleared all ({amount_deleted}) messages."
+
+        await ctx.reply(content=message, silent=True)
 
     async def initiatechatview(self, ctx: commands.Context, shared_chat: bool):
         """
@@ -441,46 +450,85 @@ class Chat(commands.Cog):
     @commands.command(
         aliases=["chatclear", "clearchat", "cc"],
         brief="Clears the chat history.",
-        description="Clears the chat history in the current server, for the user that started the command.",
+        description="Clears N (or all) messages from the chat history for the user initiating the command.",
     )
     async def ChatClear(
-        self, ctx: commands.Context, amount_to_clear: Optional[int] = None
-    ):
+        self, ctx: commands.Context, amount_to_clear: Optional[Union[int, str]] = None
+    ) -> None:
         """
-        Clears the chat for the user initiating the command.
+        Clears N (or all) messages from the chat history for the user initiating the command.
 
         Parameters:
-        - ctx (commands.Context): The context object representing the invocation context.
-        - amount_to_clear (int): The number of messages to clear. Defaults to all messages.
-
-        Returns:
-        - None
+        - amount_to_clear (int or str): The number of messages to clear. `all` clears all messages. Must be specified.
         """
-        await self.initiatechatclear(ctx, False, amount_to_clear)
+        if not amount_to_clear:
+            await ctx.reply(
+                content="Please specify the number of messages to clear or use `all` to clear all messages.",
+                silent=True,
+            )
+            return
+
+        if str(object=amount_to_clear).lower() == "all" or (
+            int(x=amount_to_clear) > 0
+            if isinstance(amount_to_clear, (int, str))
+            else False
+        ):
+            await self.initiatechatclear(
+                ctx=ctx,
+                shared_chat=False,
+                amount_to_clear=(
+                    None if amount_to_clear.lower() == "all" else amount_to_clear
+                ),
+            )
+        else:
+            await ctx.reply(
+                content=f'{amount_to_clear} is not a valid option. Please specify a number greater than 0 or use "all" to clear all messages.',
+                silent=True,
+            )
 
     @commands.command(
         aliases=["sharedchatclear", "sharedclearchat", "scc"],
         brief="Clears the shared chat history.",
-        description="Clears the shared chat history in the current server. Only server and bot owner, and mods can do this.",
+        description="Clears N (or all) messages from shared chat history in the current server. Only server and bot owner, and mods can do this.",
     )
     async def SharedChatClear(
-        self, ctx: commands.Context, amount_to_clear: Optional[int] = None
-    ):
+        self, ctx: commands.Context, amount_to_clear: Optional[Union[int, str]] = None
+    ) -> None:
         """
-        Clears the shared chat history if the user has the necessary permissions.
+        Clears N (or all) messages from the shared chat history if the user has the necessary permissions.
 
         Parameters:
-        - ctx (commands.Context): The context object representing the invocation of the command.
-        - amount_to_clear (int): The number of messages to clear. Defaults to all messages.
-
-        Returns:
-        None
+        - amount_to_clear (int or str): The number of messages to clear. `all` clears all messages. Must be specified.
         """
-        if DiscordHelper.is_privileged_user(ctx):
-            await self.initiatechatclear(ctx, True, amount_to_clear)
+        if not DiscordHelper.is_privileged_user(ctx=ctx):
+            await ctx.reply(
+                content="Sorry, only server and bot owner, and mods, can clear the sharedchat history",
+                silent=True,
+            )
+            return
+
+        if not amount_to_clear:
+            await ctx.reply(
+                content="Please specify the number of messages to clear or use `all` to clear all messages.",
+                silent=True,
+            )
+            return
+
+        if str(object=amount_to_clear).lower() == "all" or (
+            int(x=amount_to_clear) > 0
+            if isinstance(amount_to_clear, (int, str))
+            else False
+        ):
+            await self.initiatechatclear(
+                ctx=ctx,
+                shared_chat=True,
+                amount_to_clear=(
+                    None if amount_to_clear.lower() == "all" else amount_to_clear
+                ),
+            )
         else:
             await ctx.reply(
-                "Sorry, only server and bot owner, and mods can clear the sharedchat history",
+                content=f'{amount_to_clear} is not a valid option. Please specify a number greater than 0 or use "all" to clear all messages.',
                 silent=True,
             )
 
