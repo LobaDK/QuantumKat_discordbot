@@ -303,11 +303,13 @@ async def delete_chat(db: AsyncSession, chat: schemas.Chat.Delete) -> int:
                 .limit(chat.n)
             )
         results = results.scalars()
+        _count = 0
         for result in results:
             await db.delete(result)
+            _count += 1
         await db.commit()
 
-        return len(results)
+        return _count
 
 
 @timeit
@@ -339,11 +341,13 @@ async def delete_shared_chat(db: AsyncSession, chat: schemas.Chat.Delete) -> int
                 .limit(chat.n)
             )
         results = results.scalars()
+        _count = 0
         for result in results:
             await db.delete(result)
+            _count += 1
         await db.commit()
 
-        return len(results)
+        return _count
 
 
 @timeit
