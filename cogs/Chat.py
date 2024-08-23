@@ -405,7 +405,6 @@ class Chat(commands.Cog):
             messages = []
             messages.append("Chat history for this server:")
             for message in conversation_history:
-                messages.append("\n")
                 messages.append(f"**{message['role'].title()}**: {message['content']}")
             message = "\n".join(messages)
             if len(message) > 2000:
