@@ -115,7 +115,12 @@ class Chat(commands.Cog):
             ),
         )
 
-    async def database_read(self, ctx: commands.Context, shared_chat: bool) -> list:
+    async def database_read(
+        self,
+        ctx: commands.Context,
+        shared_chat: bool,
+        amount_to_read: Optional[int] = None,
+    ) -> list:
         """
         Retrieves the user and assistant messages from the chat database for a specific user.
 
@@ -132,13 +137,18 @@ class Chat(commands.Cog):
             result = await crud.get_shared_chats_for_server(
                 database.AsyncSessionLocal,
                 schemas.Chat.Get(
-                    server_id=server_id, user_id=ctx.author.id, n=10, shared_chat=True
+                    server_id=server_id,
+                    user_id=ctx.author.id,
+                    n=amount_to_read,
+                    shared_chat=True,
                 ),
             )
         else:
             result = await crud.get_chats_for_user(
                 database.AsyncSessionLocal,
-                schemas.Chat.Get(server_id=server_id, user_id=ctx.author.id, n=10),
+                schemas.Chat.Get(
+                    server_id=server_id, user_id=ctx.author.id, n=amount_to_read
+                ),
             )
         messages = []
         for user_message, assistant_message in result:
@@ -367,7 +377,12 @@ class Chat(commands.Cog):
 
         await ctx.reply(content=message, silent=True)
 
-    async def initiatechatview(self, ctx: commands.Context, shared_chat: bool):
+    async def initiatechatview(
+        self,
+        ctx: commands.Context,
+        shared_chat: bool,
+        amount_to_read: Optional[int] = None,
+    ) -> None:
         """
         Initiates a chat view for the specified context and shared_chat flag.
 
@@ -379,9 +394,13 @@ class Chat(commands.Cog):
         None
         """
         if shared_chat:
-            conversation_history = await self.database_read(ctx, True)
+            conversation_history = await self.database_read(
+                ctx=ctx, shared_chat=True, amount_to_read=amount_to_read
+            )
         else:
-            conversation_history = await self.database_read(ctx, False)
+            conversation_history = await self.database_read(
+                ctx=ctx, shared_chat=False, amount_to_read=amount_to_read
+            )
         if conversation_history:
             messages = []
             messages.append("Chat history for this server:")
@@ -461,30 +480,37 @@ class Chat(commands.Cog):
         Parameters:
         - amount_to_clear (int or str): The number of messages to clear. `all` clears all messages. Must be specified.
         """
-        if not amount_to_clear:
+        if amount_to_clear is None:
             await ctx.reply(
                 content="Please specify the number of messages to clear or use `all` to clear all messages.",
                 silent=True,
             )
             return
 
-        if str(object=amount_to_clear).lower() == "all" or (
-            int(x=amount_to_clear) > 0
-            if isinstance(amount_to_clear, (int, str))
-            else False
-        ):
-            await self.initiatechatclear(
-                ctx=ctx,
-                shared_chat=False,
-                amount_to_clear=(
-                    None if amount_to_clear.lower() == "all" else amount_to_clear
-                ),
-            )
-        else:
-            await ctx.reply(
-                content=f'{amount_to_clear} is not a valid option. Please specify a number greater than 0 or use "all" to clear all messages.',
-                silent=True,
-            )
+        _amount_to_clear: Optional[int]
+        if isinstance(amount_to_clear, str):
+            if amount_to_clear.lower() == "all":
+                _amount_to_clear = None
+            else:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to clear all messages.",
+                    silent=True,
+                )
+                return
+        elif isinstance(amount_to_clear, int):
+            if amount_to_clear <= 0:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to clear all messages.",
+                    silent=True,
+                )
+                return
+            _amount_to_clear = amount_to_clear
+
+        await self.initiatechatclear(
+            ctx=ctx,
+            shared_chat=False,
+            amount_to_clear=_amount_to_clear,
+        )
 
     @commands.command(
         aliases=["sharedchatclear", "sharedclearchat", "scc"],
@@ -507,64 +533,125 @@ class Chat(commands.Cog):
             )
             return
 
-        if not amount_to_clear:
+        if amount_to_clear is None:
             await ctx.reply(
                 content="Please specify the number of messages to clear or use `all` to clear all messages.",
                 silent=True,
             )
             return
 
-        if str(object=amount_to_clear).lower() == "all" or (
-            int(x=amount_to_clear) > 0
-            if isinstance(amount_to_clear, (int, str))
-            else False
-        ):
-            await self.initiatechatclear(
-                ctx=ctx,
-                shared_chat=True,
-                amount_to_clear=(
-                    None if amount_to_clear.lower() == "all" else amount_to_clear
-                ),
-            )
-        else:
-            await ctx.reply(
-                content=f'{amount_to_clear} is not a valid option. Please specify a number greater than 0 or use "all" to clear all messages.',
-                silent=True,
-            )
+        _amount_to_clear: Optional[int]
+        if isinstance(amount_to_clear, str):
+            if amount_to_clear.lower() == "all":
+                _amount_to_clear = None
+            else:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to clear all messages.",
+                    silent=True,
+                )
+                return
+        elif isinstance(amount_to_clear, int):
+            if amount_to_clear <= 0:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to clear all messages.",
+                    silent=True,
+                )
+                return
+            _amount_to_clear = amount_to_clear
+
+        await self.initiatechatclear(
+            ctx=ctx,
+            shared_chat=True,
+            amount_to_clear=_amount_to_clear,
+        )
 
     @commands.command(
         aliases=["chatview", "viewchat", "chathistory", "cv"],
         brief="View the chat history.",
-        description="View the chat history in the current server, for the user that started the command.",
+        description="View N (or all) messages from the chat history for the user initiating the command.",
     )
-    async def ChatView(self, ctx: commands.Context):
+    async def ChatView(
+        self, ctx: commands.Context, amount_to_read: Optional[Union[int, str]] = None
+    ) -> None:
         """
-        Retrieves the chat history for the user initiating the command.
+        Retrieves N (or all) messages from the chat history for the user initiating the command.
 
         Parameters:
-        - ctx (commands.Context): The context of the command.
-
-        Returns:
-        - None
+        - amount_to_read (int or str): The number of messages to read. If "all", all messages are read. Must be specified.
         """
-        await self.initiatechatview(ctx, False)
+        if amount_to_read is None:
+            await ctx.reply(
+                content="Please specify the number of messages to read or use `all` to read all messages.",
+                silent=True,
+            )
+            return
+
+        _amount_to_read: Optional[int]
+        if isinstance(amount_to_read, str):
+            if amount_to_read.lower() == "all":
+                _amount_to_read = None
+            else:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to read all messages.",
+                    silent=True,
+                )
+                return
+        elif isinstance(amount_to_read, int):
+            if amount_to_read <= 0:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to read all messages.",
+                    silent=True,
+                )
+                return
+            _amount_to_read = amount_to_read
+
+        await self.initiatechatview(
+            ctx=ctx, shared_chat=False, amount_to_read=_amount_to_read
+        )
 
     @commands.command(
         aliases=["sharedchatview", "sharedviewchat", "sharedchathistory", "scv"],
         brief="View the shared chat history.",
-        description="View the shared chat history in the current server.",
+        description="View N (or all) messages from the shared chat history in the current server.",
     )
-    async def SharedChatView(self, ctx: commands.Context):
+    async def SharedChatView(
+        self, ctx: commands.Context, amount_to_read: Optional[Union[int, str]] = None
+    ) -> None:
         """
-        Retrieves the shared chat history for the server.
+        Retrieves N (or all) messages from the shared chat history for the user initiating the command.
 
         Parameters:
-        - ctx (commands.Context): The context object representing the invocation context.
-
-        Returns:
-        - None
+        - amount_to_read (int or str): The number of messages to read. If "all", all messages are read. Must be specified.
         """
-        await self.initiatechatview(ctx, True)
+        if amount_to_read is None:
+            await ctx.reply(
+                content="Please specify the number of messages to read or use `all` to read all messages.",
+                silent=True,
+            )
+            return
+
+        _amount_to_read: Optional[int]
+        if isinstance(amount_to_read, str):
+            if amount_to_read.lower() == "all":
+                _amount_to_read = None
+            else:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to read all messages.",
+                    silent=True,
+                )
+                return
+        elif isinstance(amount_to_read, int):
+            if amount_to_read <= 0:
+                await ctx.reply(
+                    content="Please specify a number greater than 0 or use `all` to read all messages.",
+                    silent=True,
+                )
+                return
+            _amount_to_read = amount_to_read
+
+        await self.initiatechatview(
+            ctx=ctx, shared_chat=True, amount_to_read=_amount_to_read
+        )
 
     @commands.command(
         aliases=["chatstatus", "cs"],
