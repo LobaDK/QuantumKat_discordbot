@@ -15,6 +15,7 @@ from subprocess import check_output, STDOUT
 from shutil import which
 from discord import Guild, User
 from os import path, listdir
+from typing import Tuple
 
 from cogs.utils._logger import system_logger
 
@@ -474,7 +475,7 @@ def get_usage(session_key: str) -> dict:
     return response.json()
 
 
-def get_server_id_and_name(ctx: commands.Context) -> tuple:
+def get_server_id_and_name(ctx: commands.Context) -> Tuple[int, str]:
     """
     Retrieves the server ID and name from the context object.
 
@@ -484,9 +485,9 @@ def get_server_id_and_name(ctx: commands.Context) -> tuple:
     Returns:
         tuple: A tuple containing the server ID and name.
     """
-    if not DiscordHelper.is_dm(ctx):
-        server_id = ctx.guild.id
-        server_name = ctx.guild.name
+    if not DiscordHelper.is_dm(ctx=ctx):
+        server_id: int = ctx.guild.id
+        server_name: str = ctx.guild.name
     else:
         server_id = ctx.channel.id
         server_name = "DM"
