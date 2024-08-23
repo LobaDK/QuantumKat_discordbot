@@ -222,15 +222,22 @@ async def get_chats_for_user(db: AsyncSession, chat: schemas.Chat.Get):
     """
     async with db() as db:
         if chat.n is None:
-            chat.n = 10
-        result = await db.execute(
-            select(models.Chat.user_message, models.Chat.assistant_message)
-            .where(models.Chat.user_id == chat.user_id)
-            .where(models.Chat.server_id == chat.server_id)
-            .where(models.Chat.shared_chat == 0)
-            .order_by(models.Chat.id.desc())
-            .limit(chat.n)
-        )
+            result = await db.execute(
+                select(models.Chat.user_message, models.Chat.assistant_message)
+                .where(models.Chat.user_id == chat.user_id)
+                .where(models.Chat.server_id == chat.server_id)
+                .where(models.Chat.shared_chat == 0)
+                .order_by(models.Chat.id.desc())
+            )
+        else:
+            result = await db.execute(
+                select(models.Chat.user_message, models.Chat.assistant_message)
+                .where(models.Chat.user_id == chat.user_id)
+                .where(models.Chat.server_id == chat.server_id)
+                .where(models.Chat.shared_chat == 0)
+                .order_by(models.Chat.id.desc())
+                .limit(limit=chat.n)
+            )
         return result.all()
 
 
@@ -248,14 +255,20 @@ async def get_shared_chats_for_server(db: AsyncSession, chat: schemas.Chat.Get):
     """
     async with db() as db:
         if chat.n is None:
-            chat.n = 10
-        result = await db.execute(
-            select(models.Chat.user_message, models.Chat.assistant_message)
-            .where(models.Chat.server_id == chat.server_id)
-            .where(models.Chat.shared_chat == 1)
-            .order_by(models.Chat.id.desc())
-            .limit(chat.n)
-        )
+            result = await db.execute(
+                select(models.Chat.user_message, models.Chat.assistant_message)
+                .where(models.Chat.server_id == chat.server_id)
+                .where(models.Chat.shared_chat == 1)
+                .order_by(models.Chat.id.desc())
+            )
+        else:
+            result = await db.execute(
+                select(models.Chat.user_message, models.Chat.assistant_message)
+                .where(models.Chat.server_id == chat.server_id)
+                .where(models.Chat.shared_chat == 1)
+                .order_by(models.Chat.id.desc())
+                .limit(limit=chat.n)
+            )
         return result.all()
 
 
