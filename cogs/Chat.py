@@ -405,7 +405,9 @@ class Chat(commands.Cog):
             messages = []
             messages.append("Chat history for this server:")
             for message in conversation_history:
-                messages.append(f"{message['role'].title()}: {message['content']}")
+                messages.append(
+                    f"\n**{message['role'].title()}**: {message['content']}"
+                )
             message = "\n".join(messages)
             if len(message) > 2000:
                 message = split_message_by_sentence(message)
