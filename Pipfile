@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+hikari = {extras = ["speedups"], version = "*"}
+hikari-lightbulb = "*"
+hikari-tanjun = "*"
+hikari-crescent = "*"
+hikari-arc = "*"
+uvloop = {version = "*", markers = "sys_platform == 'linux' or sys_platform == 'linux2'"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"
+
+[pipenv]
+allow_prereleases = true
