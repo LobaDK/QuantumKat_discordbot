@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f7f0266757d77f646b736bf177398abff2028a84b53e8208b63848d0272dce13"
+            "sha256": "d9db9be838ef8be2511eb1f4cd87c3c013bbc7fd8c19d8889a97a7c84d8268d9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -131,14 +131,6 @@
             ],
             "markers": "python_version < '3.14' and python_full_version >= '3.9.0'",
             "version": "==0.3.3"
-        },
-        "async-timeout": {
-            "hashes": [
-                "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f",
-                "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==4.0.3"
         },
         "attrs": {
             "hashes": [
@@ -544,15 +536,6 @@
             "index": "pypi",
             "markers": "python_version < '3.13' and python_version >= '3.9'",
             "version": "==1.1.0"
-        },
-        "hikari-lightbulb": {
-            "hashes": [
-                "sha256:e24b5b2c59e94ae7bf43b825b8c7e732de539b264008d69f047ccc91cd2f5cd7",
-                "sha256:edd780f165b22455df7e6aca96385942391f10aa422047dc053a06ea99dcfbb3"
-            ],
-            "index": "pypi",
-            "markers": "python_version < '3.13' and python_full_version >= '3.10.0'",
-            "version": "==3.0.0a13"
         },
         "hikari-tanjun": {
             "hashes": [

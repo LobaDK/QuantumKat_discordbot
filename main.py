@@ -1,3 +1,8 @@
-from quantum_kat.quantum_kat import quantum_bot
+from threading import Thread
 
-quantum_bot.run()
+from QuantumKat.quantum_kat import quantum_bot
+
+if __name__ == "__main__":
+    quantum_kat_thread = Thread(target=quantum_bot.run)
+    quantum_kat_thread.start()
+    quantum_kat_thread.join()

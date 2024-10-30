@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 hikari = {extras = ["speedups"], version = "*"}
-hikari-lightbulb = "*"
 hikari-tanjun = "*"
 hikari-crescent = "*"
 hikari-arc = "*"
