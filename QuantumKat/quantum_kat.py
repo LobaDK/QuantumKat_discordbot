@@ -3,8 +3,8 @@ import hikari
 from os import name
 from pathlib import Path
 
-from QuantumKat.lib.utility import create_bot
-from QuantumKat import quantum_kat_logger, loaded_extensions, owner_ids
+from shared.utility import create_bot
+from QuantumKat import quantum_kat_logger
 
 if name != "nt":
     import uvloop
@@ -21,8 +21,6 @@ quantum_bot, arc_client = create_bot()
 @quantum_bot.listen(hikari.StartingEvent)
 async def on_starting(_: hikari.StartingEvent) -> None:
     arc_client.load_extensions_from(dir_path=Path("QuantumKat", "extensions"))
-    loaded_extensions.extend(list(arc_client.plugins))
-    owner_ids.extend(arc_client.owner_ids)
 
 
 @quantum_bot.listen(hikari.StoppingEvent)

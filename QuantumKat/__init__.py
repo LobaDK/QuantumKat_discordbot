@@ -1,6 +1,4 @@
 import logging
-from typing import List
-from hikari import Snowflake
 
 from lib.log_helper.log_helper import LogHelper
 
@@ -11,6 +9,3 @@ quantum_kat_logger: logging.Logger = LogHelper.create_logger(
     stream_log_level=logging.INFO,
     rotate_logs=True,
 )
-
-loaded_extensions: List[str] = []
-owner_ids: List[Snowflake] = []

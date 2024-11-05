@@ -3,6 +3,7 @@ import arc
 from QuantumKat.lib.utility import (
     autocomplete_loaded_extensions_callback,
     autocomplete_unloaded_extensions_callback,
+    is_owner_hook,
 )
 
 plugin = arc.GatewayPlugin("control")
@@ -13,6 +14,7 @@ extensions: arc.SlashGroup[arc.GatewayClient] = plugin.include_slash_group(
 
 
 @extensions.include
+@arc.with_hook(hook=is_owner_hook)
 @arc.slash_subcommand(name="load", description="Load an extension.")
 async def load_extension(
     ctx: arc.GatewayContext,
@@ -28,6 +30,7 @@ async def load_extension(
 
 
 @extensions.include
+@arc.with_hook(hook=is_owner_hook)
 @arc.slash_subcommand(name="unload", description="Unload an extension.")
 async def unload_extension(
     ctx: arc.GatewayContext,
@@ -43,6 +46,7 @@ async def unload_extension(
 
 
 @extensions.include
+@arc.with_hook(hook=is_owner_hook)
 @arc.slash_subcommand(name="reload", description="Reload an extension.")
 async def reload_extension(
     ctx: arc.GatewayContext,
@@ -58,6 +62,7 @@ async def reload_extension(
 
 
 @extensions.include
+@arc.with_hook(hook=is_owner_hook)
 @arc.slash_subcommand(name="list", description="List available extensions.")
 async def list_extensions(ctx: arc.GatewayContext) -> None:
     await ctx.respond(content="Listing available extensions.")
