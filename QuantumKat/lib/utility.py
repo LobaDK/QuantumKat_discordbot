@@ -1,12 +1,12 @@
 from typing import List, Any
 from pathlib import Path
-from arc import GatewayClient, AutocompleteData, Context, HookResult
+from arc import GatewayClient, AutocompleteData, Context
 
 from QuantumKat.quantum_kat import arc_client
 
 
 async def get_extensions() -> list[Path]:
-    return list(Path("quantum_kat", "plugins").rglob(pattern="*.py"))
+    return list(Path("QuantumKat", "extensions").rglob(pattern="*.py"))
 
 
 async def autocomplete_loaded_extensions_callback(
@@ -46,19 +46,4 @@ def is_owner(ctx: Context[Any]) -> bool:
     Returns:
         bool: True if the user is the owner of the bot, False otherwise.
     """
-    return ctx.author.id == arc_client.application.owner.id
-
-
-def is_owner_hook(ctx: Context[Any]) -> HookResult:
-    """
-    A hook function to check if the context's user is the owner.
-
-    Args:
-        ctx (Context[Any]): The context of the command being executed.
-
-    Returns:
-        HookResult: A result object indicating whether to abort the operation.
-    """
-    if not is_owner(ctx=ctx):
-        return HookResult(abort=True)
-    return HookResult(abort=False)
+    return ctx.author.id in arc_client.owner_ids

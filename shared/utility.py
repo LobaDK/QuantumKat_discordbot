@@ -3,7 +3,7 @@ from shutil import which
 from typing import Tuple
 from os import environ
 from arc import GatewayClient
-from hikari import GatewayBot, Application, User
+from hikari import GatewayBot
 
 
 def get_field_from_1password(reference: str) -> str:
@@ -56,14 +56,3 @@ def create_bot() -> Tuple[GatewayBot, GatewayClient]:
     )
 
     return quantum_bot, arc_client
-
-
-async def fetch_bot_application_info(bot: GatewayBot) -> Application:
-    app_info: Application = await bot.rest.fetch_application()
-    return app_info
-
-
-async def get_bot_owner(bot: GatewayBot) -> User:
-    app_info: Application = await fetch_bot_application_info(bot=bot)
-    owner: User = app_info.owner
-    return owner
