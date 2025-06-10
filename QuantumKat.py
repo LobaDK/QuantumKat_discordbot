@@ -175,7 +175,7 @@ async def on_guild_join(guild):
 
 @bot.event
 async def on_ready():
-    # await init_models()
+    await init_models()
 
     # Add all servers the bot is in to the database on startup in case the bot was added while offline
     for guild in bot.guilds:
